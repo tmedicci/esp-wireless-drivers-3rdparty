@@ -18,7 +18,7 @@
  * See readme.md in soc/include/hal/readme.md
  ******************************************************************************/
 
-// The LL layer for ESP32 SPI register operations
+// The LL layer for ESP32s2beta SPI register operations
 
 #pragma once
 
@@ -32,9 +32,11 @@
 /// Registers to reset during initialization. Don't use in app.
 #define SPI_LL_RST_MASK (SPI_OUT_RST | SPI_IN_RST | SPI_AHBM_RST | SPI_AHBM_FIFO_RST)
 /// Interrupt not used. Don't use in app.
-#define SPI_LL_UNUSED_INT_MASK  (SPI_INT_EN | SPI_SLV_WR_STA_DONE | SPI_SLV_RD_STA_DONE | SPI_SLV_WR_BUF_DONE | SPI_SLV_RD_BUF_DONE)
+#define SPI_LL_UNUSED_INT_MASK  (SPI_INT_TRANS_DONE_EN | SPI_INT_WR_DMA_DONE_EN | SPI_INT_RD_DMA_DONE_EN | SPI_INT_WR_BUF_DONE_EN | SPI_INT_RD_BUF_DONE_EN)
 /// Swap the bit order to its correct place to send
 #define HAL_SPI_SWAP_DATA_TX(data, len) HAL_SWAP32((uint32_t)data<<(32-len))
+
+#define SPI_LL_GET_HW(ID) ((ID)==0? ({abort();NULL;}):((ID)==1? &GPSPI2 : ((ID)==2? &GPSPI3: &GPSPI4)))
 
 /**
  * The data structure holding calculated clock configuration. Since the
@@ -51,6 +53,13 @@ typedef enum {
     SPI_LL_IO_MODE_QIO,         ///< 4-bit mode for address and data phases, 1-bit mode for command phase
     SPI_LL_IO_MODE_QUAD,        ///< 4-bit mode for data phases only, 1-bit mode for command and address phases
 } spi_ll_io_mode_t;
+
+/// Interrupt type for different working pattern
+typedef enum {
+    SPI_LL_INT_TYPE_NORMAL = 0, ///< Typical pattern, only wait for trans done
+    SPI_LL_INT_TYPE_SEG = 1,    ///< Wait for DMA signals
+} spi_ll_slave_intr_type;
+
 
 /*------------------------------------------------------------------------------
  * Control
@@ -85,13 +94,15 @@ static inline void spi_ll_master_init(spi_dev_t *hw)
  */
 static inline void spi_ll_slave_init(spi_dev_t *hw)
 {
+    //it's stupid, but if something goes wrong, try to uncomment it
+    //hw->slave.slave_mode = 1;
     //Configure slave
     hw->clock.val = 0;
     hw->user.val = 0;
     hw->ctrl.val = 0;
-    hw->slave.wr_rd_buf_en = 1; //no sure if needed
     hw->user.doutdin = 1; //we only support full duplex
     hw->user.sio = 0;
+    hw->user.tx_start_bit = 7;
     hw->slave.slave_mode = 1;
     hw->dma_conf.val |= SPI_LL_RST_MASK;
     hw->dma_out_link.start = 0;
@@ -102,9 +113,12 @@ static inline void spi_ll_slave_init(spi_dev_t *hw)
     //use all 64 bytes of the buffer
     hw->user.usr_miso_highpart = 0;
     hw->user.usr_mosi_highpart = 0;
+    //by default seg mode is disabled
+    hw->dma_conf.dma_continue = 0;
 
     //Disable unneeded ints
     hw->slave.val &= ~SPI_LL_UNUSED_INT_MASK;
+    hw->dma_int_ena.val = 0;
 }
 
 /**
@@ -122,6 +136,8 @@ static inline void spi_ll_reset_dma(spi_dev_t *hw)
     hw->dma_conf.out_data_burst_en = 1;
     hw->dma_conf.indscr_burst_en = 1;
     hw->dma_conf.outdscr_burst_en = 1;
+    hw->dma_in_link.dma_rx_ena = 0;
+    assert(hw->dma_in_link.dma_rx_ena==0);
 }
 
 /**
@@ -132,6 +148,8 @@ static inline void spi_ll_reset_dma(spi_dev_t *hw)
  */
 static inline void spi_ll_rxdma_start(spi_dev_t *hw, lldesc_t *addr)
 {
+    //if something breaks, uncomment this line
+    //hw->dma_in_link.restart = 1;
     hw->dma_in_link.addr = (int) addr & 0xFFFFF;
     hw->dma_in_link.start = 1;
 }
@@ -144,6 +162,8 @@ static inline void spi_ll_rxdma_start(spi_dev_t *hw, lldesc_t *addr)
  */
 static inline void spi_ll_txdma_start(spi_dev_t *hw, lldesc_t *addr)
 {
+    //if something breaks, uncomment this line
+    hw->dma_out_link.restart = 1;
     hw->dma_out_link.addr = (int) addr & 0xFFFFF;
     hw->dma_out_link.start = 1;
 }
@@ -226,7 +246,7 @@ static inline uint32_t spi_ll_get_running_cmd(spi_dev_t *hw)
  */
 static inline void spi_ll_disable_int(spi_dev_t *hw)
 {
-    hw->slave.trans_inten = 0;
+    hw->slave.int_trans_done_en = 0;
 }
 
 /**
@@ -237,6 +257,7 @@ static inline void spi_ll_disable_int(spi_dev_t *hw)
 static inline void spi_ll_clear_int_stat(spi_dev_t *hw)
 {
     hw->slave.trans_done = 0;
+    hw->dma_int_clr.val = UINT32_MAX;
 }
 
 /**
@@ -256,8 +277,31 @@ static inline void spi_ll_set_int_stat(spi_dev_t *hw)
  */
 static inline void spi_ll_enable_int(spi_dev_t *hw)
 {
-    hw->slave.trans_inten = 1;
+    hw->slave.int_trans_done_en = 1;
 }
+
+/**
+ * Set different interrupt types for the slave.
+ *
+ * @param hw Beginning address of the peripheral registers.
+ * @param int_type Interrupt type
+ */
+static inline void spi_ll_slave_set_int_type(spi_dev_t *hw, spi_ll_slave_intr_type int_type)
+{
+    switch (int_type)
+    {
+    case SPI_LL_INT_TYPE_SEG:
+        hw->dma_int_ena.in_suc_eof = 1;
+        hw->dma_int_ena.out_total_eof = 1;
+        hw->slave.int_trans_done_en = 0;
+        break;
+    default:
+        hw->dma_int_ena.in_suc_eof = 0;
+        hw->dma_int_ena.out_total_eof = 0;
+        hw->slave.int_trans_done_en = 1;
+    }
+}
+
 
 
 /*------------------------------------------------------------------------------
@@ -273,9 +317,9 @@ static inline void spi_ll_enable_int(spi_dev_t *hw)
 static inline void spi_ll_master_set_pos_cs(spi_dev_t *hw, int cs, uint32_t pos_cs)
 {
     if (pos_cs) {
-        hw->pin.master_cs_pol |= (1 << cs);
+        hw->misc.master_cs_pol |= (1 << cs);
     } else {
-        hw->pin.master_cs_pol &= (1 << cs);
+        hw->misc.master_cs_pol &= (1 << cs);
     }
 }
 
@@ -311,16 +355,16 @@ static inline void spi_ll_master_set_mode(spi_dev_t *hw, uint8_t mode)
 {
     //Configure polarity
     if (mode == 0) {
-        hw->pin.ck_idle_edge = 0;
+        hw->misc.ck_idle_edge = 0;
         hw->user.ck_out_edge = 0;
     } else if (mode == 1) {
-        hw->pin.ck_idle_edge = 0;
+        hw->misc.ck_idle_edge = 0;
         hw->user.ck_out_edge = 1;
     } else if (mode == 2) {
-        hw->pin.ck_idle_edge = 1;
+        hw->misc.ck_idle_edge = 1;
         hw->user.ck_out_edge = 1;
     } else if (mode == 3) {
-        hw->pin.ck_idle_edge = 1;
+        hw->misc.ck_idle_edge = 1;
         hw->user.ck_out_edge = 0;
     }
 }
@@ -334,58 +378,31 @@ static inline void spi_ll_master_set_mode(spi_dev_t *hw, uint8_t mode)
 static inline void spi_ll_slave_set_mode(spi_dev_t *hw, const int mode, bool dma_used)
 {
     if (mode == 0) {
-        //The timing needs to be fixed to meet the requirements of DMA
-        hw->pin.ck_idle_edge = 1;
-        hw->user.ck_i_edge = 0;
-        hw->ctrl2.miso_delay_mode = 0;
-        hw->ctrl2.miso_delay_num = 0;
-        hw->ctrl2.mosi_delay_mode = 2;
-        hw->ctrl2.mosi_delay_num = 2;
+        hw->misc.ck_idle_edge = 0;
+        hw->user.rsck_i_edge = 0;
+        hw->user.tsck_i_edge = 0;
+        hw->ctrl1.rsck_data_out = 0;
+        hw->ctrl1.clk_mode_13 = 0;
     } else if (mode == 1) {
-        hw->pin.ck_idle_edge = 1;
-        hw->user.ck_i_edge = 1;
-        hw->ctrl2.miso_delay_mode = 2;
-        hw->ctrl2.miso_delay_num = 0;
-        hw->ctrl2.mosi_delay_mode = 0;
-        hw->ctrl2.mosi_delay_num = 0;
+        hw->misc.ck_idle_edge = 0;
+        hw->user.rsck_i_edge = 1;
+        hw->user.tsck_i_edge = 1;
+        hw->ctrl1.rsck_data_out = 0;
+        hw->ctrl1.clk_mode_13 = 1;
     } else if (mode == 2) {
-        //The timing needs to be fixed to meet the requirements of DMA
-        hw->pin.ck_idle_edge = 0;
-        hw->user.ck_i_edge = 1;
-        hw->ctrl2.miso_delay_mode = 0;
-        hw->ctrl2.miso_delay_num = 0;
-        hw->ctrl2.mosi_delay_mode = 1;
-        hw->ctrl2.mosi_delay_num = 2;
+        hw->misc.ck_idle_edge = 1;
+        hw->user.rsck_i_edge = 1;
+        hw->user.tsck_i_edge = 1;
+        hw->ctrl1.rsck_data_out = 0;
+        hw->ctrl1.clk_mode_13 = 0;
     } else if (mode == 3) {
-        hw->pin.ck_idle_edge = 0;
-        hw->user.ck_i_edge = 0;
-        hw->ctrl2.miso_delay_mode = 1;
-        hw->ctrl2.miso_delay_num = 0;
-        hw->ctrl2.mosi_delay_mode = 0;
-        hw->ctrl2.mosi_delay_num = 0;
+        hw->misc.ck_idle_edge = 1;
+        hw->user.rsck_i_edge = 0;
+        hw->user.tsck_i_edge = 0;
+        hw->ctrl1.rsck_data_out = 0;
+        hw->ctrl1.clk_mode_13 = 1;
     }
-
-    /* Silicon issues exists in mode 0 and 2 with DMA, change clock phase to
-     * avoid dma issue. This will cause slave output to appear at most half a
-     * spi clock before
-     */
-    if (dma_used) {
-        if (mode == 0) {
-            hw->pin.ck_idle_edge = 0;
-            hw->user.ck_i_edge = 1;
-            hw->ctrl2.miso_delay_mode = 0;
-            hw->ctrl2.miso_delay_num = 2;
-            hw->ctrl2.mosi_delay_mode = 0;
-            hw->ctrl2.mosi_delay_num = 3;
-        } else if (mode == 2) {
-            hw->pin.ck_idle_edge = 1;
-            hw->user.ck_i_edge = 0;
-            hw->ctrl2.miso_delay_mode = 0;
-            hw->ctrl2.miso_delay_num = 2;
-            hw->ctrl2.mosi_delay_mode = 0;
-            hw->ctrl2.mosi_delay_num = 3;
-        }
-    }
+    //hw->ctrl1.rsck_data_out = 1;
 }
 
 /**
@@ -424,16 +441,16 @@ static inline void spi_ll_master_set_io_mode(spi_dev_t *hw, spi_ll_io_mode_t io_
     hw->user.val &= ~(SPI_FWRITE_DUAL | SPI_FWRITE_QUAD | SPI_FWRITE_DIO | SPI_FWRITE_QIO);
     switch (io_mode) {
     case SPI_LL_IO_MODE_DIO:
-        hw->ctrl.fread_dio = 1;
-        hw->user.fwrite_dio = 1;
+        // hw->ctrl.fread_dio = 1;
+        // hw->user.fwrite_dio = 1;
         break;
     case SPI_LL_IO_MODE_DUAL:
         hw->ctrl.fread_dual = 1;
         hw->user.fwrite_dual = 1;
         break;
     case SPI_LL_IO_MODE_QIO:
-        hw->ctrl.fread_qio = 1;
-        hw->user.fwrite_qio = 1;
+        // hw->ctrl.fread_qio = 1;
+        // hw->user.fwrite_qio = 1;
         break;
     case SPI_LL_IO_MODE_QUAD:
         hw->ctrl.fread_quad = 1;
@@ -442,9 +459,9 @@ static inline void spi_ll_master_set_io_mode(spi_dev_t *hw, spi_ll_io_mode_t io_
     default:
         break;
     };
-    if (io_mode != SPI_LL_IO_MODE_NORMAL) {
-        hw->ctrl.fastrd_mode = 1;
-    }
+    // if (io_mode != SPI_LL_IO_MODE_NORMAL) {
+    //     hw->ctrl.fastrd_mode = 1;
+    // }
 }
 
 /**
@@ -455,9 +472,9 @@ static inline void spi_ll_master_set_io_mode(spi_dev_t *hw, spi_ll_io_mode_t io_
  */
 static inline void spi_ll_master_select_cs(spi_dev_t *hw, int cs_id)
 {
-    hw->pin.cs0_dis = (cs_id == 0) ? 0 : 1;
-    hw->pin.cs1_dis = (cs_id == 1) ? 0 : 1;
-    hw->pin.cs2_dis = (cs_id == 2) ? 0 : 1;
+    hw->misc.cs0_dis = (cs_id == 0) ? 0 : 1;
+    hw->misc.cs1_dis = (cs_id == 1) ? 0 : 1;
+    hw->misc.cs2_dis = (cs_id == 2) ? 0 : 1;
 }
 
 /*------------------------------------------------------------------------------
@@ -500,7 +517,7 @@ static inline int spi_ll_freq_for_pre_n(int fapb, int pre, int n)
  */
 static inline int spi_ll_master_cal_clock(int fapb, int hz, int duty_cycle, spi_ll_clock_val_t *out_reg)
 {
-    typeof(SPI1.clock) reg;
+    typeof(GPSPI2.clock) reg;
     int eff_clk;
 
     //In hw, n, h and l are 1-64, pre is 1-8K. Value written to register is one lower than used value.
@@ -586,24 +603,6 @@ static inline int spi_ll_master_set_clock(spi_dev_t *hw, int fapb, int hz, int d
 }
 
 /**
- * Enable/disable the CK sel feature for a CS pin.
- *
- * CK sel is a feature to toggle the CS line along with the clock.
- *
- * @param hw Beginning address of the peripheral registers.
- * @param cs CS pin to enable/disable the feature, 0-2.
- * @param cksel true to enable the feature, otherwise false.
- */
-static inline void spi_ll_master_set_cksel(spi_dev_t *hw, int cs, uint32_t cksel)
-{
-    if (cksel) {
-        hw->pin.master_ck_sel |= (1 << cs);
-    } else {
-        hw->pin.master_ck_sel &= (1 << cs);
-    }
-}
-
-/**
  * Set the mosi delay after the output edge to the signal. (Preview)
  *
  * The delay mode/num is a Espressif conception, may change in the new chips.
@@ -614,8 +613,9 @@ static inline void spi_ll_master_set_cksel(spi_dev_t *hw, int cs, uint32_t cksel
  */
 static inline void spi_ll_set_mosi_delay(spi_dev_t *hw, int delay_mode, int delay_num)
 {
-    hw->ctrl2.mosi_delay_mode = delay_mode;
-    hw->ctrl2.mosi_delay_num = delay_num;
+    //TODO: this doesn't make sense
+    hw->dout_num.dout0_num = 0;
+    hw->dout_num.dout1_num = 0;
 }
 
 /**
@@ -629,8 +629,9 @@ static inline void spi_ll_set_mosi_delay(spi_dev_t *hw, int delay_mode, int dela
  */
 static inline void spi_ll_set_miso_delay(spi_dev_t *hw, int delay_mode, int delay_num)
 {
-    hw->ctrl2.miso_delay_mode = delay_mode;
-    hw->ctrl2.miso_delay_num = delay_num;
+    //TODO: this doesn't make sense
+    hw->din_num.din0_num = 1;
+    hw->din_num.din1_num = 1;
 }
 
 /**
@@ -656,7 +657,7 @@ static inline void spi_ll_set_dummy(spi_dev_t *hw, int dummy_n)
  */
 static inline void spi_ll_master_set_cs_hold(spi_dev_t *hw, int hold)
 {
-    hw->ctrl2.hold_time = hold;
+    hw->ctrl2.cs_hold_time = hold - 1;
     hw->user.cs_hold = hold ? 1 : 0;
 }
 
@@ -671,8 +672,19 @@ static inline void spi_ll_master_set_cs_hold(spi_dev_t *hw, int hold)
  */
 static inline void spi_ll_master_set_cs_setup(spi_dev_t *hw, uint8_t setup)
 {
-    hw->ctrl2.setup_time = setup - 1;
+    hw->ctrl2.cs_setup_time = setup - 1;
     hw->user.cs_setup = setup ? 1 : 0;
+}
+
+/**
+ * Enable/disable the segment transfer feature for the slave.
+ *
+ * @param hw Beginning address of the peripheral registers.
+ * @param en true to enable, false to disable.
+ */
+static inline void spi_ll_slave_set_seg_en(spi_dev_t *hw, bool en)
+{
+    hw->dma_conf.slv_rx_seg_trans_en = en;
 }
 
 /*------------------------------------------------------------------------------
@@ -686,7 +698,7 @@ static inline void spi_ll_master_set_cs_setup(spi_dev_t *hw, uint8_t setup)
  */
 static inline void spi_ll_set_miso_bitlen(spi_dev_t *hw, size_t bitlen)
 {
-    hw->miso_dlen.usr_miso_dbitlen = bitlen - 1;
+    hw->miso_dlen.usr_miso_bit_len = bitlen - 1;
 }
 
 /**
@@ -697,7 +709,7 @@ static inline void spi_ll_set_miso_bitlen(spi_dev_t *hw, size_t bitlen)
  */
 static inline void spi_ll_set_mosi_bitlen(spi_dev_t *hw, size_t bitlen)
 {
-    hw->mosi_dlen.usr_mosi_dbitlen = bitlen - 1;
+    hw->mosi_dlen.usr_mosi_bit_len = bitlen - 1;
 }
 
 /**
@@ -856,7 +868,7 @@ static inline void spi_ll_slave_reset(spi_dev_t *hw)
  */
 static inline uint32_t spi_ll_slave_get_rcv_bitlen(spi_dev_t *hw)
 {
-    return hw->slv_rd_bit.slv_rdata_bit;
+    return hw->slv_rd_byte.slv_rdata_bit * 8;
 }
 
 
