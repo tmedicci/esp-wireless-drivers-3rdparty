@@ -14,12 +14,5 @@
 
 #pragma once
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#define SOC_CP_DMA_MAX_BUFFER_SIZE (4095) /*!< Maximum size of the buffer that can be attached to descriptor */
-
-#ifdef __cplusplus
-}
-#endif
+#define SOC_GDMA_CHANNELS_NUM (5)       /*!< GDMA has 5 TX and 5 RX  channels in ESP32-S3 */
+#define SOC_GDMA_L2_FIFO_BASE_SIZE (16) /*!< GDMA L2 FIFO basic size is 16 Bytes */
