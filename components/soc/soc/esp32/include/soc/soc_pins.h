@@ -1,9 +1,9 @@
-// Copyright 2010-2020 Espressif Systems (Shanghai) PTE LTD
+// Copyright 2020 Espressif Systems (Shanghai) PTE LTD
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-
+//
 //     http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
@@ -12,25 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/*
+ * Pin definition header file. The long term plan is to have a single soc_pins.h for all
+ * peripherals. Now we temporarily separate these information into periph_pins/channels.h for each
+ * peripheral and include them here to avoid developing conflicts in those header files.
+ */
+
 #pragma once
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// ESP32-S2 have 2 I2C.
-#define SOC_I2C_NUM            (2)
-
-#define SOC_I2C_FIFO_LEN       (32) /*!< I2C hardware FIFO depth */
-#define I2C_INTR_MASK          (0x1ffff) /*!< I2C all interrupt bitmap */
-
-//ESP32-S2 support hardware FSM reset
-#define I2C_SUPPORT_HW_FSM_RST  (1)
-//ESP32-S2 support hardware clear bus
-#define I2C_SUPPORT_HW_CLR_BUS  (1)
-
-#ifdef __cplusplus
-}
-#endif
-
-
+#include "soc/gpio_pins.h"
+#include "soc/spi_pins.h"
+#include "soc/sdio_slave_pins.h"
+#include "soc/sdmmc_pins.h"
