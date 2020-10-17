@@ -18,9 +18,8 @@
 extern "C" {
 #endif
 
-// ESP32 have 1 PCNT peripheral
-#define SOC_PCNT_PORT_NUM      (1)
-#define SOC_PCNT_UNIT_NUM      (8)
+#define GPIO_MATRIX_CONST_ONE_INPUT   (0x38)
+#define GPIO_MATRIX_CONST_ZERO_INPUT  (0x3C)
 
 #ifdef __cplusplus
 }
