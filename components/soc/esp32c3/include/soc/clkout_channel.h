@@ -1,9 +1,9 @@
-// Copyright 2015-2020 Espressif Systems (Shanghai) PTE LTD
+// Copyright 2010-2016 Espressif Systems (Shanghai) PTE LTD
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//
+
 //     http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
@@ -12,12 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef _SOC_CLKOUT_CHANNEL_H
+#define _SOC_CLKOUT_CHANNEL_H
 
-#define SOC_I2S_APLL_MIN_FREQ                     (250000000)
-#define SOC_I2S_APLL_MAX_FREQ                     (500000000)
-#define SOC_I2S_APLL_MIN_RATE                 (10675) //in Hz, I2S Clock rate limited by hardware
-#define SOC_I2S_MAX_BUFFER_SIZE               (4 * 1024 * 1024) //the maximum RAM can be allocated
+//CLKOUT channels
+#define CLKOUT_GPIO20_DIRECT_CHANNEL         CLKOUT_CHANNEL_1
+#define CLKOUT_CHANNEL_1_DIRECT_GPIO_NUM     20
+#define CLKOUT_GPIO19_DIRECT_CHANNEL         CLKOUT_CHANNEL_2
+#define CLKOUT_CHANNEL_2_DIRECT_GPIO_NUM     19
+#define CLKOUT_GPIO18_DIRECT_CHANNEL         CLKOUT_CHANNEL_3
+#define CLKOUT_CHANNEL_3_DIRECT_GPIO_NUM     18
 
-// ESP32-S3 have 1 I2S
-#define SOC_I2S_NUM            (1)
+#endif
