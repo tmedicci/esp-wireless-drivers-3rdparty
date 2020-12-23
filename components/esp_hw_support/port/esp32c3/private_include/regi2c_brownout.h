@@ -1,4 +1,4 @@
-// Copyright 2015-2020 Espressif Systems (Shanghai) PTE LTD
+// Copyright 2020 Espressif Systems (Shanghai) PTE LTD
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,10 +14,17 @@
 
 #pragma once
 
-#define SOC_I2S_APLL_MIN_FREQ                     (250000000)
-#define SOC_I2S_APLL_MAX_FREQ                     (500000000)
-#define SOC_I2S_APLL_MIN_RATE                 (10675) //in Hz, I2S Clock rate limited by hardware
-#define SOC_I2S_MAX_BUFFER_SIZE               (4 * 1024 * 1024) //the maximum RAM can be allocated
+/**
+ * @file regi2c_brownout.h
+ * @brief Register definitions for brownout detector
+ *
+ * This file lists register fields of the brownout detector, located on an internal configuration
+ * bus. These definitions are used via macros defined in regi2c_ctrl.h.
+ */
 
-// ESP32-S3 have 1 I2S
-#define SOC_I2S_NUM            (1)
+#define I2C_BOD            0x61
+#define I2C_BOD_HOSTID     1
+
+#define I2C_BOD_THRESHOLD           0x5
+#define I2C_BOD_THRESHOLD_MSB       2
+#define I2C_BOD_THRESHOLD_LSB       0

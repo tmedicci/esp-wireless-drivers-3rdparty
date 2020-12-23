@@ -14,10 +14,17 @@
 
 #pragma once
 
-#define SOC_I2S_APLL_MIN_FREQ                     (250000000)
-#define SOC_I2S_APLL_MAX_FREQ                     (500000000)
-#define SOC_I2S_APLL_MIN_RATE                 (10675) //in Hz, I2S Clock rate limited by hardware
-#define SOC_I2S_MAX_BUFFER_SIZE               (4 * 1024 * 1024) //the maximum RAM can be allocated
+/**
+ * @file regi2c_bias.h
+ * @brief Register definitions for bias
+ *
+ * This file lists register fields of BIAS. These definitions are used via macros defined in regi2c_ctrl.h, by
+ * bootloader_hardware_init function in bootloader_esp32c3.c.
+ */
 
-// ESP32-S3 have 1 I2S
-#define SOC_I2S_NUM            (1)
+#define I2C_BIAS            0X6A
+#define I2C_BIAS_HOSTID     0
+
+#define I2C_BIAS_DREG_1P1_PVT 1
+#define I2C_BIAS_DREG_1P1_PVT_MSB 3
+#define I2C_BIAS_DREG_1P1_PVT_LSB 0
