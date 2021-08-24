@@ -1,4 +1,4 @@
-// Copyright 2020 Espressif Systems (Shanghai) PTE LTD
+// Copyright 2021 Espressif Systems (Shanghai) PTE LTD
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,9 +14,18 @@
 
 #pragma once
 
-#define SOC_I2S_APLL_MIN_FREQ                     (250000000)
-#define SOC_I2S_APLL_MAX_FREQ                     (500000000)
-#define SOC_I2S_APLL_MIN_RATE                 (10675) //in Hz, I2S Clock rate limited by hardware
-#define SOC_I2S_MAX_BUFFER_SIZE               (4 * 1024 * 1024) //the maximum RAM can be allocated
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#define SOC_I2S_NUM            (1)
+/**
+ * @brief Dummy to satisfy the requirement for this type on Linux targets.
+ * Look at other reset_reasons.h files in IDF.
+ */
+typedef enum {
+    RESET_REASON_CHIP_POWER_ON   = 0x01, // Power on reset
+} soc_reset_reason_t;
+
+#ifdef __cplusplus
+}
+#endif
