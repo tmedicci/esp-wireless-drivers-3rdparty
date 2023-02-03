@@ -1,0 +1,9 @@
+ifneq ($(CONFIG_WPA_SUPPLICANT),)
+
+CSRCS += eapol_auth_sm.c
+
+DEPPATH += --dep-path src/eapol_auth
+VPATH += :src/eapol_auth
+CFLAGS += ${shell $(INCDIR) "$(CC)" $(APPDIR)/wireless/wpa_supplicant/src/eapol_auth}
+
+endif

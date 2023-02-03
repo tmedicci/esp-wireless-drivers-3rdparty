@@ -1,0 +1,18 @@
+############################################################################
+# SPDX-FileCopyrightText: 2018-2023 Espressif Systems (Shanghai) CO LTD
+#
+# SPDX-License-Identifier: Apache-2.0
+############################################################################
+
+CHIP_CSRCS += chap.c
+CHIP_CSRCS += eap.c
+CHIP_CSRCS += eap_common.c
+CHIP_CSRCS += eap_mschapv2.c
+CHIP_CSRCS += eap_peap.c
+CHIP_CSRCS += eap_peap_common.c
+CHIP_CSRCS += eap_tls.c
+CHIP_CSRCS += eap_tls_common.c
+CHIP_CSRCS += eap_ttls.c
+CHIP_CSRCS += mschapv2.c
+
+VPATH += $(WIFI_WPA_SUPPLICANT)$(DELIM)src$(DELIM)eap_peer

@@ -1,0 +1,14 @@
+############################################################################
+# SPDX-FileCopyrightText: 2018-2023 Espressif Systems (Shanghai) CO LTD
+#
+# SPDX-License-Identifier: Apache-2.0
+############################################################################
+
+INCLUDES += $(shell $(INCDIR) "$(CC)" $(ARCH_SRCDIR)$(WIFI_WPA_SUPPLICANT)$(DELIM)src$(DELIM)ap)
+
+CHIP_CSRCS += ap_config.c
+CHIP_CSRCS += sta_info.c
+CHIP_CSRCS += wpa_auth.c
+CHIP_CSRCS += wpa_auth_ie.c
+
+VPATH += $(WIFI_WPA_SUPPLICANT)$(DELIM)src$(DELIM)ap

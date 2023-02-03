@@ -1,0 +1,9 @@
+ifneq ($(CONFIG_WPA_SUPPLICANT),)
+
+CSRCS += eap_server_identity.c eap_server_methods.c eap_server_wsc.c eap_server.c
+
+DEPPATH += --dep-path src/eap_server
+VPATH += :src/eap_server
+CFLAGS += ${shell $(INCDIR) "$(CC)" $(APPDIR)/wireless/wpa_supplicant/src/eap_server}
+
+endif

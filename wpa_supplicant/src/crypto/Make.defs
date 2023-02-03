@@ -1,0 +1,20 @@
+############################################################################
+# SPDX-FileCopyrightText: 2018-2023 Espressif Systems (Shanghai) CO LTD
+#
+# SPDX-License-Identifier: Apache-2.0
+############################################################################
+
+CHIP_CSRCS += aes-ccm.c
+CHIP_CSRCS += aes-omac1.c
+CHIP_CSRCS += aes-unwrap.c
+CHIP_CSRCS += aes-wrap.c
+CHIP_CSRCS += ccmp.c
+CHIP_CSRCS += crypto_ops.c
+CHIP_CSRCS += des-internal.c
+CHIP_CSRCS += dh_groups.c
+CHIP_CSRCS += rc4.c
+CHIP_CSRCS += sha1-prf.c
+CHIP_CSRCS += sha256-kdf.c
+CHIP_CSRCS += sha256-prf.c
+
+VPATH += $(WIFI_WPA_SUPPLICANT)$(DELIM)src$(DELIM)crypto

@@ -1,0 +1,15 @@
+############################################################################
+# SPDX-FileCopyrightText: 2018-2023 Espressif Systems (Shanghai) CO LTD
+#
+# SPDX-License-Identifier: Apache-2.0
+############################################################################
+
+INCLUDES += $(shell $(INCDIR) "$(CC)" $(ARCH_SRCDIR)$(DELIM)$(WIFI_WPA_SUPPLICANT)$(DELIM)src$(DELIM)crypto)
+
+CHIP_CSRCS += crypto_mbedtls.c
+CHIP_CSRCS += crypto_mbedtls-bignum.c
+CHIP_CSRCS += crypto_mbedtls-ec.c
+CHIP_CSRCS += crypto_mbedtls-rsa.c
+CHIP_CSRCS += tls_mbedtls.c
+
+VPATH += $(WIFI_WPA_SUPPLICANT)$(DELIM)esp_supplicant$(DELIM)src$(DELIM)crypto
