@@ -365,6 +365,8 @@
  */
 #ifdef CONFIG_MBEDTLS_CMAC_C
 #define MBEDTLS_CMAC_C
+#else
+#undef MBEDTLS_CMAC_C
 #endif
 
 /**
