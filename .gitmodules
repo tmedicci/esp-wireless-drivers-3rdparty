@@ -1,0 +1,3 @@
+[submodule "esp-mbedtls/mbedtls"]
+	path = esp-mbedtls/mbedtls
+	url = https://github.com/espressif/mbedtls.git

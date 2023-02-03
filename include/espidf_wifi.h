@@ -15,6 +15,8 @@
 #define _ESPIDF_WIFI_H_
 
 #include "sdkconfig.h"
+#include "esp_wpa.h"
+#include "soc/soc_caps.h"
 #include "espidf_types.h"
 #include "esp_private/wifi_os_adapter.h"
 #include "esp_phy_init.h"
@@ -22,9 +24,11 @@
 #include "phy.h"
 #include "phy_init_data.h"
 #include "nvs.h"
-#include "esp_wpa.h"
+
 #include "esp_timer.h"
 #include "esp_system.h"
 #include "esp_wpa2.h"
+#include "esp_mac.h"
+#include "esp_random.h"
 
 #endif /* _ESPIDF_WIFI_H_ */

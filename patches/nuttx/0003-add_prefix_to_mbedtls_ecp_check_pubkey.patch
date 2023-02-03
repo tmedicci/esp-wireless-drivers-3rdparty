@@ -1,0 +1,39 @@
+diff --git a/esp-mbedtls/port/ecc/ecc_alt.c b/esp-mbedtls/port/ecc/ecc_alt.c
+index eb5bcd8f3de0748392148554c0864160321352b1..08c48faaf1eede76c174c482d13b467ee6936efb 100644
+--- a/esp-mbedtls/port/ecc/ecc_alt.c
++++ b/esp-mbedtls/port/ecc/ecc_alt.c
+@@ -76,7 +76,7 @@ cleanup:
+ 
+ #if defined(MBEDTLS_ECP_VERIFY_ALT) || defined(MBEDTLS_ECP_VERIFY_ALT_SOFT_FALLBACK)
+ 
+-int mbedtls_ecp_check_pubkey( const mbedtls_ecp_group *grp,
++int esp_mbedtls_ecp_check_pubkey( const mbedtls_ecp_group *grp,
+                               const mbedtls_ecp_point *pt )
+ {
+     int res;
+diff --git a/esp-mbedtls/test/test_ecp.c b/esp-mbedtls/test/test_ecp.c
+index 44a58e92cdbb569e475b2f9e774cc2502e326905..743b38a59a409e8f0261411d67bc6940022aa26b 100644
+--- a/esp-mbedtls/test/test_ecp.c
++++ b/esp-mbedtls/test/test_ecp.c
+@@ -236,7 +236,7 @@ static void test_ecp_verify(mbedtls_ecp_group_id id, const uint8_t *x_coord, con
+     mbedtls_mpi_read_binary(&P.Y, y_coord, size);
+     mbedtls_mpi_lset(&P.Z, 1);
+ 
+-    ret = mbedtls_ecp_check_pubkey(&grp, &P);
++    ret = esp_mbedtls_ecp_check_pubkey(&grp, &P);
+ 
+     TEST_ASSERT_EQUAL(0, ret);
+ 
+diff --git a/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls-ec.c b/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls-ec.c
+index 249dd099cd86c0579563518d6ce37639c9be1327..1e90f08f47ca06fc198c605be65a39707d636a04 100644
+--- a/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls-ec.c
++++ b/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls-ec.c
+@@ -534,7 +534,7 @@ struct crypto_key * crypto_ec_set_pubkey_point(const struct crypto_ec_group *gro
+ 		goto fail;
+ 	}
+ 
+-	if (mbedtls_ecp_check_pubkey((mbedtls_ecp_group *)group, point) < 0) { //typecast
++	if (esp_mbedtls_ecp_check_pubkey((mbedtls_ecp_group *)group, point) < 0) { //typecast
+ 		// ideally should have failed in upper condition, duplicate code??
+ 		wpa_printf(MSG_ERROR, "Invalid key");
+ 		goto fail;
