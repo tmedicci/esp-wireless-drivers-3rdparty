@@ -1671,7 +1671,7 @@
  *
  * This module provides debugging functions.
  */
-#if CONFIG_MBEDTLS_DEBUG
+#ifdef CONFIG_MBEDTLS_DEBUG
 #define MBEDTLS_DEBUG_C
 #else
 #undef MBEDTLS_DEBUG_C
