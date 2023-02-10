@@ -19,7 +19,7 @@ readtags_cmd="readtags -F '(list \$name #t)' -l ${ctags_file}"
 echo "readtags command is: ${readtags_cmd}"
 
 while read -r mbedtls_function ; do
-    find_cmd="grep -rl '\b${mbedtls_function}\b' ${destination}"
+    find_cmd="grep -rl \"--include=*.[ch]\" '\b${mbedtls_function}\b' ${destination}"
     echo "Find command is: ${find_cmd}"
     find_results="$(eval ${find_cmd})"
 
@@ -38,10 +38,6 @@ while read -r mbedtls_function ; do
         fi
         echo "Added \"${prefix}\" prefix to \"${mbedtls_function}\" on the following occurences:"
         echo "${find_results}"
-    # else
-        # echo "Error: \"${mbedtls_function}\" was not found on any file."
-        # echo "Aborting..."
-        # exit 1
     fi
 
 done < <(eval "${readtags_cmd}" )
