@@ -19,7 +19,7 @@ readtags_cmd="readtags -F '(list \$name #t)' -l ${ctags_file}"
 echo "readtags command is: ${readtags_cmd}"
 
 while read -r mbedtls_function ; do
-    find_cmd="grep -rl -e '[^${prefix}]${mbedtls_function}' ${destination}"
+    find_cmd="grep -rl '\b${mbedtls_function}\b' ${destination}"
     echo "Find command is: ${find_cmd}"
     find_results="$(eval ${find_cmd})"
 
