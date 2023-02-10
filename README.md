@@ -6,7 +6,12 @@ This project is used to integrate ESP32 family SoC's wireless software drivers i
 
 Wireless software drivers mainly contains of hardware drivers, wireless protocols and utils.
 
-ctags --kinds-c=f esp-mbedtls/mbedtls/library/
+## How to Use this Repository
+
+### mbedTLS Symbol Collisions 
+
+ctags --kinds-c=fv ../esp-mbedtls/mbedtls/library/*.c
+
 ./prefixer.sh ./tags ../esp-mbedtls/mbedtls/
  3306  ./prefixer.sh ./tags ../wpa_supplicant/esp_supplicant
  3307  history prefixer
