@@ -1033,6 +1033,7 @@ int rsn_pmkid_suite_b_192(const u8 *kck, size_t kck_len, const u8 *aa,
 }
 #endif /* CONFIG_SUITEB192 */
 
+#ifdef DEBUG_PRINT
 /**
  * wpa_cipher_txt - Convert cipher suite to a text string
  * @cipher: Cipher suite (WPA_CIPHER_* enum)
@@ -1065,6 +1066,7 @@ const char * wpa_cipher_txt(int cipher)
 		return "UNKNOWN";
 	}
 }
+#endif
 
 /**
  * wpa_pmk_to_ptk - Calculate PTK from PMK, addresses, and nonces
@@ -1389,7 +1391,7 @@ u32 wpa_cipher_to_suite(int proto, int cipher)
 			RSN_CIPHER_SUITE_NONE : WPA_CIPHER_SUITE_NONE);
 	if (cipher & WPA_CIPHER_AES_128_CMAC)
 		return RSN_CIPHER_SUITE_AES_128_CMAC;
-#ifdef CONFIG_GMAC
+#if CONFIG_GMAC
 	if (cipher & WPA_CIPHER_BIP_GMAC_128)
 		return RSN_CIPHER_SUITE_BIP_GMAC_128;
 	if (cipher & WPA_CIPHER_BIP_GMAC_256)

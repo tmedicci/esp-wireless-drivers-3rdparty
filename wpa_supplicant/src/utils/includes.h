@@ -59,7 +59,6 @@
 
 #else
 // for ETSTimer type
-// for ETSTimer type
 #if CONFIG_IDF_TARGET_ESP32
 #include "esp32/rom/ets_sys.h"
 #elif CONFIG_IDF_TARGET_ESP32S2
@@ -73,8 +72,6 @@
 #elif CONFIG_IDF_TARGET_ESP32H2
 #include "esp32h2/rom/ets_sys.h"
 #endif
-
-#include "espidf_wifi.h"
 
 #endif /* !__ets__ */
 

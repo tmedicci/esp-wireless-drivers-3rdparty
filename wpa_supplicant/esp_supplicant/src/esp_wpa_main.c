@@ -123,8 +123,6 @@ void  wpa_neg_complete(void)
 
 bool  wpa_attach(void)
 {
-    wpa_printf(MSG_DEBUG, "wpa_attach TEST");
-    
     bool ret = true;
     ret = wpa_sm_init(NULL, wpa_sendto_wrapper,
                  wpa_config_assoc_ie, wpa_install_key, wpa_get_key, wpa_deauthenticate, wpa_neg_complete);
@@ -361,7 +359,7 @@ int esp_supplicant_init(void)
 
     esp_wifi_register_wpa_cb_internal(wpa_cb);
 
-#ifdef CONFIG_WPA_WAPI_PSK
+#if CONFIG_WPA_WAPI_PSK
     ret =  esp_wifi_internal_wapi_init();
 #endif
 

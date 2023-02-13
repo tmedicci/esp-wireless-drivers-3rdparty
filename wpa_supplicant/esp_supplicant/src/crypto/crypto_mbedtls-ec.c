@@ -6,8 +6,10 @@
 
 #define MBEDTLS_ALLOW_PRIVATE_ACCESS
 
+#ifdef ESP_PLATFORM
 #include "esp_system.h"
 #include "mbedtls/bignum.h"
+#endif
 
 #include "utils/includes.h"
 #include "utils/common.h"

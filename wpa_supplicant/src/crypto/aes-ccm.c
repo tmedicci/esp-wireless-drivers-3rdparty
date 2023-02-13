@@ -10,7 +10,7 @@
 #ifdef CONFIG_IEEE80211W
 #include "includes.h"
 
-#include "utils/common.h"
+#include "common.h"
 #include "aes.h"
 #include "aes_wrap.h"
 

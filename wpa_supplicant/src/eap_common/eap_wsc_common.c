@@ -8,7 +8,7 @@
 
 #include "includes.h"
 
-#include "utils/common.h"
+#include "common.h"
 #include "eap_peer/eap_defs.h"
 #include "eap_peer/eap_common.h"
 #include "wps/wps.h"

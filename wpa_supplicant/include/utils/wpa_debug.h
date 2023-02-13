@@ -16,32 +16,26 @@
 #define WPA_DEBUG_H
 
 #include "wpabuf.h"
+#include "esp_log.h"
 #include "supplicant_opt.h"
+
+#ifdef ESPRESSIF_USE
 
 #define TAG "wpa"
 
-/** EAP authentication completed successfully */
-#define WPA_EVENT_EAP_SUCCESS "CTRL-EVENT-EAP-SUCCESS "
-
-enum { MSG_EXCESSIVE, MSG_MSGDUMP, MSG_DEBUG, MSG_INFO, MSG_WARNING, MSG_ERROR };
-
-#ifndef DEBUG_PRINT
-
-static inline void wpa_printf(int level, const char *fmt, ...)
-{
-	return ;
-}
-
-#define wpa_hexdump(...) do {} while(0)
-#define wpa_dump_mem(...) do {} while(0)
-#define wpa_hexdump_buf(...) do {} while(0)
-#define wpa_hexdump_key(...) do {} while(0)
-#define wpa_hexdump_buf_key(...) do {} while(0)
-#define wpa_hexdump_ascii(...) do {} while(0)
-#define wpa_hexdump_ascii_key(...) do {} while(0)
-#define wpa_dbg(...) do {} while(0)
+#define MSG_ERROR ESP_LOG_ERROR
+#define MSG_WARNING ESP_LOG_WARN
+#define MSG_INFO ESP_LOG_INFO
+#define MSG_DEBUG ESP_LOG_DEBUG
+#define MSG_MSGDUMP ESP_LOG_VERBOSE
+#define MSG_EXCESSIVE ESP_LOG_VERBOSE
 
 #else
+enum { MSG_MSGDUMP, MSG_DEBUG, MSG_INFO, MSG_WARNING, MSG_ERROR };
+#endif
+
+/** EAP authentication completed successfully */
+#define WPA_EVENT_EAP_SUCCESS "CTRL-EVENT-EAP-SUCCESS "
 
 int wpa_debug_open_file(const char *path);
 void wpa_debug_close_file(void);
@@ -55,6 +49,7 @@ void wpa_debug_close_file(void);
  */
 void wpa_debug_print_timestamp(void);
 
+#ifdef DEBUG_PRINT
 /**
  * wpa_printf - conditional printf
  * @level: priority level (MSG_*) of the message
@@ -66,8 +61,7 @@ void wpa_debug_print_timestamp(void);
  *
  * Note: New line '\n' is added to the end of the text when printing to stdout.
  */
-void wpa_printf(int level, const char *fmt, ...)
-PRINTF_FORMAT(2, 3);
+#define wpa_printf(level,fmt, args...) ESP_LOG_LEVEL_LOCAL(level, TAG, fmt, ##args)
 #define wpa_dbg(ctx, level, fmt, args...) wpa_printf(level, fmt, ##args)
 
 void wpa_dump_mem(char* desc, uint8_t *addr, uint16_t len);
@@ -154,6 +148,16 @@ void wpa_hexdump_ascii(int level, const char *title, const void *buf,
  */
 void wpa_hexdump_ascii_key(int level, const char *title, const void *buf,
 			   size_t len);
+#else
+#define wpa_printf(level,fmt, args...) do {} while(0)
+#define wpa_hexdump(...) do {} while(0)
+#define wpa_dump_mem(...) do {} while(0)
+#define wpa_hexdump_buf(...) do {} while(0)
+#define wpa_hexdump_key(...) do {} while(0)
+#define wpa_hexdump_buf_key(...) do {} while(0)
+#define wpa_hexdump_ascii(...) do {} while(0)
+#define wpa_hexdump_ascii_key(...) do {} while(0)
+#define wpa_dbg(...) do {} while(0)
 #endif
 
 #define wpa_auth_logger(...) do {} while(0)

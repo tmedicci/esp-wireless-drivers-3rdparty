@@ -34,6 +34,7 @@
 #include "sha384.h"
 #include "aes_wrap.h"
 #include "crypto.h"
+#include "mbedtls/esp_config.h"
 
 static int digest_vector(mbedtls_md_type_t md_type, size_t num_elem,
 			 const u8 *addr[], const size_t *len, u8 *mac)

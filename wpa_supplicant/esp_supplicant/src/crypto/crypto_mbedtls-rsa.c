@@ -4,7 +4,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#ifdef ESP_PLATFORM
 #include "mbedtls/bignum.h"
+#endif
 
 #include "utils/includes.h"
 #include "utils/common.h"

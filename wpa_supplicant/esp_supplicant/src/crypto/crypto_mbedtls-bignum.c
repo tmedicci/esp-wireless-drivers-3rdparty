@@ -4,8 +4,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#ifdef ESP_PLATFORM
 #include "esp_system.h"
 #include "mbedtls/bignum.h"
+#endif
 
 #include "utils/includes.h"
 #include "utils/common.h"
@@ -13,8 +15,6 @@
 #include "random.h"
 #include "sha256.h"
 #include "mbedtls/pk.h"
-
-#define ALLOW_EVEN_MOD 1
 
 static int crypto_rng_wrapper(void *ctx, unsigned char *buf, size_t len)
 {

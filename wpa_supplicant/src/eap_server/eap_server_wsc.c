@@ -8,7 +8,7 @@
 
 #include "includes.h"
 
-#include "utils/common.h"
+#include "common.h"
 #include "eloop.h"
 #include "eap_i.h"
 #include "eap_common/eap_wsc_common.h"
