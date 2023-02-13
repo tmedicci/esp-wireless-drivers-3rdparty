@@ -15,7 +15,7 @@ fi
 prefix="esp_"
 substitutions=0
 
-readtags_cmd="readtags -F '(list \$name #t)' -l ${ctags_file}"
+readtags_cmd="readtags -t ${ctags_file} -F '(list \$name #t)' -l"
 echo "readtags command is: ${readtags_cmd}"
 
 while read -r mbedtls_function ; do
