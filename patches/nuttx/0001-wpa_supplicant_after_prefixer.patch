@@ -1,5 +1,5 @@
 diff --git a/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls-bignum.c b/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls-bignum.c
-index c2a2279a9ec4af91cc3a0fd74ef8c8a393958cb3..b26736136299dc25ca5d3df986b3e63b3b49bcc3 100644
+index 316412e298bc2823be07d280b5477674ea4dd5c9..a4de750ab713f4c434c8dbaa3dbaf12054431204 100644
 --- a/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls-bignum.c
 +++ b/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls-bignum.c
 @@ -28,7 +28,7 @@ struct crypto_bignum *crypto_bignum_init(void)
@@ -274,10 +274,10 @@ index c2a2279a9ec4af91cc3a0fd74ef8c8a393958cb3..b26736136299dc25ca5d3df986b3e63b
  
      ret = 0;
 diff --git a/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls-ec.c b/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls-ec.c
-index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639c9be1327 100644
+index 956a84662c9be221f49060d82d6a60161db188d4..abf322f6b64cb30511143eacb4364db0b98e8b9f 100644
 --- a/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls-ec.c
 +++ b/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls-ec.c
-@@ -67,9 +67,9 @@ struct crypto_ec *crypto_ec_init(int group)
+@@ -69,9 +69,9 @@ struct crypto_ec *crypto_ec_init(int group)
  		return NULL;
  	}
  
@@ -289,7 +289,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  		crypto_ec_deinit(e);
  		e = NULL;
  	}
-@@ -84,7 +84,7 @@ void crypto_ec_deinit(struct crypto_ec *e)
+@@ -86,7 +86,7 @@ void crypto_ec_deinit(struct crypto_ec *e)
  		return;
  	}
  
@@ -298,7 +298,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  	os_free(e);
  }
  
-@@ -102,7 +102,7 @@ struct crypto_ec_point *crypto_ec_point_init(struct crypto_ec *e)
+@@ -104,7 +104,7 @@ struct crypto_ec_point *crypto_ec_point_init(struct crypto_ec *e)
  		return NULL;
  	}
  
@@ -307,7 +307,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  
  	return (struct crypto_ec_point *) pt;
  }
-@@ -110,32 +110,32 @@ struct crypto_ec_point *crypto_ec_point_init(struct crypto_ec *e)
+@@ -112,32 +112,32 @@ struct crypto_ec_point *crypto_ec_point_init(struct crypto_ec *e)
  
  size_t crypto_ec_prime_len(struct crypto_ec *e)
  {
@@ -346,7 +346,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  		crypto_ec_deinit(e);
  		e = NULL;
  	}
-@@ -163,14 +163,14 @@ const struct crypto_bignum * crypto_ec_get_b(struct crypto_ec *e)
+@@ -165,14 +165,14 @@ const struct crypto_bignum * crypto_ec_get_b(struct crypto_ec *e)
  
  void crypto_ec_point_deinit(struct crypto_ec_point *p, int clear)
  {
@@ -363,7 +363,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  
  	if (x) {
  		if(crypto_bignum_to_bin((struct crypto_bignum *) & ((mbedtls_ecp_point *) point)->MBEDTLS_PRIVATE(X),
-@@ -196,17 +196,17 @@ int crypto_ec_get_affine_coordinates(struct crypto_ec *e, struct crypto_ec_point
+@@ -198,17 +198,17 @@ int crypto_ec_get_affine_coordinates(struct crypto_ec *e, struct crypto_ec_point
  	int ret = -1;
  	mbedtls_ecp_point *point = (mbedtls_ecp_point *)pt;
  
@@ -384,7 +384,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  	}
  	return 0;
  cleanup:
-@@ -223,22 +223,22 @@ struct crypto_ec_point *crypto_ec_point_from_bin(struct crypto_ec *e,
+@@ -225,22 +225,22 @@ struct crypto_ec_point *crypto_ec_point_from_bin(struct crypto_ec *e,
  		return NULL;
  	}
  
@@ -413,7 +413,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  	os_free(pt);
  	return NULL;
  }
-@@ -251,13 +251,13 @@ int crypto_ec_point_add(struct crypto_ec *e, const struct crypto_ec_point *a,
+@@ -253,13 +253,13 @@ int crypto_ec_point_add(struct crypto_ec *e, const struct crypto_ec_point *a,
  	int ret;
  	mbedtls_mpi one;
  
@@ -431,7 +431,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  	return ret ? -1 : 0;
  }
  
-@@ -270,21 +270,21 @@ int crypto_ec_point_mul(struct crypto_ec *e, const struct crypto_ec_point *p,
+@@ -272,21 +272,21 @@ int crypto_ec_point_mul(struct crypto_ec *e, const struct crypto_ec_point *p,
  	mbedtls_entropy_context entropy;
  	mbedtls_ctr_drbg_context ctr_drbg;
  
@@ -460,7 +460,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  	return ret ? -1 : 0;
  }
  
-@@ -299,12 +299,12 @@ static int ecp_opp(const mbedtls_ecp_group *grp, mbedtls_ecp_point *R, const mbe
+@@ -301,12 +301,12 @@ static int ecp_opp(const mbedtls_ecp_group *grp, mbedtls_ecp_point *R, const mbe
  
  	/* Copy */
  	if (R != P) {
@@ -476,7 +476,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  	}
  
  cleanup:
-@@ -322,7 +322,7 @@ int crypto_ec_point_solve_y_coord(struct crypto_ec *e,
+@@ -324,7 +324,7 @@ int crypto_ec_point_solve_y_coord(struct crypto_ec *e,
  {
  	mbedtls_mpi temp;
  	mbedtls_mpi *y_sqr, *y;
@@ -485,7 +485,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  	int ret = 0;
  
  	y = &((mbedtls_ecp_point *)p)->MBEDTLS_PRIVATE(Y);
-@@ -342,28 +342,28 @@ int crypto_ec_point_solve_y_coord(struct crypto_ec *e,
+@@ -344,28 +344,28 @@ int crypto_ec_point_solve_y_coord(struct crypto_ec *e,
  
  	if (y_sqr) {
  
@@ -524,7 +524,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  }
  
  struct crypto_bignum *crypto_ec_point_compute_y_sqr(struct crypto_ec *e,
-@@ -377,10 +377,10 @@ struct crypto_bignum *crypto_ec_point_compute_y_sqr(struct crypto_ec *e,
+@@ -379,10 +379,10 @@ struct crypto_bignum *crypto_ec_point_compute_y_sqr(struct crypto_ec *e,
  		return NULL;
  	}
  
@@ -539,7 +539,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  
  	/* y^2 = x^3 + ax + b  mod  P*/
  	/* mbedtls does not have mod-add or mod-mul apis.
-@@ -388,28 +388,28 @@ struct crypto_bignum *crypto_ec_point_compute_y_sqr(struct crypto_ec *e,
+@@ -390,28 +390,28 @@ struct crypto_bignum *crypto_ec_point_compute_y_sqr(struct crypto_ec *e,
  	 */
  
  	/* Calculate x^3  mod P*/
@@ -581,7 +581,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  		os_free(y_sqr);
  		return NULL;
  	} else {
-@@ -420,7 +420,7 @@ cleanup:
+@@ -422,7 +422,7 @@ cleanup:
  int crypto_ec_point_is_at_infinity(struct crypto_ec *e,
  		const struct crypto_ec_point *p)
  {
@@ -590,7 +590,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  }
  
  int crypto_ec_point_is_on_curve(struct crypto_ec *e,
-@@ -429,23 +429,23 @@ int crypto_ec_point_is_on_curve(struct crypto_ec *e,
+@@ -431,23 +431,23 @@ int crypto_ec_point_is_on_curve(struct crypto_ec *e,
  	mbedtls_mpi y_sqr_lhs, *y_sqr_rhs = NULL, two;
  	int ret = 0, on_curve = 0;
  
@@ -622,7 +622,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  	os_free(y_sqr_rhs);
  	return (ret == 0) && (on_curve == 1);
  }
-@@ -454,7 +454,7 @@ int crypto_ec_point_cmp(const struct crypto_ec *e,
+@@ -456,7 +456,7 @@ int crypto_ec_point_cmp(const struct crypto_ec *e,
  		const struct crypto_ec_point *a,
  		const struct crypto_ec_point *b)
  {
@@ -631,7 +631,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  			(const mbedtls_ecp_point *) b);
  }
  
-@@ -464,18 +464,18 @@ int crypto_key_compare(struct crypto_key *key1, struct crypto_key *key2)
+@@ -466,18 +466,18 @@ int crypto_key_compare(struct crypto_key *key1, struct crypto_key *key2)
  	mbedtls_entropy_context entropy;
  	mbedtls_ctr_drbg_context ctr_drbg;
  
@@ -656,7 +656,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  	return ret;
  }
  
-@@ -501,7 +501,7 @@ static struct crypto_key *crypto_alloc_key(void)
+@@ -503,7 +503,7 @@ static struct crypto_key *crypto_alloc_key(void)
  		wpa_printf(MSG_ERROR, "%s: memory allocation failed\n", __func__);
  		return NULL;
  	}
@@ -665,7 +665,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  
  	return (struct crypto_key *)key;
  }
-@@ -540,11 +540,11 @@ struct crypto_key * crypto_ec_set_pubkey_point(const struct crypto_ec_group *gro
+@@ -542,11 +542,11 @@ struct crypto_key * crypto_ec_set_pubkey_point(const struct crypto_ec_group *gro
  		goto fail;
  	}
  	/* Assign values */
@@ -681,7 +681,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  
  	pkey = (struct crypto_key *)key;
  	crypto_ec_point_deinit((struct crypto_ec_point *)point, 0);
-@@ -553,7 +553,7 @@ fail:
+@@ -555,7 +555,7 @@ fail:
  	if (point)
  		crypto_ec_point_deinit((struct crypto_ec_point *)point, 0);
  	if (key)
@@ -690,7 +690,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  	pkey = NULL;
  	return pkey;
  }
-@@ -562,7 +562,7 @@ fail:
+@@ -564,7 +564,7 @@ fail:
  void crypto_ec_free_key(struct crypto_key *key)
  {
  	mbedtls_pk_context *pkey = (mbedtls_pk_context *)key;
@@ -699,7 +699,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  	os_free(key);
  }
  
-@@ -574,22 +574,22 @@ struct crypto_ec_point *crypto_ec_get_public_key(struct crypto_key *key)
+@@ -576,22 +576,22 @@ struct crypto_ec_point *crypto_ec_get_public_key(struct crypto_key *key)
  }
  
  
@@ -727,7 +727,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  
  	return 0;
  }
-@@ -616,7 +616,7 @@ int crypto_ec_get_publickey_buf(struct crypto_key *key, u8 *key_buf, int len)
+@@ -618,7 +618,7 @@ int crypto_ec_get_publickey_buf(struct crypto_key *key, u8 *key_buf, int len)
  	int pk_len = 0;
  
  	memset(buf, 0, sizeof(buf) );
@@ -736,7 +736,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  
  	if (pk_len < 0)
  		return -1;
-@@ -632,7 +632,7 @@ int crypto_ec_get_publickey_buf(struct crypto_key *key, u8 *key_buf, int len)
+@@ -634,7 +634,7 @@ int crypto_ec_get_publickey_buf(struct crypto_key *key, u8 *key_buf, int len)
  int crypto_write_pubkey_der(struct crypto_key *key, unsigned char **key_buf)
  {
  	unsigned char output_buf[1600] = {0};
@@ -745,7 +745,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  	if (len <= 0)
  		return 0;
  
-@@ -654,7 +654,7 @@ struct crypto_key *crypto_ec_get_key(const u8 *privkey, size_t privkey_len)
+@@ -656,7 +656,7 @@ struct crypto_key *crypto_ec_get_key(const u8 *privkey, size_t privkey_len)
  		wpa_printf(MSG_ERROR, "memory allocation failed\n");
  		return NULL;
  	}
@@ -754,7 +754,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  
  	if (ret < 0) {
  		//crypto_print_error_string(ret);
-@@ -664,7 +664,7 @@ struct crypto_key *crypto_ec_get_key(const u8 *privkey, size_t privkey_len)
+@@ -666,7 +666,7 @@ struct crypto_key *crypto_ec_get_key(const u8 *privkey, size_t privkey_len)
  	return (struct crypto_key *)kctx;
  
  fail:
@@ -763,7 +763,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  	os_free(kctx);
  	return NULL;
  }
-@@ -714,10 +714,10 @@ int crypto_ecdh(struct crypto_key *key_own, struct crypto_key *key_peer,
+@@ -716,10 +716,10 @@ int crypto_ecdh(struct crypto_key *key_own, struct crypto_key *key_peer,
  	mbedtls_ctr_drbg_context ctr_drbg;
  	int ret = -1;
  
@@ -777,7 +777,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  		goto fail;
  	}
  
-@@ -729,11 +729,11 @@ int crypto_ecdh(struct crypto_key *key_own, struct crypto_key *key_peer,
+@@ -731,11 +731,11 @@ int crypto_ecdh(struct crypto_key *key_own, struct crypto_key *key_peer,
  		goto fail;
  	}
  
@@ -792,7 +792,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  		wpa_printf(MSG_ERROR, "failed to set our ecdh params\n");
  		goto fail;
  	}
-@@ -742,13 +742,13 @@ int crypto_ecdh(struct crypto_key *key_own, struct crypto_key *key_peer,
+@@ -744,13 +744,13 @@ int crypto_ecdh(struct crypto_key *key_own, struct crypto_key *key_peer,
  #define DPP_MAX_SHARED_SECRET_LEN 66
  #endif
  	/* set params from peers key */
@@ -809,7 +809,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  		wpa_printf(MSG_ERROR, "failed to calculate secret\n");
  		goto fail;
  	}
-@@ -761,10 +761,10 @@ int crypto_ecdh(struct crypto_key *key_own, struct crypto_key *key_peer,
+@@ -763,10 +763,10 @@ int crypto_ecdh(struct crypto_key *key_own, struct crypto_key *key_peer,
  	ret = 0;
  
  fail:
@@ -823,7 +823,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  		os_free(ctx);
  	}
  	return ret;
-@@ -782,16 +782,16 @@ int crypto_ecdsa_get_sign(unsigned char *hash,
+@@ -784,16 +784,16 @@ int crypto_ecdsa_get_sign(unsigned char *hash,
  		wpa_printf(MSG_ERROR,"failed to allcate memory\n");
  		return -1;
  	}
@@ -844,7 +844,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  	os_free(ctx);
  
  	return  ret;
-@@ -808,18 +808,18 @@ int crypto_edcsa_sign_verify(const unsigned char *hash,
+@@ -810,18 +810,18 @@ int crypto_edcsa_sign_verify(const unsigned char *hash,
  		wpa_printf(MSG_ERROR, "failed to allcate memory\n");
  		return ret;
  	}
@@ -867,7 +867,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  	os_free(ctx);
  
  	return ret;
-@@ -832,8 +832,8 @@ void crypto_debug_print_ec_key(const char *title, struct crypto_key *key)
+@@ -834,8 +834,8 @@ void crypto_debug_print_ec_key(const char *title, struct crypto_key *key)
  	mbedtls_ecp_keypair *ecp = mbedtls_pk_ec( *pkey );
  	u8 x[32], y[32], d[32];
  	wpa_printf(MSG_ERROR, "curve: %s\n",
@@ -878,7 +878,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  
  	wpa_printf(MSG_ERROR, "prime len is %d\n", len);
  	crypto_ec_point_to_bin((struct crypto_ec *)crypto_ec_get_group_from_key(key), crypto_ec_get_public_key(key), x, y);
-@@ -849,7 +849,7 @@ struct crypto_key *crypto_ec_parse_subpub_key(const unsigned char *p, size_t len
+@@ -851,7 +851,7 @@ struct crypto_key *crypto_ec_parse_subpub_key(const unsigned char *p, size_t len
  {
  	int ret;
  	mbedtls_pk_context *pkey = (mbedtls_pk_context *)crypto_alloc_key();
@@ -887,7 +887,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  
  	if (ret < 0) {
  		os_free(pkey);
-@@ -861,7 +861,7 @@ struct crypto_key *crypto_ec_parse_subpub_key(const unsigned char *p, size_t len
+@@ -863,7 +863,7 @@ struct crypto_key *crypto_ec_parse_subpub_key(const unsigned char *p, size_t len
  
  int crypto_is_ec_key(struct crypto_key *key)
  {
@@ -896,7 +896,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  	return  ret;
  }
  
-@@ -874,16 +874,16 @@ struct crypto_key * crypto_ec_gen_keypair(u16 ike_group)
+@@ -876,16 +876,16 @@ struct crypto_key * crypto_ec_gen_keypair(u16 ike_group)
  		return NULL;
  	}
  
@@ -917,7 +917,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  	os_free(kctx);
  	return NULL;
  }
-@@ -893,7 +893,7 @@ fail:
+@@ -895,7 +895,7 @@ fail:
   *   namedCurve         OBJECT IDENTIFIER
   * }
   */
@@ -926,7 +926,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  		mbedtls_ecp_keypair *ec )
  {
  	int ret;
-@@ -904,7 +904,7 @@ static int pk_write_ec_param( unsigned char **p, unsigned char *start,
+@@ -906,7 +906,7 @@ static int pk_write_ec_param( unsigned char **p, unsigned char *start,
  	if( ( ret = mbedtls_oid_get_oid_by_ec_grp( ec->MBEDTLS_PRIVATE(grp).id, &oid, &oid_len ) ) != 0 )
  		return( ret );
  
@@ -935,7 +935,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  
  	return( (int) len );
  }
-@@ -916,7 +916,7 @@ static int pk_write_ec_pubkey_formatted( unsigned char **p, unsigned char *start
+@@ -918,7 +918,7 @@ static int pk_write_ec_pubkey_formatted( unsigned char **p, unsigned char *start
  	size_t len = 0;
  	unsigned char buf[MBEDTLS_ECP_MAX_PT_LEN];
  
@@ -944,7 +944,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  					format,
  					&len, buf, sizeof( buf ) ) ) != 0 )
  	{
-@@ -938,7 +938,7 @@ int mbedtls_pk_write_pubkey_formatted( unsigned char **p, unsigned char *start,
+@@ -940,7 +940,7 @@ int mbedtls_pk_write_pubkey_formatted( unsigned char **p, unsigned char *start,
  	int ret;
  	size_t len = 0;
  
@@ -953,7 +953,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  		MBEDTLS_ASN1_CHK_ADD( len, pk_write_ec_pubkey_formatted( p, start, mbedtls_pk_ec( *key ), format ) );
  	else
  		return( MBEDTLS_ERR_PK_FEATURE_UNAVAILABLE );
-@@ -972,25 +972,25 @@ int crypto_pk_write_formatted_pubkey_der(mbedtls_pk_context *key, unsigned char
+@@ -974,25 +974,25 @@ int crypto_pk_write_formatted_pubkey_der(mbedtls_pk_context *key, unsigned char
  	len += 1;
  
  
@@ -987,7 +987,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  				MBEDTLS_ASN1_SEQUENCE ) );
  
  	return( (int) len );
-@@ -1033,7 +1033,7 @@ void crypto_ecdh_deinit(struct crypto_ecdh *ecdh)
+@@ -1035,7 +1035,7 @@ void crypto_ecdh_deinit(struct crypto_ecdh *ecdh)
          if (!ctx) {
                  return;
          }
@@ -996,7 +996,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
          os_free(ctx);
          ctx = NULL;
  }
-@@ -1049,43 +1049,43 @@ struct crypto_ecdh * crypto_ecdh_init(int group)
+@@ -1051,43 +1051,43 @@ struct crypto_ecdh * crypto_ecdh_init(int group)
  		wpa_printf(MSG_ERROR, "Memory allocation failed for ecdh context");
  		goto fail;
  	}
@@ -1051,7 +1051,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  	return NULL;
  }
  
-@@ -1103,7 +1103,7 @@ struct wpabuf * crypto_ecdh_get_pubkey(struct crypto_ecdh *ecdh, int y)
+@@ -1105,7 +1105,7 @@ struct wpabuf * crypto_ecdh_get_pubkey(struct crypto_ecdh *ecdh, int y)
          }
  
  	/* Export an MPI into unsigned big endian binary data of fixed size */
@@ -1060,7 +1060,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  	public_key = wpabuf_alloc_copy(buf, 32);
  	os_free(buf);
  	return public_key;
-@@ -1127,11 +1127,11 @@ struct wpabuf * crypto_ecdh_set_peerkey(struct crypto_ecdh *ecdh, int inc_y,
+@@ -1129,11 +1129,11 @@ struct wpabuf * crypto_ecdh_set_peerkey(struct crypto_ecdh *ecdh, int inc_y,
  	mbedtls_entropy_context entropy;
  
  	/* Initialize CTR_DRBG context */
@@ -1075,7 +1075,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  		wpa_printf(MSG_ERROR, "Seeding entropy source failed");
  		goto cleanup;
  	}
-@@ -1175,9 +1175,9 @@ struct wpabuf * crypto_ecdh_set_peerkey(struct crypto_ecdh *ecdh, int inc_y,
+@@ -1177,9 +1177,9 @@ struct wpabuf * crypto_ecdh_set_peerkey(struct crypto_ecdh *ecdh, int inc_y,
  	mbedtls_pk_context *peer = (mbedtls_pk_context*)pkey;
  
  	/* Setup ECDH context from EC key */
@@ -1087,7 +1087,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  #ifndef CONFIG_MBEDTLS_ECDH_LEGACY_CONTEXT
                  ctx->var = MBEDTLS_ECDH_VARIANT_MBEDTLS_2_0;
  #endif
-@@ -1194,7 +1194,7 @@ struct wpabuf * crypto_ecdh_set_peerkey(struct crypto_ecdh *ecdh, int inc_y,
+@@ -1196,7 +1196,7 @@ struct wpabuf * crypto_ecdh_set_peerkey(struct crypto_ecdh *ecdh, int inc_y,
  
  	/* Calculate secret
  	z = F(DH(x,Y)) */
@@ -1096,7 +1096,7 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  	if (secret_key != 0) {
  		wpa_printf(MSG_ERROR, "Calculation of secret failed");
  		goto cleanup;
-@@ -1209,8 +1209,8 @@ cleanup:
+@@ -1211,8 +1211,8 @@ cleanup:
  	crypto_ec_free_key(pkey);
  	crypto_bignum_deinit(bn_x, 1);
  	crypto_ec_point_deinit(ec_pt, 1);
@@ -1108,10 +1108,10 @@ index c8ba118834504e19ee7be86feec7c73e985eb649..249dd099cd86c0579563518d6ce37639
  }
  
 diff --git a/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls-rsa.c b/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls-rsa.c
-index a6ce048c29ccac8383affcc618af1ec97ac5a589..68622a0f69603867c124f64dc311aae66016714b 100644
+index 450f78b8febde931ff9f7301c92ab1fd6dc1d50e..705dd9924ca4747eb0711cbc90f77a2419c5bf28 100644
 --- a/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls-rsa.c
 +++ b/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls-rsa.c
-@@ -29,7 +29,7 @@ static void crypto_dump_verify_info(u32 flags)
+@@ -31,7 +31,7 @@ static void crypto_dump_verify_info(u32 flags)
  {
  	char dump_buffer[1024];
  
@@ -1120,7 +1120,7 @@ index a6ce048c29ccac8383affcc618af1ec97ac5a589..68622a0f69603867c124f64dc311aae6
  	wpa_printf(MSG_ERROR, "%s", dump_buffer);
  }
  #else
-@@ -57,28 +57,28 @@ int crypto_verify_cert(const u8 *cert_start, int certlen, const u8 *ca_cert_star
+@@ -59,28 +59,28 @@ int crypto_verify_cert(const u8 *cert_start, int certlen, const u8 *ca_cert_star
  		wpa_printf(MSG_ERROR, "%s: memory allocation failed", __func__);
  		return -1;
  	}
@@ -1156,7 +1156,7 @@ index a6ce048c29ccac8383affcc618af1ec97ac5a589..68622a0f69603867c124f64dc311aae6
  
  	os_free(cert);
  	os_free(ca_cert);
-@@ -94,8 +94,8 @@ struct crypto_public_key *  crypto_public_key_import(const u8 *key, size_t len)
+@@ -96,8 +96,8 @@ struct crypto_public_key *  crypto_public_key_import(const u8 *key, size_t len)
  	if (!pkey)
  		return NULL;
  
@@ -1167,7 +1167,7 @@ index a6ce048c29ccac8383affcc618af1ec97ac5a589..68622a0f69603867c124f64dc311aae6
  
  	if (ret < 0) {
  		wpa_printf(MSG_ERROR, "failed to parse public key");
-@@ -115,9 +115,9 @@ struct crypto_private_key *  crypto_private_key_import(const u8 *key,
+@@ -117,9 +117,9 @@ struct crypto_private_key *  crypto_private_key_import(const u8 *key,
  	if (!pkey)
  		return NULL;
  
@@ -1179,7 +1179,7 @@ index a6ce048c29ccac8383affcc618af1ec97ac5a589..68622a0f69603867c124f64dc311aae6
  			passwd ? os_strlen(passwd) : 0, crypto_rng_wrapper, NULL);
  
  	if (ret < 0) {
-@@ -146,21 +146,21 @@ struct crypto_public_key *crypto_public_key_from_cert(const u8 *buf,
+@@ -148,21 +148,21 @@ struct crypto_public_key *crypto_public_key_from_cert(const u8 *buf,
  		wpa_printf(MSG_ERROR, "failed to allocate memory");
  		goto fail;
  	}
@@ -1206,7 +1206,7 @@ index a6ce048c29ccac8383affcc618af1ec97ac5a589..68622a0f69603867c124f64dc311aae6
  
  	if (ret < 0) {
  		wpa_printf(MSG_ERROR, "key copy failed");
-@@ -168,7 +168,7 @@ struct crypto_public_key *crypto_public_key_from_cert(const u8 *buf,
+@@ -170,7 +170,7 @@ struct crypto_public_key *crypto_public_key_from_cert(const u8 *buf,
  	}
  
  cleanup:
@@ -1215,7 +1215,7 @@ index a6ce048c29ccac8383affcc618af1ec97ac5a589..68622a0f69603867c124f64dc311aae6
  	os_free(cert);
  	return (struct crypto_public_key *)kctx;
  fail:
-@@ -196,30 +196,30 @@ int crypto_public_key_encrypt_pkcs1_v15(struct crypto_public_key *key,
+@@ -198,30 +198,30 @@ int crypto_public_key_encrypt_pkcs1_v15(struct crypto_public_key *key,
  		return -1;
  	}
  
@@ -1254,7 +1254,7 @@ index a6ce048c29ccac8383affcc618af1ec97ac5a589..68622a0f69603867c124f64dc311aae6
  	os_free(entropy);
  	os_free(ctr_drbg);
  
-@@ -245,9 +245,9 @@ int  crypto_private_key_decrypt_pkcs1_v15(struct crypto_private_key *key,
+@@ -247,9 +247,9 @@ int  crypto_private_key_decrypt_pkcs1_v15(struct crypto_private_key *key,
  			os_free(ctr_drbg);
  		return -1;
  	}
@@ -1267,7 +1267,7 @@ index a6ce048c29ccac8383affcc618af1ec97ac5a589..68622a0f69603867c124f64dc311aae6
  			entropy, (const unsigned char *) pers,
  			strlen(pers));
  
-@@ -255,14 +255,14 @@ int  crypto_private_key_decrypt_pkcs1_v15(struct crypto_private_key *key,
+@@ -257,14 +257,14 @@ int  crypto_private_key_decrypt_pkcs1_v15(struct crypto_private_key *key,
  		goto cleanup;
  
  	i =  mbedtls_pk_rsa(*pkey)->MBEDTLS_PRIVATE(len);
@@ -1285,7 +1285,7 @@ index a6ce048c29ccac8383affcc618af1ec97ac5a589..68622a0f69603867c124f64dc311aae6
  	os_free(entropy);
  	os_free(ctr_drbg);
  
-@@ -287,22 +287,22 @@ int crypto_private_key_sign_pkcs1(struct crypto_private_key *key,
+@@ -289,22 +289,22 @@ int crypto_private_key_sign_pkcs1(struct crypto_private_key *key,
  			os_free(ctr_drbg);
  		return -1;
  	}
@@ -1315,7 +1315,7 @@ index a6ce048c29ccac8383affcc618af1ec97ac5a589..68622a0f69603867c124f64dc311aae6
  	os_free(entropy);
  	os_free(ctr_drbg);
  	return ret;
-@@ -315,7 +315,7 @@ void  crypto_public_key_free(struct crypto_public_key *key)
+@@ -317,7 +317,7 @@ void  crypto_public_key_free(struct crypto_public_key *key)
  	if (!pkey)
  		return;
  
@@ -1324,7 +1324,7 @@ index a6ce048c29ccac8383affcc618af1ec97ac5a589..68622a0f69603867c124f64dc311aae6
  	os_free(pkey);
  }
  
-@@ -326,7 +326,7 @@ void  crypto_private_key_free(struct crypto_private_key *key)
+@@ -328,7 +328,7 @@ void  crypto_private_key_free(struct crypto_private_key *key)
  	if (!pkey)
  		return;
  
@@ -1333,7 +1333,7 @@ index a6ce048c29ccac8383affcc618af1ec97ac5a589..68622a0f69603867c124f64dc311aae6
  	os_free(pkey);
  }
  
-@@ -342,7 +342,7 @@ int  crypto_public_key_decrypt_pkcs1(struct crypto_public_key *key,
+@@ -344,7 +344,7 @@ int  crypto_public_key_decrypt_pkcs1(struct crypto_public_key *key,
  		return -1;
  	}
  
@@ -1343,10 +1343,10 @@ index a6ce048c29ccac8383affcc618af1ec97ac5a589..68622a0f69603867c124f64dc311aae6
  
  	/*
 diff --git a/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls.c b/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls.c
-index 4c8c7b55edc6f101ff583b7112e431b1e77121a6..b8d1f7eb127759f7a48efeaa43487e04c2cb38b8 100644
+index b6ec692adcde98eedbb0d0d77dbeea04671af30d..137f15dfcddf1b2b57c2a8c396f18e10f0825e78 100644
 --- a/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls.c
 +++ b/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls.c
-@@ -43,37 +43,37 @@ static int digest_vector(mbedtls_md_type_t md_type, size_t num_elem,
+@@ -44,37 +44,37 @@ static int digest_vector(mbedtls_md_type_t md_type, size_t num_elem,
  	mbedtls_md_context_t md_ctx;
  	int ret;
  
@@ -1395,7 +1395,7 @@ index 4c8c7b55edc6f101ff583b7112e431b1e77121a6..b8d1f7eb127759f7a48efeaa43487e04
  
  	return ret;
  
-@@ -115,7 +115,7 @@ int md4_vector(size_t num_elem, const u8 *addr[], const size_t *len, u8 *mac)
+@@ -116,7 +116,7 @@ int md4_vector(size_t num_elem, const u8 *addr[], const size_t *len, u8 *mac)
  #endif
  
  struct crypto_hash * crypto_hash_init(enum crypto_hash_alg alg, const u8 *key,
@@ -1404,7 +1404,7 @@ index 4c8c7b55edc6f101ff583b7112e431b1e77121a6..b8d1f7eb127759f7a48efeaa43487e04
  {
  	mbedtls_md_context_t *ctx = NULL;
  	mbedtls_md_type_t md_type;
-@@ -160,18 +160,18 @@ struct crypto_hash * crypto_hash_init(enum crypto_hash_alg alg, const u8 *key,
+@@ -161,18 +161,18 @@ struct crypto_hash * crypto_hash_init(enum crypto_hash_alg alg, const u8 *key,
  		return NULL;
  	}
  
@@ -1428,7 +1428,7 @@ index 4c8c7b55edc6f101ff583b7112e431b1e77121a6..b8d1f7eb127759f7a48efeaa43487e04
  	}
  	if (ret < 0) {
  		goto cleanup;
-@@ -179,7 +179,7 @@ struct crypto_hash * crypto_hash_init(enum crypto_hash_alg alg, const u8 *key,
+@@ -180,7 +180,7 @@ struct crypto_hash * crypto_hash_init(enum crypto_hash_alg alg, const u8 *key,
  
  	return (struct crypto_hash *)ctx;
  cleanup:
@@ -1437,7 +1437,7 @@ index 4c8c7b55edc6f101ff583b7112e431b1e77121a6..b8d1f7eb127759f7a48efeaa43487e04
  	os_free(ctx);
  	return NULL;
  }
-@@ -193,12 +193,12 @@ void crypto_hash_update(struct crypto_hash *crypto_ctx, const u8 *data, size_t l
+@@ -194,12 +194,12 @@ void crypto_hash_update(struct crypto_hash *crypto_ctx, const u8 *data, size_t l
  		return;
  	}
  	if (ctx->MBEDTLS_PRIVATE(hmac_ctx)) {
@@ -1453,7 +1453,7 @@ index 4c8c7b55edc6f101ff583b7112e431b1e77121a6..b8d1f7eb127759f7a48efeaa43487e04
  	}
  }
  
-@@ -215,7 +215,7 @@ int crypto_hash_finish(struct crypto_hash *crypto_ctx, u8 *mac, size_t *len)
+@@ -216,7 +216,7 @@ int crypto_hash_finish(struct crypto_hash *crypto_ctx, u8 *mac, size_t *len)
  	if (mac == NULL || len == NULL) {
  		goto err;
  	}
@@ -1462,7 +1462,7 @@ index 4c8c7b55edc6f101ff583b7112e431b1e77121a6..b8d1f7eb127759f7a48efeaa43487e04
  	switch(md_type) {
  	case MBEDTLS_MD_MD5:
  		if (*len < MD5_MAC_LEN) {
-@@ -263,20 +263,20 @@ int crypto_hash_finish(struct crypto_hash *crypto_ctx, u8 *mac, size_t *len)
+@@ -264,20 +264,20 @@ int crypto_hash_finish(struct crypto_hash *crypto_ctx, u8 *mac, size_t *len)
  		goto err;
  	}
  	if (ctx->MBEDTLS_PRIVATE(hmac_ctx)) {
@@ -1487,7 +1487,7 @@ index 4c8c7b55edc6f101ff583b7112e431b1e77121a6..b8d1f7eb127759f7a48efeaa43487e04
  		       size_t num_elem, const u8 *addr[],
  		       const size_t *len, u8 *mac)
  {
-@@ -285,89 +285,89 @@ static int hmac_vector(mbedtls_md_type_t md_type,
+@@ -286,89 +286,89 @@ static int hmac_vector(mbedtls_md_type_t md_type,
  	mbedtls_md_context_t md_ctx;
  	int ret;
  
@@ -1600,7 +1600,7 @@ index 4c8c7b55edc6f101ff583b7112e431b1e77121a6..b8d1f7eb127759f7a48efeaa43487e04
  }
  
  static void *aes_crypt_init(int mode, const u8 *key, size_t len)
-@@ -377,17 +377,17 @@ static void *aes_crypt_init(int mode, const u8 *key, size_t len)
+@@ -378,17 +378,17 @@ static void *aes_crypt_init(int mode, const u8 *key, size_t len)
  	if (!aes) {
  		return NULL;
  	}
@@ -1623,7 +1623,7 @@ index 4c8c7b55edc6f101ff583b7112e431b1e77121a6..b8d1f7eb127759f7a48efeaa43487e04
  		return NULL;
  	}
  
-@@ -396,13 +396,13 @@ static void *aes_crypt_init(int mode, const u8 *key, size_t len)
+@@ -397,13 +397,13 @@ static void *aes_crypt_init(int mode, const u8 *key, size_t len)
  
  static int aes_crypt(void *ctx, int mode, const u8 *in, u8 *out)
  {
@@ -1639,7 +1639,7 @@ index 4c8c7b55edc6f101ff583b7112e431b1e77121a6..b8d1f7eb127759f7a48efeaa43487e04
  	os_free(ctx);
  }
  
-@@ -442,18 +442,18 @@ int aes_128_cbc_encrypt(const u8 *key, const u8 *iv, u8 *data, size_t data_len)
+@@ -443,18 +443,18 @@ int aes_128_cbc_encrypt(const u8 *key, const u8 *iv, u8 *data, size_t data_len)
  	mbedtls_aes_context ctx;
  	u8 cbc[MBEDTLS_AES_BLOCK_SIZE];
  
@@ -1663,7 +1663,7 @@ index 4c8c7b55edc6f101ff583b7112e431b1e77121a6..b8d1f7eb127759f7a48efeaa43487e04
  
  	return ret;
  }
-@@ -464,18 +464,18 @@ int aes_128_cbc_decrypt(const u8 *key, const u8 *iv, u8 *data, size_t data_len)
+@@ -465,18 +465,18 @@ int aes_128_cbc_decrypt(const u8 *key, const u8 *iv, u8 *data, size_t data_len)
  	mbedtls_aes_context ctx;
  	u8 cbc[MBEDTLS_AES_BLOCK_SIZE];
  
@@ -1687,7 +1687,7 @@ index 4c8c7b55edc6f101ff583b7112e431b1e77121a6..b8d1f7eb127759f7a48efeaa43487e04
  
  	return ret;
  
-@@ -489,27 +489,27 @@ struct crypto_cipher {
+@@ -490,27 +490,27 @@ struct crypto_cipher {
  
  static int crypto_init_cipher_ctx(mbedtls_cipher_context_t *ctx,
  				  const mbedtls_cipher_info_t *cipher_info,
@@ -1724,7 +1724,7 @@ index 4c8c7b55edc6f101ff583b7112e431b1e77121a6..b8d1f7eb127759f7a48efeaa43487e04
  		return -1;
  	}
  
-@@ -517,17 +517,17 @@ static int crypto_init_cipher_ctx(mbedtls_cipher_context_t *ctx,
+@@ -518,17 +518,17 @@ static int crypto_init_cipher_ctx(mbedtls_cipher_context_t *ctx,
  }
  
  static mbedtls_cipher_type_t alg_to_mbedtls_cipher(enum crypto_cipher_alg alg,
@@ -1746,7 +1746,7 @@ index 4c8c7b55edc6f101ff583b7112e431b1e77121a6..b8d1f7eb127759f7a48efeaa43487e04
  			return MBEDTLS_CIPHER_AES_256_CBC;
  		}
  		break;
-@@ -546,7 +546,7 @@ static mbedtls_cipher_type_t alg_to_mbedtls_cipher(enum crypto_cipher_alg alg,
+@@ -547,7 +547,7 @@ static mbedtls_cipher_type_t alg_to_mbedtls_cipher(enum crypto_cipher_alg alg,
  
  struct crypto_cipher *crypto_cipher_init(enum crypto_cipher_alg alg,
  					 const u8 *iv, const u8 *key,
@@ -1755,7 +1755,7 @@ index 4c8c7b55edc6f101ff583b7112e431b1e77121a6..b8d1f7eb127759f7a48efeaa43487e04
  {
  	struct crypto_cipher *ctx;
  	mbedtls_cipher_type_t cipher_type;
-@@ -557,31 +557,31 @@ struct crypto_cipher *crypto_cipher_init(enum crypto_cipher_alg alg,
+@@ -558,31 +558,31 @@ struct crypto_cipher *crypto_cipher_init(enum crypto_cipher_alg alg,
  		return NULL;
  	}
  
@@ -1793,7 +1793,7 @@ index 4c8c7b55edc6f101ff583b7112e431b1e77121a6..b8d1f7eb127759f7a48efeaa43487e04
  		goto cleanup;
  	}
  	return ctx;
-@@ -597,12 +597,12 @@ int crypto_cipher_encrypt(struct crypto_cipher *ctx, const u8 *plain,
+@@ -598,12 +598,12 @@ int crypto_cipher_encrypt(struct crypto_cipher *ctx, const u8 *plain,
  	int ret;
  	size_t olen = 0;
  
@@ -1808,7 +1808,7 @@ index 4c8c7b55edc6f101ff583b7112e431b1e77121a6..b8d1f7eb127759f7a48efeaa43487e04
  	if (ret != 0) {
  		return -1;
  	}
-@@ -616,12 +616,12 @@ int crypto_cipher_decrypt(struct crypto_cipher *ctx, const u8 *crypt,
+@@ -617,12 +617,12 @@ int crypto_cipher_decrypt(struct crypto_cipher *ctx, const u8 *crypt,
  	int ret;
  	size_t olen = 0;
  
@@ -1823,7 +1823,7 @@ index 4c8c7b55edc6f101ff583b7112e431b1e77121a6..b8d1f7eb127759f7a48efeaa43487e04
  	if (ret != 0) {
  		return -1;
  	}
-@@ -631,13 +631,13 @@ int crypto_cipher_decrypt(struct crypto_cipher *ctx, const u8 *crypt,
+@@ -632,13 +632,13 @@ int crypto_cipher_decrypt(struct crypto_cipher *ctx, const u8 *crypt,
  
  void crypto_cipher_deinit(struct crypto_cipher *ctx)
  {
@@ -1840,7 +1840,7 @@ index 4c8c7b55edc6f101ff583b7112e431b1e77121a6..b8d1f7eb127759f7a48efeaa43487e04
  		    u8 *data, size_t data_len)
  {
  	int ret;
-@@ -645,15 +645,15 @@ int aes_ctr_encrypt(const u8 *key, size_t key_len, const u8 *nonce,
+@@ -646,15 +646,15 @@ int aes_ctr_encrypt(const u8 *key, size_t key_len, const u8 *nonce,
  	uint8_t stream_block[MBEDTLS_AES_BLOCK_SIZE];
  	size_t offset = 0;
  
@@ -1860,7 +1860,7 @@ index 4c8c7b55edc6f101ff583b7112e431b1e77121a6..b8d1f7eb127759f7a48efeaa43487e04
  	return ret;
  }
  
-@@ -670,18 +670,18 @@ int aes_wrap(const u8 *kek, size_t kek_len, int n, const u8 *plain, u8 *cipher)
+@@ -671,18 +671,18 @@ int aes_wrap(const u8 *kek, size_t kek_len, int n, const u8 *plain, u8 *cipher)
  	mbedtls_nist_kw_context ctx;
  	size_t olen;
  	int ret = 0;
@@ -1883,7 +1883,7 @@ index 4c8c7b55edc6f101ff583b7112e431b1e77121a6..b8d1f7eb127759f7a48efeaa43487e04
  	return ret;
  }
  
-@@ -691,18 +691,18 @@ int aes_unwrap(const u8 *kek, size_t kek_len, int n, const u8 *cipher,
+@@ -692,18 +692,18 @@ int aes_unwrap(const u8 *kek, size_t kek_len, int n, const u8 *cipher,
  	mbedtls_nist_kw_context ctx;
  	size_t olen;
  	int ret = 0;
@@ -1906,7 +1906,7 @@ index 4c8c7b55edc6f101ff583b7112e431b1e77121a6..b8d1f7eb127759f7a48efeaa43487e04
  	return ret;
  }
  #endif
-@@ -715,27 +715,27 @@ int crypto_mod_exp(const uint8_t *base, size_t base_len,
+@@ -716,27 +716,27 @@ int crypto_mod_exp(const uint8_t *base, size_t base_len,
  	mbedtls_mpi bn_base, bn_exp, bn_modulus, bn_result, bn_rinv;
  	int ret = 0;
  
@@ -1949,7 +1949,7 @@ index 4c8c7b55edc6f101ff583b7112e431b1e77121a6..b8d1f7eb127759f7a48efeaa43487e04
  
  	return ret;
  }
-@@ -748,20 +748,20 @@ int pbkdf2_sha1(const char *passphrase, const u8 *ssid, size_t ssid_len,
+@@ -749,20 +749,20 @@ int pbkdf2_sha1(const char *passphrase, const u8 *ssid, size_t ssid_len,
  	const mbedtls_md_info_t *info_sha1;
  	int ret;
  
@@ -1974,7 +1974,7 @@ index 4c8c7b55edc6f101ff583b7112e431b1e77121a6..b8d1f7eb127759f7a48efeaa43487e04
  					os_strlen(passphrase) , ssid,
  					ssid_len, iterations, 32, buf);
  	if (ret != 0) {
-@@ -770,7 +770,7 @@ int pbkdf2_sha1(const char *passphrase, const u8 *ssid, size_t ssid_len,
+@@ -771,7 +771,7 @@ int pbkdf2_sha1(const char *passphrase, const u8 *ssid, size_t ssid_len,
  	}
  
  cleanup:
@@ -1983,7 +1983,7 @@ index 4c8c7b55edc6f101ff583b7112e431b1e77121a6..b8d1f7eb127759f7a48efeaa43487e04
  	return ret;
  }
  
-@@ -791,13 +791,13 @@ int des_encrypt(const u8 *clear, const u8 *key, u8 *cypher)
+@@ -792,13 +792,13 @@ int des_encrypt(const u8 *clear, const u8 *key, u8 *cypher)
  	}
  	pkey[i] = next | 1;
  
@@ -2001,7 +2001,7 @@ index 4c8c7b55edc6f101ff583b7112e431b1e77121a6..b8d1f7eb127759f7a48efeaa43487e04
  
  	return ret;
  }
-@@ -805,32 +805,32 @@ int des_encrypt(const u8 *clear, const u8 *key, u8 *cypher)
+@@ -806,32 +806,32 @@ int des_encrypt(const u8 *clear, const u8 *key, u8 *cypher)
  
  /* Only enable this if all other ciphers are using MbedTLS implementation */
  #if defined(MBEDTLS_CCM_C) && defined(MBEDTLS_CMAC_C) && defined(MBEDTLS_NIST_KW_C)
@@ -2042,7 +2042,7 @@ index 4c8c7b55edc6f101ff583b7112e431b1e77121a6..b8d1f7eb127759f7a48efeaa43487e04
  	       size_t M, const u8 *crypt, size_t crypt_len,
  	       const u8 *aad, size_t aad_len, const u8 *auth,
  	       u8 *plain)
-@@ -838,27 +838,27 @@ int aes_ccm_ad(const u8 *key, size_t key_len, const u8 *nonce,
+@@ -839,27 +839,27 @@ int aes_ccm_ad(const u8 *key, size_t key_len, const u8 *nonce,
  	int ret;
  	mbedtls_ccm_context ccm;
  
@@ -2076,7 +2076,7 @@ index 4c8c7b55edc6f101ff583b7112e431b1e77121a6..b8d1f7eb127759f7a48efeaa43487e04
  		     const u8 *addr[], const size_t *len, u8 *mac)
  {
  	const mbedtls_cipher_info_t *cipher_info;
-@@ -866,7 +866,7 @@ int omac1_aes_vector(const u8 *key, size_t key_len, size_t num_elem,
+@@ -867,7 +867,7 @@ int omac1_aes_vector(const u8 *key, size_t key_len, size_t num_elem,
  	mbedtls_cipher_type_t cipher_type;
  	mbedtls_cipher_context_t ctx;
  
@@ -2085,7 +2085,7 @@ index 4c8c7b55edc6f101ff583b7112e431b1e77121a6..b8d1f7eb127759f7a48efeaa43487e04
  	case 16:
  		cipher_type = MBEDTLS_CIPHER_AES_128_ECB;
  		break;
-@@ -880,7 +880,7 @@ int omac1_aes_vector(const u8 *key, size_t key_len, size_t num_elem,
+@@ -881,7 +881,7 @@ int omac1_aes_vector(const u8 *key, size_t key_len, size_t num_elem,
  		cipher_type = MBEDTLS_CIPHER_NONE;
  		break;
  	}
@@ -2094,7 +2094,7 @@ index 4c8c7b55edc6f101ff583b7112e431b1e77121a6..b8d1f7eb127759f7a48efeaa43487e04
  	if (cipher_info == NULL) {
  		/* Failing at this point must be due to a build issue */
  		ret = MBEDTLS_ERR_CIPHER_FEATURE_UNAVAILABLE;
-@@ -891,28 +891,28 @@ int omac1_aes_vector(const u8 *key, size_t key_len, size_t num_elem,
+@@ -892,28 +892,28 @@ int omac1_aes_vector(const u8 *key, size_t key_len, size_t num_elem,
  		return -1;
  	}
  
@@ -2421,10 +2421,10 @@ index 91ef416e72cf029f295ddac10402d72fd7707988..2d5fe14bcc5a79b1c42bfa24678ebd41
  		wpa_s->subtype = 1 << WLAN_ACTION_RADIO_MEASUREMENT;
  	if (esp_wifi_is_btm_enabled_internal(WIFI_IF_STA))
 diff --git a/wpa_supplicant/esp_supplicant/src/esp_wifi_driver.h b/wpa_supplicant/esp_supplicant/src/esp_wifi_driver.h
-index caf25df8fa99dff17a3f2999159d64de4dbbc966..d3995a060025cf1f1835ddf96a9f1d6abf9ee226 100644
+index e0b2b5de22bc6d6bd19a43b7f25d12ef8ab808cc..b7662e04373b9c5408aff2f8fda18edbb483be6b 100644
 --- a/wpa_supplicant/esp_supplicant/src/esp_wifi_driver.h
 +++ b/wpa_supplicant/esp_supplicant/src/esp_wifi_driver.h
-@@ -227,11 +227,11 @@ void esp_wifi_deauthenticate_internal(u8 reason_code);
+@@ -226,11 +226,11 @@ void esp_wifi_deauthenticate_internal(u8 reason_code);
  uint16_t esp_wifi_get_spp_attrubute_internal(uint8_t ifx);
  bool esp_wifi_sta_is_running_internal(void);
  bool esp_wifi_auth_done_internal(void);
@@ -2440,7 +2440,7 @@ index caf25df8fa99dff17a3f2999159d64de4dbbc966..d3995a060025cf1f1835ddf96a9f1d6a
  uint8_t esp_wifi_sta_set_reset_param_internal(uint8_t reset_flag);
  uint8_t esp_wifi_get_sta_gtk_index_internal(void);
 diff --git a/wpa_supplicant/esp_supplicant/src/esp_wpa_main.c b/wpa_supplicant/esp_supplicant/src/esp_wpa_main.c
-index f4d072d40745147915d50d0042d2e36898c3ef8f..d90f8d8058a0b64f82a7679bbc2c6c391b29c2a0 100644
+index 434d66bbc23bfaa129ec891b53e933114b0dab2a..8f62e5fd74abf7ea7742403f56d78a5d9fe9fada 100644
 --- a/wpa_supplicant/esp_supplicant/src/esp_wpa_main.c
 +++ b/wpa_supplicant/esp_supplicant/src/esp_wpa_main.c
 @@ -42,15 +42,15 @@
@@ -2516,10 +2516,10 @@ index 7ad0e293b6ed5438d8d40da5788ddff24d64716f..b432b0759735004db4016447c382bbd3
      struct wps_device_data *dev;
      u8 uuid[16];
 diff --git a/wpa_supplicant/port/include/os.h b/wpa_supplicant/port/include/os.h
-index 990981e274c8de64539466798186c631ffdbb823..1ae14e89efcc3fc15a02d0372cbd72f07a262816 100644
+index 06c4c176ab6933af3eac8e7b6f4afb504d15884a..dbd91af7afa92dd21bb944423f284a7ac50dd11b 100644
 --- a/wpa_supplicant/port/include/os.h
 +++ b/wpa_supplicant/port/include/os.h
-@@ -327,12 +327,12 @@ void forced_memzero(void *ptr, size_t len);
+@@ -328,12 +328,12 @@ void forced_memzero(void *ptr, size_t len);
   * try go a bit further by storing the first octet (now zero) to make this even
   * a bit more difficult to optimize out. Once memset_s() is available, that
   * could be used here instead. */
@@ -2535,7 +2535,7 @@ index 990981e274c8de64539466798186c631ffdbb823..1ae14e89efcc3fc15a02d0372cbd72f0
  		forced_memzero_val = ((uint8_t *) ptr)[0];
  	}
 diff --git a/wpa_supplicant/port/os_xtensa.c b/wpa_supplicant/port/os_xtensa.c
-index 93ab7a801cc91f852ffbd27225accb8416ea4f9b..ca90e886fee853bfc4b613150f04269bc23f4884 100644
+index 7a2309e8b5b018f0baafe1e7599898559b298b4c..2f522eb30ea58f56f5c63792448cd0a731effd8a 100644
 --- a/wpa_supplicant/port/os_xtensa.c
 +++ b/wpa_supplicant/port/os_xtensa.c
 @@ -63,6 +63,6 @@ void os_sleep(os_time_t sec, os_time_t usec)
@@ -2771,7 +2771,7 @@ index 3d04995327f7450a8ceaaa39613e0a9ac3e0b550..47212cdb3a8b5e163c174516b64f459e
  }
  
 diff --git a/wpa_supplicant/src/common/wpa_common.c b/wpa_supplicant/src/common/wpa_common.c
-index f8c39639a806894f26eef5effbea7b8b42e55b0a..a3dbdd34e6f8630323bee2bde3fd19de34b20eed 100644
+index 4cdf7ab38805a1cee706ffde250c30a86ad8debe..d799463be71e4098674fb8fdf28024244ca44a64 100644
 --- a/wpa_supplicant/src/common/wpa_common.c
 +++ b/wpa_supplicant/src/common/wpa_common.c
 @@ -849,7 +849,7 @@ int wpa_pmk_r1_to_ptk(const u8 *pmk_r1, const u8 *snonce, const u8 *anonce,
@@ -2869,7 +2869,7 @@ index 77907842fb61f4afabb6f9c3d649852063c27c04..c8179eb76855da4f68e83c215df73fa9
  struct rrm_data {
  	/* rrm_used - indication regarding the current connection */
 diff --git a/wpa_supplicant/src/crypto/aes-ccm.c b/wpa_supplicant/src/crypto/aes-ccm.c
-index ba1ed04d5561ce0765d0131b1f0db11c5d4cc227..f8bac1b3eb8aa71cafbe4cce4499ded8b6530de1 100644
+index e5bb94ca0868a9e83c7880b8b95cadf11a40441f..507c8f5458e4015bf11114456c12f2007522a2aa 100644
 --- a/wpa_supplicant/src/crypto/aes-ccm.c
 +++ b/wpa_supplicant/src/crypto/aes-ccm.c
 @@ -42,7 +42,7 @@ static void aes_ccm_auth_start(void *aes, size_t M, size_t L, const u8 *nonce,
@@ -3008,7 +3008,7 @@ index 8ce05b894db6d1ecedb7329940222b3897d82fcb..9e936ddb56d08f56a07ac8ec1c484a51
   * @data: Data to encrypt in-place
   * @data_len: Length of data in bytes
 diff --git a/wpa_supplicant/src/crypto/aes-gcm.c b/wpa_supplicant/src/crypto/aes-gcm.c
-index 7f9582b4c8f54bf18290d4398b1c027af0c3de7f..fb8038ee6b25f08f67675852b17fd631edda7948 100644
+index 84294d2d104caae7268d91e98ab6836ac3d68cfb..0a937f5e6bb44e841eb4f3cce8f89ac437587e74 100644
 --- a/wpa_supplicant/src/crypto/aes-gcm.c
 +++ b/wpa_supplicant/src/crypto/aes-gcm.c
 @@ -172,11 +172,11 @@ static void aes_gctr(void *aes, const u8 *icb, const u8 *x, size_t xlen, u8 *y)
@@ -3105,7 +3105,7 @@ index bd4535d2096e21ae6f1d3fce290728ca215924f0..c400015b1ef4d89f65987f84746e23fa
  			rk[10] = rk[2] ^ rk[9];
  			rk[11] = rk[3] ^ rk[10];
 diff --git a/wpa_supplicant/src/crypto/aes-omac1.c b/wpa_supplicant/src/crypto/aes-omac1.c
-index 113991eea81bd04d5cb628f76d5a8095d0c63ee0..abfe248aced9fc728a79c8e4d7b99eb04908fbd6 100644
+index 8642516340c69e2ad0e93757b7b679d21e0c695b..0a3420492ecf1697a3a3cb4321b97d789246c65a 100644
 --- a/wpa_supplicant/src/crypto/aes-omac1.c
 +++ b/wpa_supplicant/src/crypto/aes-omac1.c
 @@ -29,7 +29,7 @@ static void gf_mulx(u8 *pad)
@@ -3262,7 +3262,7 @@ index b8b152f7ca31db65ef59cb6e1688fbe55406e662..99b432338a5512513da0cdcceac161b4
  		return ret;
  	if (os_memcmp(check, iv_crypt, AES_BLOCK_SIZE) == 0)
 diff --git a/wpa_supplicant/src/crypto/aes-unwrap.c b/wpa_supplicant/src/crypto/aes-unwrap.c
-index f4ae84a97c4788d81d7d7a5edb4810427d136476..5d961e62e678352711221ca5a8d778141a34df4d 100644
+index ec793d9dbf78b74a96579efcf73d83397bfcfdba..b3cb0e5c9a038047d636c659e28a5fa401251b0e 100644
 --- a/wpa_supplicant/src/crypto/aes-unwrap.c
 +++ b/wpa_supplicant/src/crypto/aes-unwrap.c
 @@ -1,5 +1,5 @@
@@ -3282,7 +3282,7 @@ index f4ae84a97c4788d81d7d7a5edb4810427d136476..5d961e62e678352711221ca5a8d77814
  	 *         R[i] = LSB(64, B)
  	 */
 diff --git a/wpa_supplicant/src/crypto/aes-wrap.c b/wpa_supplicant/src/crypto/aes-wrap.c
-index 75644d92c4b4b0bba2183de2797db66aa7812d8d..1562a1031739ecbb9ce32d48412bc320f2e33a1d 100644
+index 7ed34e803e4e53383793d3f4278b033636090f6d..2c6be608f2b5721147aa279d42b2742dc2c8105c 100644
 --- a/wpa_supplicant/src/crypto/aes-wrap.c
 +++ b/wpa_supplicant/src/crypto/aes-wrap.c
 @@ -44,7 +44,7 @@ int aes_wrap(const u8 *kek, size_t kek_len, int n, const u8 *plain, u8 *cipher)
@@ -3637,7 +3637,7 @@ index aad40af16e06e3cc9e7c1b53b2bacbabf1bb5412..6a46cfeaeaba009eba9e2dc660d8d93d
  			k_pad[i] ^= 0x5c;
  		sha256_init(&ctx->u.sha256);
 diff --git a/wpa_supplicant/src/crypto/crypto_ops.c b/wpa_supplicant/src/crypto/crypto_ops.c
-index 4052ad96761c7a9f9cebdc35b50a60aa20066570..fe0f55652826ffb13544e392bc42604ae064f513 100644
+index 128af4e1ae3fca08f01b9ee7979bc19cee6aa457..d87d67f7abbbcb7db756e6a874d0a2bcad12d787 100644
 --- a/wpa_supplicant/src/crypto/crypto_ops.c
 +++ b/wpa_supplicant/src/crypto/crypto_ops.c
 @@ -36,11 +36,11 @@ static void esp_aes_decrypt(void *ctx, const u8 *crypt, u8 *plain)
@@ -3648,7 +3648,7 @@ index 4052ad96761c7a9f9cebdc35b50a60aa20066570..fe0f55652826ffb13544e392bc42604a
 +static int esp_aes_gmac(const u8 *key, size_t esp_key_len, const u8 *iv, size_t iv_len,
  			const u8 *aad, size_t aad_len, u8 *tag)
  {
- #ifdef CONFIG_GMAC
+ #if CONFIG_GMAC
 -	return aes_gmac(key, key_len, iv, iv_len, aad, aad_len, tag);
 +	return aes_gmac(key, esp_key_len, iv, iv_len, aad, aad_len, tag);
  #else
@@ -3764,7 +3764,7 @@ index ffa04df017e37817dbf506b45bd989c0c3c61ae8..709803e29022a6715a0a61d2d9f2c8e8
  it.  This caused the hash function to generate incorrect values if len was
  greater than 8191 (8K - 1) due to the 'len << 3' on line 3 of SHA1Update().
 diff --git a/wpa_supplicant/src/crypto/sha1-prf.c b/wpa_supplicant/src/crypto/sha1-prf.c
-index 5f7eb1ee41bfd52f84f8ff03b740cd190645335b..427dc21ccf33d76f25aab3dcaf6aea2deef5300c 100644
+index 13851494fb92372f8cb97ae22cd28b9f0cfed4c9..24c63477845da210b83a884c84d0df14c2197015 100644
 --- a/wpa_supplicant/src/crypto/sha1-prf.c
 +++ b/wpa_supplicant/src/crypto/sha1-prf.c
 @@ -16,7 +16,7 @@
@@ -3958,7 +3958,7 @@ index ff1e2ba1686d3014b011aaf577af86a8ac473329..646a8022c0d103ecf8113adc1e7a2cf4
  	d += t0;					\
  	h  = t0 + t1;
 diff --git a/wpa_supplicant/src/crypto/sha256-prf.c b/wpa_supplicant/src/crypto/sha256-prf.c
-index 1516e74286dd8fb69299fce484aa58341d20432a..9de2ff29e2a5a54a14cc5ad89b2b1de24919b988 100644
+index d665a9983cf8a798cbc86dca8070018f8e9d1402..656de59772f7f19dc902cf61b125eae12908b6c3 100644
 --- a/wpa_supplicant/src/crypto/sha256-prf.c
 +++ b/wpa_supplicant/src/crypto/sha256-prf.c
 @@ -16,7 +16,7 @@
@@ -4275,156 +4275,6 @@ index c0263941c123c3b0358c6c17b693ac59f0fa46e3..63d161cd666e975f1ad194d0af6f9c34
  		t1 = Sigma0(S[0]) + Maj(S[0], S[1], S[2]);
  		S[7] = S[6];
  		S[6] = S[5];
-diff --git a/wpa_supplicant/src/drivers/driver.h b/wpa_supplicant/src/drivers/driver.h
-index feb4e7ab3e9d3631bd761ccef54d0b5a78f7b59d..25bace5fe8b017f77b7fe674be682b9314f8ef71 100644
---- a/wpa_supplicant/src/drivers/driver.h
-+++ b/wpa_supplicant/src/drivers/driver.h
-@@ -288,7 +288,7 @@ struct wpa_driver_ops {
- 	 *	TKIP: 6 octets, CCMP/GCMP: 6 octets, IGTK: 6 octets
- 	 * @key: key buffer; TKIP: 16-byte temporal key, 8-byte Tx Mic key,
- 	 *	8-byte Rx Mic Key
--	 * @key_len: length of the key buffer in octets (WEP: 5 or 13,
-+	 * @esp_key_len: length of the key buffer in octets (WEP: 5 or 13,
- 	 *	TKIP: 32, CCMP/GCMP: 16, IGTK: 16)
- 	 *
- 	 * Returns: 0 on success, -1 on failure
-@@ -299,7 +299,7 @@ struct wpa_driver_ops {
- 	 * individual. If only 4 keys are supported, the default key with key
- 	 * index 0 is used as the individual key. STA must be configured to use
- 	 * it as the default Tx key (set_tx is set) and accept Rx for all the
--	 * key indexes. In most cases, WPA uses only key indexes 1 and 2 for
-+	 * key esp_indexes. In most cases, WPA uses only key esp_indexes 1 and 2 for
- 	 * broadcast keys, so key index 0 is available for this kind of
- 	 * configuration.
- 	 *
-@@ -314,7 +314,7 @@ struct wpa_driver_ops {
- 	int (*set_key)(const char *ifname, void *priv, enum wpa_alg alg,
- 		       const u8 *addr, int key_idx, int set_tx,
- 		       const u8 *seq, size_t seq_len,
--		       const u8 *key, size_t key_len);
-+		       const u8 *key, size_t esp_key_len);
- 
- 	/**
- 	 * init - Initialize driver interface
-@@ -1467,7 +1467,7 @@ struct wpa_driver_ops {
- 	 * Returns: 0 on success, -1 on failure
- 	 *
- 	 * This callback can be used to configure driver and below layers to
--	 * enable/disable all FILS features.
-+	 * enable/disable all FILS esp_features.
- 	 */
- 	int (*disable_fils)(void *priv, int disable);
- 
-diff --git a/wpa_supplicant/src/drivers/driver_wext.c b/wpa_supplicant/src/drivers/driver_wext.c
-index d092605e3e3a063980e578e5882be56334aed5f4..3392cfcc6f8d4d48f82823d841ea38bfac34cb38 100644
---- a/wpa_supplicant/src/drivers/driver_wext.c
-+++ b/wpa_supplicant/src/drivers/driver_wext.c
-@@ -1691,8 +1691,8 @@ static int wpa_driver_wext_set_psk(struct wpa_driver_wext_data *drv,
- 
- 	iwr.u.encoding.pointer = (caddr_t) ext;
- 	iwr.u.encoding.length = sizeof(*ext) + PMK_LEN;
--	ext->key_len = PMK_LEN;
--	os_memcpy(&ext->key, psk, ext->key_len);
-+	ext->esp_key_len = PMK_LEN;
-+	os_memcpy(&ext->key, psk, ext->esp_key_len);
- 	ext->alg = IW_ENCODE_ALG_PMK;
- 
- 	ret = ioctl(drv->ioctl_sock, SIOCSIWENCODEEXT, &iwr);
-@@ -1709,7 +1709,7 @@ static int wpa_driver_wext_set_key_ext(void *priv, enum wpa_alg alg,
- 				       const u8 *addr, int key_idx,
- 				       int set_tx, const u8 *seq,
- 				       size_t seq_len,
--				       const u8 *key, size_t key_len)
-+				       const u8 *key, size_t esp_key_len)
- {
- 	struct wpa_driver_wext_data *drv = priv;
- 	struct iwreq iwr;
-@@ -1722,7 +1722,7 @@ static int wpa_driver_wext_set_key_ext(void *priv, enum wpa_alg alg,
- 		return -1;
- 	}
- 
--	ext = os_zalloc(sizeof(*ext) + key_len);
-+	ext = os_zalloc(sizeof(*ext) + esp_key_len);
- 	if (ext == NULL)
- 		return -1;
- 	os_memset(&iwr, 0, sizeof(iwr));
-@@ -1732,7 +1732,7 @@ static int wpa_driver_wext_set_key_ext(void *priv, enum wpa_alg alg,
- 	if (alg == WPA_ALG_NONE)
- 		iwr.u.encoding.flags |= IW_ENCODE_DISABLED;
- 	iwr.u.encoding.pointer = (caddr_t) ext;
--	iwr.u.encoding.length = sizeof(*ext) + key_len;
-+	iwr.u.encoding.length = sizeof(*ext) + esp_key_len;
- 
- 	if (addr == NULL || is_broadcast_ether_addr(addr))
- 		ext->ext_flags |= IW_ENCODE_EXT_GROUP_KEY;
-@@ -1744,9 +1744,9 @@ static int wpa_driver_wext_set_key_ext(void *priv, enum wpa_alg alg,
- 		os_memcpy(ext->addr.sa_data, addr, ETH_ALEN);
- 	else
- 		os_memset(ext->addr.sa_data, 0xff, ETH_ALEN);
--	if (key && key_len) {
--		os_memcpy(ext + 1, key, key_len);
--		ext->key_len = key_len;
-+	if (key && esp_key_len) {
-+		os_memcpy(ext + 1, key, esp_key_len);
-+		ext->esp_key_len = esp_key_len;
- 	}
- 	switch (alg) {
- 	case WPA_ALG_NONE:
-@@ -1818,7 +1818,7 @@ static int wpa_driver_wext_set_key_ext(void *priv, enum wpa_alg alg,
-  *	TKIP: 6 octets, CCMP: 6 octets
-  * @key: Key buffer; TKIP: 16-byte temporal key, 8-byte Tx Mic key,
-  *	8-byte Rx Mic Key
-- * @key_len: Length of the key buffer in octets (WEP: 5 or 13,
-+ * @esp_key_len: Length of the key buffer in octets (WEP: 5 or 13,
-  *	TKIP: 32, CCMP: 16)
-  * Returns: 0 on success, -1 on failure
-  *
-@@ -1828,19 +1828,19 @@ static int wpa_driver_wext_set_key_ext(void *priv, enum wpa_alg alg,
- int wpa_driver_wext_set_key(const char *ifname, void *priv, enum wpa_alg alg,
- 			    const u8 *addr, int key_idx,
- 			    int set_tx, const u8 *seq, size_t seq_len,
--			    const u8 *key, size_t key_len)
-+			    const u8 *key, size_t esp_key_len)
- {
- 	struct wpa_driver_wext_data *drv = priv;
- 	struct iwreq iwr;
- 	int ret = 0;
- 
- 	wpa_printf(MSG_DEBUG, "%s: alg=%d key_idx=%d set_tx=%d seq_len=%lu "
--		   "key_len=%lu",
-+		   "esp_key_len=%lu",
- 		   __FUNCTION__, alg, key_idx, set_tx,
--		   (unsigned long) seq_len, (unsigned long) key_len);
-+		   (unsigned long) seq_len, (unsigned long) esp_key_len);
- 
- 	ret = wpa_driver_wext_set_key_ext(drv, alg, addr, key_idx, set_tx,
--					  seq, seq_len, key, key_len);
-+					  seq, seq_len, key, esp_key_len);
- 	if (ret == 0)
- 		return 0;
- 
-@@ -1862,7 +1862,7 @@ int wpa_driver_wext_set_key(const char *ifname, void *priv, enum wpa_alg alg,
- 	if (alg == WPA_ALG_NONE)
- 		iwr.u.encoding.flags |= IW_ENCODE_DISABLED;
- 	iwr.u.encoding.pointer = (caddr_t) key;
--	iwr.u.encoding.length = key_len;
-+	iwr.u.encoding.length = esp_key_len;
- 
- 	if (ioctl(drv->ioctl_sock, SIOCSIWENCODE, &iwr) < 0) {
- 		wpa_printf(MSG_ERROR, "ioctl[SIOCSIWENCODE]: %s",
-diff --git a/wpa_supplicant/src/drivers/driver_wext.h b/wpa_supplicant/src/drivers/driver_wext.h
-index ca5db15b40e24b0d5e1428b545a125fa921e0611..bc0690cf40b1bee507ff9e8ac23871aad63ba7c4 100644
---- a/wpa_supplicant/src/drivers/driver_wext.h
-+++ b/wpa_supplicant/src/drivers/driver_wext.h
-@@ -50,7 +50,7 @@ int wpa_driver_wext_set_mode(void *priv, int mode);
- int wpa_driver_wext_set_key(const char *ifname, void *priv, enum wpa_alg alg,
- 			    const u8 *addr, int key_idx,
- 			    int set_tx, const u8 *seq, size_t seq_len,
--			    const u8 *key, size_t key_len);
-+			    const u8 *key, size_t esp_key_len);
- int wpa_driver_wext_scan(void *priv, struct wpa_driver_scan_params *params);
- struct wpa_scan_results * wpa_driver_wext_get_scan_results(void *priv);
- 
 diff --git a/wpa_supplicant/src/eap_peer/eap_fast.c b/wpa_supplicant/src/eap_peer/eap_fast.c
 index 37e0ef18b70a775a46bc8bb1c7023bea51c6e873..83b4833d975740f9f384db12c42f7e87d8b9b865 100644
 --- a/wpa_supplicant/src/eap_peer/eap_fast.c
@@ -4621,10 +4471,10 @@ index 7aad0dff781d9a57e1eb69ad853a98ccfd1bbf3e..d907fd6ae65d328f20d4f35ca73b6639
  		 u8 *buf, size_t buf_len);
  
 diff --git a/wpa_supplicant/src/rsn_supp/wpa.c b/wpa_supplicant/src/rsn_supp/wpa.c
-index 3ad31ea8fa35cff9c369a6e371d3dff743222f54..6a507835ad6a86995b0c492fd12a886e556e1519 100644
+index 2c5ed0d7b1111f8d129c49799fab00b271b9947c..5fc90b4c78bf77843940c64d9e5e9e93f44e32a3 100644
 --- a/wpa_supplicant/src/rsn_supp/wpa.c
 +++ b/wpa_supplicant/src/rsn_supp/wpa.c
-@@ -58,7 +58,7 @@ u8 assoc_ie_buf[ASSOC_IE_LEN+2];
+@@ -59,7 +59,7 @@ u8 assoc_ie_buf[ASSOC_IE_LEN+2];
  
  void set_assoc_ie(u8 * assoc_buf);
  
@@ -4633,7 +4483,7 @@ index 3ad31ea8fa35cff9c369a6e371d3dff743222f54..6a507835ad6a86995b0c492fd12a886e
  
  void wpa_set_passphrase(char * passphrase, u8 *ssid, size_t ssid_len);
  
-@@ -1590,7 +1590,7 @@ static int wpa_supplicant_process_1_of_2_wpa(struct wpa_sm *sm,
+@@ -1591,7 +1591,7 @@ static int wpa_supplicant_process_1_of_2_wpa(struct wpa_sm *sm,
          }
          if (aes_unwrap(sm->ptk.kek, sm->ptk.kek_len, maxkeylen / 8, key_data, gd->gtk)) {
              #ifdef DEBUG_PRINT
@@ -4642,7 +4492,7 @@ index 3ad31ea8fa35cff9c369a6e371d3dff743222f54..6a507835ad6a86995b0c492fd12a886e
                  "failed - could not decrypt GTK");
              #endif
              return -1;
-@@ -1836,7 +1836,7 @@ static int wpa_supplicant_decrypt_key_data(struct wpa_sm *sm,
+@@ -1837,7 +1837,7 @@ static int wpa_supplicant_decrypt_key_data(struct wpa_sm *sm,
          if (aes_unwrap(sm->ptk.kek, sm->ptk.kek_len, *key_data_len / 8,
                         key_data, buf)) {
              #ifdef DEBUG_PRINT
@@ -4651,7 +4501,7 @@ index 3ad31ea8fa35cff9c369a6e371d3dff743222f54..6a507835ad6a86995b0c492fd12a886e
                         "could not decrypt EAPOL-Key key data");
              #endif
              return -1;
-@@ -2625,13 +2625,13 @@ set_assoc_ie(u8 * assoc_buf)
+@@ -2626,13 +2626,13 @@ set_assoc_ie(u8 * assoc_buf)
  int wpa_sm_set_key(struct install_key *key_sm, enum wpa_alg alg,
          u8 *addr, int key_idx, int set_tx,
          u8 *seq, size_t seq_len,
@@ -4667,7 +4517,7 @@ index 3ad31ea8fa35cff9c369a6e371d3dff743222f54..6a507835ad6a86995b0c492fd12a886e
          /* Clear the MIC error counter when setting a new PTK. */
          sm->mic_errors_seen = 0;
      }
-@@ -2641,17 +2641,17 @@ int wpa_sm_set_key(struct install_key *key_sm, enum wpa_alg alg,
+@@ -2642,17 +2642,17 @@ int wpa_sm_set_key(struct install_key *key_sm, enum wpa_alg alg,
      memcpy(key_sm->addr, addr, ETH_ALEN);
      key_sm->key_idx = key_idx;
      key_sm->set_tx = set_tx;
@@ -5247,16 +5097,3 @@ index f67224871a5be6f371086f57edbbdd87e057b390..1996cfb54879ed96dde6a897ca21ada4
          crypto_ec_point_deinit(p, 1);
          crypto_ec_point_deinit(q, 1);
          crypto_ec_point_deinit(r, 1);
-diff --git a/wpa_supplicant/test/test_dpp.c b/wpa_supplicant/test/test_dpp.c
-index 6070842dc02be4bce167783c020ef1b4566fa20f..cff7753010f8eb462c5403cbd4a4c83b9f287ee8 100644
---- a/wpa_supplicant/test/test_dpp.c
-+++ b/wpa_supplicant/test/test_dpp.c
-@@ -65,7 +65,7 @@ TEST_CASE("Test vectors DPP responder p256", "[wpa_dpp]")
- 		const char *uri;
- 
- 		char private_bootstrap_key[] = "54ce181a98525f217216f59b245f60e9df30ac7f6b26c939418cfc3c42d1afa0";
--		char bootstrap_info[] = "DPP:K:MDkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDIgACCcWFqRtN+f0loEUgGIXDnMXPrjl92u2pV97Ff6DjUD8=;;";
-+		char bootstrap_info[] = "DPP:esp_K:MDkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDIgACCcWFqRtN+f0loEUgGIXDnMXPrjl92u2pV97Ff6DjUD8=;;";
- 
- 		sprintf(key, "%s%s%s", prefix, private_bootstrap_key, postfix);
- 
