@@ -16,12 +16,6 @@
 #include <sys/param.h>
 #include <sys/lock.h>
 
-typedef sem_t _lock_t;
-
-#define _lock_acquire(lock) sem_wait(lock)
-#define _lock_release(lock) sem_post(lock)
-#define _lock_try_acquire(lock) sem_trywait(lock)
-
 static _lock_t mpi_lock;
 
 /* Round up number of words to nearest

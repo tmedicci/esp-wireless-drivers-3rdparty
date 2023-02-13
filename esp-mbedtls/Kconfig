@@ -1,3 +1,4 @@
+menu "mbedTLS"
 
     choice MBEDTLS_MEM_ALLOC_MODE
         prompt "Memory allocation strategy"
@@ -1008,3 +1009,5 @@
         help
             Allow the X.509 certificate parser to load certificates
             with unsupported critical extensions
+
+endmenu  # mbedTLS

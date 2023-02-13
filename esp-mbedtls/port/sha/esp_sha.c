@@ -9,7 +9,7 @@
 #include <assert.h>
 #include "hal/sha_types.h"
 #include "soc/soc_caps.h"
-// #include "esp_log.h"
+#include "esp_log.h"
 
 #include <mbedtls/sha1.h>
 #include <mbedtls/sha256.h>

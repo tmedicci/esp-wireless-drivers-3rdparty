@@ -30,7 +30,9 @@
 #include <machine/endian.h>
 #include <assert.h>
 
-#include <nuttx/spinlock.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
+#include "esp_cpu.h"
 
 #include "hal/sha_hal.h"
 #include "hal/sha_types.h"
@@ -38,71 +40,11 @@
 #include "soc/hwcrypto_periph.h"
 #include "esp_private/periph_ctrl.h"
 
-/****************************************************************************
-* Private Types
-****************************************************************************/
-typedef sem_t portMUX_TYPE;
-typedef sem_t *SemaphoreHandle_t;
-typedef sem_t _lock_t;
-typedef uint32_t        TickType_t;
-typedef int32_t         BaseType_t;
-
-/******************************************************************************
-* macro defination
-******************************************************************************/
-#define ESP_OK OK
-#define ESP_ERR_INVALID_ARG ERROR
-#define ESP_ERR_INVALID_STATE ERROR
-#define ESP_FAIL ERROR
-#define ESP_ERR_NO_MEM ERROR
-#define ESP_ERR_TIMEOUT ERROR
-
-#define pdFALSE 0
-#define pdTRUE 1
-
-#ifdef CONFIG_PRIORITY_INHERITANCE
-#define portMUX_INITIALIZER_LOCKED { .semcount = 0, .flags = FLAGS_INITIALIZED, }
-#define portMUX_INITIALIZER_UNLOCKED { .semcount = 1, .flags = FLAGS_INITIALIZED, }
-#else
-#define portMUX_INITIALIZER_LOCKED { .semcount = 0 }
-#define portMUX_INITIALIZER_UNLOCKED { .semcount = 1 }
-#endif
-
-#define portENTER_CRITICAL(lock) sem_wait(lock)
-#define portEXIT_CRITICAL(lock) sem_post(lock)
-
-#define xSemaphoreTake(sem, t) sem_wait(sem)
-#define xSemaphoreGive(sem) sem_post(sem)
-
-#define vTaskDelay(t)   usleep(t)
-
-#define portMAX_DELAY       0xffffffff
-
-/****************************************************************************
-* Private Functions
-****************************************************************************/
-
-SemaphoreHandle_t xSemaphoreCreateBinary(void)
-{
-	SemaphoreHandle_t x = kmm_malloc(sizeof(sem_t));
-	if (x != NULL) {
-		sem_init(x, 0, 1);
-		sem_setprotocol(x, SEM_PRIO_NONE);
-	}
-	return x;
-}
-
-void vSemaphoreDelete(SemaphoreHandle_t sem)
-{
-	sem_destroy(sem);
-}
-
-
 /*
      Single spinlock for SHA engine memory block
 */
-static spinlock_t memory_block_lock;
-static irqstate_t memory_block_lockirqstate;
+static portMUX_TYPE memory_block_lock = portMUX_INITIALIZER_UNLOCKED;
+
 
 /* Binary semaphore managing the state of each concurrent SHA engine.
 
@@ -152,12 +94,12 @@ inline static size_t sha_engine_index(esp_sha_type type)
 
 void esp_sha_lock_memory_block(void)
 {
-    memory_block_lockirqstate = spin_lock_irqsave(&memory_block_lock);
+    portENTER_CRITICAL(&memory_block_lock);
 }
 
 void esp_sha_unlock_memory_block(void)
 {
-    spin_unlock_irqrestore(&memory_block_lock, memory_block_lockirqstate);
+    portEXIT_CRITICAL(&memory_block_lock);
 }
 
 static SemaphoreHandle_t sha_get_engine_state(esp_sha_type sha_type)
@@ -172,8 +114,11 @@ static SemaphoreHandle_t sha_get_engine_state(esp_sha_type sha_type)
         assert(new_engine != NULL);
         xSemaphoreGive(new_engine); // start available
 
-        (*engine) = new_engine;
-
+        // try to atomically set the previously NULL *engine to new_engine
+        if (!esp_cpu_compare_and_set((volatile uint32_t *)engine, 0, (uint32_t)new_engine)) {
+            // we lost a race setting *engine
+            vSemaphoreDelete(new_engine);
+        }
         result = *engine;
     }
     return result;

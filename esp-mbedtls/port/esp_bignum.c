@@ -17,15 +17,15 @@
 #include <sys/param.h>
 
 #include "esp_system.h"
-// #include "esp_log.h"
-// #include "esp_attr.h"
-// #include "esp_intr_alloc.h"
+#include "esp_log.h"
+#include "esp_attr.h"
+#include "esp_intr_alloc.h"
 #if CONFIG_PM_ENABLE
 #include "esp_pm.h"
 #endif
 
-// #include "freertos/FreeRTOS.h"
-// #include "freertos/semphr.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
 
 #include "soc/hwcrypto_periph.h"
 #include "soc/periph_defs.h"
@@ -82,7 +82,7 @@ static esp_err_t esp_mpi_isr_initialise(void)
         op_complete_sem = xSemaphoreCreateBinary();
 
         if (op_complete_sem == NULL) {
-            // ESP_LOGE(TAG, "Failed to create intr semaphore");
+            ESP_LOGE(TAG, "Failed to create intr semaphore");
             return ESP_FAIL;
         }
 
@@ -93,11 +93,11 @@ static esp_err_t esp_mpi_isr_initialise(void)
 #ifdef CONFIG_PM_ENABLE
     if (s_pm_cpu_lock == NULL) {
         if (esp_pm_lock_create(ESP_PM_NO_LIGHT_SLEEP, 0, "mpi_sleep", &s_pm_sleep_lock) != ESP_OK) {
-            // ESP_LOGE(TAG, "Failed to create PM sleep lock");
+            ESP_LOGE(TAG, "Failed to create PM sleep lock");
             return ESP_FAIL;
         }
         if (esp_pm_lock_create(ESP_PM_CPU_FREQ_MAX, 0, "mpi_cpu", &s_pm_cpu_lock) != ESP_OK) {
-            // ESP_LOGE(TAG, "Failed to create PM CPU lock");
+            ESP_LOGE(TAG, "Failed to create PM CPU lock");
             return ESP_FAIL;
         }
     }
@@ -111,7 +111,7 @@ static esp_err_t esp_mpi_isr_initialise(void)
 static int esp_mpi_wait_intr(void)
 {
     if (!xSemaphoreTake(op_complete_sem, 2000 / portTICK_PERIOD_MS)) {
-        // ESP_LOGE("MPI", "Timed out waiting for completion of MPI Interrupt");
+        ESP_LOGE("MPI", "Timed out waiting for completion of MPI Interrupt");
         return -1;
     }
 

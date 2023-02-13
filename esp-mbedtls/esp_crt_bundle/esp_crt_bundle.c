@@ -6,7 +6,7 @@
 #include <string.h>
 #include <esp_system.h>
 #include "esp_crt_bundle.h"
-// #include "esp_log.h"
+#include "esp_log.h"
 
 #define BUNDLE_HEADER_OFFSET 2
 #define CRT_HEADER_OFFSET 4
@@ -43,21 +43,21 @@ static int esp_crt_check_signature(mbedtls_x509_crt *child, const uint8_t *pub_k
     mbedtls_x509_crt_init(&parent);
 
     if ( (ret = mbedtls_pk_parse_public_key(&parent.pk, pub_key_buf, pub_key_len) ) != 0) {
-        // ESP_LOGE(TAG, "PK parse failed with error %X", ret);
+        ESP_LOGE(TAG, "PK parse failed with error %X", ret);
         goto cleanup;
     }
 
 
     // Fast check to avoid expensive computations when not necessary
     if (!mbedtls_pk_can_do(&parent.pk, child->MBEDTLS_PRIVATE(sig_pk))) {
-        // ESP_LOGE(TAG, "Simple compare failed");
+        ESP_LOGE(TAG, "Simple compare failed");
         ret = -1;
         goto cleanup;
     }
 
     md_info = mbedtls_md_info_from_type(child->MBEDTLS_PRIVATE(sig_md));
     if ( (ret = mbedtls_md( md_info, child->tbs.p, child->tbs.len, hash )) != 0 ) {
-        // ESP_LOGE(TAG, "Internal mbedTLS error %X", ret);
+        ESP_LOGE(TAG, "Internal mbedTLS error %X", ret);
         goto cleanup;
     }
 
@@ -65,7 +65,7 @@ static int esp_crt_check_signature(mbedtls_x509_crt *child, const uint8_t *pub_k
                                        child->MBEDTLS_PRIVATE(sig_md), hash, mbedtls_md_get_size( md_info ),
                                        child->MBEDTLS_PRIVATE(sig).p, child->MBEDTLS_PRIVATE(sig).len )) != 0 ) {
 
-        // ESP_LOGE(TAG, "PK verify failed with error %X", ret);
+        ESP_LOGE(TAG, "PK verify failed with error %X", ret);
         goto cleanup;
     }
 cleanup:
@@ -95,11 +95,11 @@ int esp_crt_verify_callback(void *buf, mbedtls_x509_crt *crt, int depth, uint32_
 
 
     if (s_crt_bundle.crts == NULL) {
-        // ESP_LOGE(TAG, "No certificates in bundle");
+        ESP_LOGE(TAG, "No certificates in bundle");
         return MBEDTLS_ERR_X509_FATAL_ERROR;
     }
 
-    // ESP_LOGD(TAG, "%d certificates in bundle", s_crt_bundle.num_certs);
+    ESP_LOGD(TAG, "%d certificates in bundle", s_crt_bundle.num_certs);
 
     size_t name_len = 0;
     const uint8_t *crt_name;
@@ -133,12 +133,12 @@ int esp_crt_verify_callback(void *buf, mbedtls_x509_crt *crt, int depth, uint32_
     }
 
     if (ret == 0) {
-        // ESP_LOGI(TAG, "Certificate validated");
+        ESP_LOGI(TAG, "Certificate validated");
         *flags = 0;
         return 0;
     }
 
-    // ESP_LOGE(TAG, "Failed to verify certificate");
+    ESP_LOGE(TAG, "Failed to verify certificate");
     return MBEDTLS_ERR_X509_FATAL_ERROR;
 }
 
@@ -149,21 +149,21 @@ int esp_crt_verify_callback(void *buf, mbedtls_x509_crt *crt, int depth, uint32_
 static esp_err_t esp_crt_bundle_init(const uint8_t *x509_bundle, size_t bundle_size)
 {
     if (bundle_size < BUNDLE_HEADER_OFFSET + CRT_HEADER_OFFSET) {
-        // ESP_LOGE(TAG, "Invalid certificate bundle");
+        ESP_LOGE(TAG, "Invalid certificate bundle");
         return ESP_ERR_INVALID_ARG;
     }
 
     uint16_t num_certs = (x509_bundle[0] << 8) | x509_bundle[1];
     if (num_certs > CONFIG_MBEDTLS_CERTIFICATE_BUNDLE_MAX_CERTS) {
-        // ESP_LOGE(TAG, "No. of certs in the certificate bundle = %d exceeds\n"
-        //               "Max allowed certificates in the certificate bundle = %d\n"
-        //               "Please update the menuconfig option with appropriate value", num_certs, CONFIG_MBEDTLS_CERTIFICATE_BUNDLE_MAX_CERTS);
+        ESP_LOGE(TAG, "No. of certs in the certificate bundle = %d exceeds\n"
+                      "Max allowed certificates in the certificate bundle = %d\n"
+                      "Please update the menuconfig option with appropriate value", num_certs, CONFIG_MBEDTLS_CERTIFICATE_BUNDLE_MAX_CERTS);
         return ESP_ERR_INVALID_ARG;
     }
 
     const uint8_t **crts = calloc(num_certs, sizeof(x509_bundle));
     if (crts == NULL) {
-        // ESP_LOGE(TAG, "Unable to allocate memory for bundle");
+        ESP_LOGE(TAG, "Unable to allocate memory for bundle");
         return ESP_ERR_NO_MEM;
     }
 
@@ -175,7 +175,7 @@ static esp_err_t esp_crt_bundle_init(const uint8_t *x509_bundle, size_t bundle_s
     for (int i = 0; i < num_certs; i++) {
         crts[i] = cur_crt;
         if (cur_crt + CRT_HEADER_OFFSET > bundle_end) {
-            // ESP_LOGE(TAG, "Invalid certificate bundle");
+            ESP_LOGE(TAG, "Invalid certificate bundle");
             free(crts);
             return ESP_ERR_INVALID_ARG;
         }
@@ -185,7 +185,7 @@ static esp_err_t esp_crt_bundle_init(const uint8_t *x509_bundle, size_t bundle_s
     }
 
     if (cur_crt > bundle_end) {
-        // ESP_LOGE(TAG, "Invalid certificate bundle");
+        ESP_LOGE(TAG, "Invalid certificate bundle");
         free(crts);
         return ESP_ERR_INVALID_ARG;
     }
@@ -208,7 +208,7 @@ esp_err_t esp_crt_bundle_attach(void *conf)
     }
 
     if (ret != ESP_OK) {
-        // ESP_LOGE(TAG, "Failed to attach bundle");
+        ESP_LOGE(TAG, "Failed to attach bundle");
         return ret;
     }
 

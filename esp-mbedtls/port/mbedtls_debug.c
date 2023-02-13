@@ -6,7 +6,7 @@
 
 #include <strings.h>
 
-// #include "esp_log.h"
+#include "esp_log.h"
 #include "mbedtls/platform.h"
 #include "mbedtls/debug.h"
 #include "mbedtls/ssl.h"

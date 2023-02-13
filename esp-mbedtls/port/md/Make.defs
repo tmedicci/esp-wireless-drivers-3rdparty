@@ -1,9 +1,0 @@
-############################################################################
-# SPDX-FileCopyrightText: 2018-2023 Espressif Systems (Shanghai) CO LTD
-#
-# SPDX-License-Identifier: Apache-2.0
-############################################################################
-
-CHIP_CSRCS += esp_md.c
-
-VPATH += chip$(DELIM)esp-wireless-drivers-3rdparty$(DELIM)esp-mbedtls$(DELIM)port$(DELIM)md
