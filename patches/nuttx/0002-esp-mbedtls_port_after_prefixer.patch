@@ -1,5 +1,5 @@
 diff --git a/esp-mbedtls/port/aes/block/esp_aes.c b/esp-mbedtls/port/aes/block/esp_aes.c
-index 258e12fb34dfed335329c44bda44090b3d5678f4..0956263108f1ce911f9f4dfed6c026a9be1cb3d9 100644
+index aa349c31633b24627d562c49d5c3cf0979c9dfea..d9e7808031e4145a6e6270f97506cea3e0882b21 100644
 --- a/esp-mbedtls/port/aes/block/esp_aes.c
 +++ b/esp-mbedtls/port/aes/block/esp_aes.c
 @@ -80,7 +80,7 @@ static int esp_aes_block(esp_aes_context *ctx, const void *input, void *output)
@@ -565,10 +565,10 @@ index 7b84d0818f8dbbb5ebd045f47e87c782e7fb5864..eb5bcd8f3de0748392148554c0864160
      point.len = grp->pbits / 8;
  
 diff --git a/esp-mbedtls/port/esp32/bignum.c b/esp-mbedtls/port/esp32/bignum.c
-index e9df4d2d5548207aef83a939b40b82a16604e642..37c7826d334a75b6580d1f0c60244f11e154e29c 100644
+index 2b55bc4c7df1ddc4a0bc0672b827f2bff7375759..8898ba5f49911a14ad0ad4d8afc031f4baf325d6 100644
 --- a/esp-mbedtls/port/esp32/bignum.c
 +++ b/esp-mbedtls/port/esp32/bignum.c
-@@ -234,7 +234,7 @@ int esp_mont_hw_op(mbedtls_mpi *Z, const mbedtls_mpi *X, const mbedtls_mpi *Y, c
+@@ -228,7 +228,7 @@ int esp_mont_hw_op(mbedtls_mpi *Z, const mbedtls_mpi *X, const mbedtls_mpi *Y, c
  
      start_op(RSA_MULT_START_REG);
      Z->MBEDTLS_PRIVATE(s) = 1; // The sign of Z will be = M->s (but M->s is always 1)
@@ -577,7 +577,7 @@ index e9df4d2d5548207aef83a939b40b82a16604e642..37c7826d334a75b6580d1f0c60244f11
  
      wait_op_complete();
  
-@@ -243,8 +243,8 @@ int esp_mont_hw_op(mbedtls_mpi *Z, const mbedtls_mpi *X, const mbedtls_mpi *Y, c
+@@ -237,8 +237,8 @@ int esp_mont_hw_op(mbedtls_mpi *Z, const mbedtls_mpi *X, const mbedtls_mpi *Y, c
  
  
      /* from HAC 14.36 - 3. If Z >= M then Z = Z - M */
@@ -641,7 +641,7 @@ index fe33dea2f04e4b793a1002a382cb31050b281a2d..217e7acbf846f69a6c56099f969e5813
      DPORT_REG_WRITE(RSA_LENGTH_REG, (num_words - 1));
  
 diff --git a/esp-mbedtls/port/esp_bignum.c b/esp-mbedtls/port/esp_bignum.c
-index d1c406833b03683ea117ed6ad6ad486affe20ab1..e69123541bf83e0fea22236b2668311ede4c3cc1 100644
+index 0cc987cbfa39991585f6d62f8574d64067eccb11..a34551c19b9aa9ef27dc6ddbfd94f194ee93aaaf 100644
 --- a/esp-mbedtls/port/esp_bignum.c
 +++ b/esp-mbedtls/port/esp_bignum.c
 @@ -184,7 +184,7 @@ static mbedtls_mpi_uint modular_inverse(const mbedtls_mpi *M)
@@ -1079,7 +1079,7 @@ index 0336ca49d46c26ef73f1b7499428bf9d7c2ae2af..de264c972276d31272b0abde8d94309e
   * \param iv_len    The length of the IV.
   * \param aad       The buffer holding the additional data.
 diff --git a/esp-mbedtls/port/include/aes_alt.h b/esp-mbedtls/port/include/aes_alt.h
-index a61733b24a1e94660b386c9fa25a80d2c963fb7e..5e9a4c3a329c85a82fed9668ca8ce67208c24e38 100644
+index 2f8e958b27d3e3894c2f7f472bb78ac4bd49d2ea..06b0758cd363e8f4eb76a892e6f7d75fe37cb6f2 100644
 --- a/esp-mbedtls/port/include/aes_alt.h
 +++ b/esp-mbedtls/port/include/aes_alt.h
 @@ -32,34 +32,34 @@ extern "C" {
@@ -1225,7 +1225,7 @@ index 28ccd5c79ce826cffa5bd4b71ff860dff64c92ae..4aa9d9d4f66cad750d8182b0ad7c170f
  #endif
  
 diff --git a/esp-mbedtls/port/include/mbedtls/esp_config.h b/esp-mbedtls/port/include/mbedtls/esp_config.h
-index c8567a34885b4f1d4f2c189ab629e45468b29cc2..feee5a7b8ea34ee7249f8136ca709890e3e4807c 100644
+index 4a8387ba8b66d7a8aabdfcec332c386a0601a433..dbb70ae01952a5d22b48a672438daad849497920 100644
 --- a/esp-mbedtls/port/include/mbedtls/esp_config.h
 +++ b/esp-mbedtls/port/include/mbedtls/esp_config.h
 @@ -3,7 +3,7 @@
@@ -1285,7 +1285,7 @@ index c8567a34885b4f1d4f2c189ab629e45468b29cc2..feee5a7b8ea34ee7249f8136ca709890
   *
   * This is useful in non-threaded environments if you want to avoid blocking
   * for too long on ECC (and, hence, X.509 or SSL/TLS) operations.
-@@ -788,15 +788,15 @@
+@@ -786,15 +786,15 @@
  /**
   * \def MBEDTLS_ERROR_STRERROR_DUMMY
   *
@@ -1304,7 +1304,7 @@ index c8567a34885b4f1d4f2c189ab629e45468b29cc2..feee5a7b8ea34ee7249f8136ca709890
   */
  #define MBEDTLS_ERROR_STRERROR_DUMMY
  
-@@ -888,8 +888,8 @@
+@@ -886,8 +886,8 @@
   * which allows to identify DTLS connections across changes
   * in the underlying transport.
   *
@@ -1315,7 +1315,7 @@ index c8567a34885b4f1d4f2c189ab629e45468b29cc2..feee5a7b8ea34ee7249f8136ca709890
   * See the corresponding documentation for more information.
   *
   * \warning The Connection ID extension is still in draft state.
-@@ -915,7 +915,7 @@
+@@ -913,7 +913,7 @@
   * \def MBEDTLS_SSL_CONTEXT_SERIALIZATION
   *
   * Enable serialization of the TLS context structures, through use of the
@@ -1324,7 +1324,7 @@ index c8567a34885b4f1d4f2c189ab629e45468b29cc2..feee5a7b8ea34ee7249f8136ca709890
   *
   * This pair of functions allows one side of a connection to serialize the
   * context associated with the connection, then free or re-use that context
-@@ -1003,13 +1003,13 @@
+@@ -1001,13 +1001,13 @@
  /**
   * \def MBEDTLS_SSL_KEEP_PEER_CERTIFICATE
   *
@@ -1340,7 +1340,7 @@ index c8567a34885b4f1d4f2c189ab629e45468b29cc2..feee5a7b8ea34ee7249f8136ca709890
   *       defined, but always returns \c NULL.
   *
   * \note This option has no influence on the protection against the
-@@ -1058,7 +1058,7 @@
+@@ -1056,7 +1056,7 @@
   * \note   Even if this option is disabled, both client and server are aware
   *         of the Renegotiation Indication Extension (RFC 5746) used to
   *         prevent the SSL renegotiation attack (see RFC 5746 Sect. 1).
@@ -1349,7 +1349,7 @@ index c8567a34885b4f1d4f2c189ab629e45468b29cc2..feee5a7b8ea34ee7249f8136ca709890
   *          configuration of this extension).
   *
   */
-@@ -1178,7 +1178,7 @@
+@@ -1176,7 +1176,7 @@
   *           MBEDTLS_SSL_PROTO_DTLS
   *
   * \warning Disabling this is often a security risk!
@@ -1358,7 +1358,7 @@ index c8567a34885b4f1d4f2c189ab629e45468b29cc2..feee5a7b8ea34ee7249f8136ca709890
   *
   * Comment this to disable anti-replay in DTLS.
   */
-@@ -1230,7 +1230,7 @@
+@@ -1228,7 +1228,7 @@
   * The resulting key should then be passed to an SRTP stack.
   *
   * Setting this option enables the runtime API
@@ -1367,7 +1367,7 @@ index c8567a34885b4f1d4f2c189ab629e45468b29cc2..feee5a7b8ea34ee7249f8136ca709890
   * through which the supported DTLS-SRTP protection
   * profiles can be configured. You must call this API at
   * runtime if you wish to negotiate the use of DTLS-SRTP.
-@@ -1323,9 +1323,9 @@
+@@ -1321,9 +1321,9 @@
   *
   * \def MBEDTLS_VERSION_FEATURES
   *
@@ -1379,7 +1379,7 @@ index c8567a34885b4f1d4f2c189ab629e45468b29cc2..feee5a7b8ea34ee7249f8136ca709890
   *
   * Requires: MBEDTLS_VERSION_C
   *
-@@ -1829,7 +1829,7 @@
+@@ -1827,7 +1827,7 @@
   * Module:  library/error.c
   * Caller:
   *
@@ -1388,7 +1388,7 @@ index c8567a34885b4f1d4f2c189ab629e45468b29cc2..feee5a7b8ea34ee7249f8136ca709890
   */
  #define MBEDTLS_ERROR_C
  
-@@ -1889,7 +1889,7 @@
+@@ -1887,7 +1887,7 @@
   *
   * Enable the generic message digest layer.
   *
@@ -1397,7 +1397,7 @@ index c8567a34885b4f1d4f2c189ab629e45468b29cc2..feee5a7b8ea34ee7249f8136ca709890
   * Caller:
   *
   * Uncomment to enable generic message digest wrappers.
-@@ -1901,8 +1901,8 @@
+@@ -1899,8 +1899,8 @@
   *
   * Enable the MD5 hash algorithm.
   *
@@ -1408,7 +1408,7 @@ index c8567a34885b4f1d4f2c189ab629e45468b29cc2..feee5a7b8ea34ee7249f8136ca709890
   *          library/pem.c
   *          library/ssl_tls.c
   *
-@@ -2115,8 +2115,8 @@
+@@ -2113,8 +2113,8 @@
   *
   * Enable the RIPEMD-160 hash algorithm.
   *
@@ -1419,7 +1419,7 @@ index c8567a34885b4f1d4f2c189ab629e45468b29cc2..feee5a7b8ea34ee7249f8136ca709890
   *
   */
  #ifdef CONFIG_MBEDTLS_RIPEMD160_C
-@@ -2148,8 +2148,8 @@
+@@ -2146,8 +2146,8 @@
   *
   * Enable the SHA1 cryptographic hash algorithm.
   *
@@ -1430,7 +1430,7 @@ index c8567a34885b4f1d4f2c189ab629e45468b29cc2..feee5a7b8ea34ee7249f8136ca709890
   *          library/ssl_cli.c
   *          library/ssl_srv.c
   *          library/ssl_tls.c
-@@ -2164,9 +2164,9 @@
+@@ -2162,9 +2162,9 @@
   *
   * Enable the SHA-224 and SHA-256 cryptographic hash algorithms.
   *
@@ -1442,7 +1442,7 @@ index c8567a34885b4f1d4f2c189ab629e45468b29cc2..feee5a7b8ea34ee7249f8136ca709890
   *          library/ssl_cli.c
   *          library/ssl_srv.c
   *          library/ssl_tls.c
-@@ -2181,9 +2181,9 @@
+@@ -2179,9 +2179,9 @@
   *
   * Enable the SHA-384 and SHA-512 cryptographic hash algorithms.
   *
@@ -1454,7 +1454,7 @@ index c8567a34885b4f1d4f2c189ab629e45468b29cc2..feee5a7b8ea34ee7249f8136ca709890
   *          library/ssl_cli.c
   *          library/ssl_srv.c
   *
-@@ -2299,7 +2299,7 @@
+@@ -2297,7 +2297,7 @@
   * \note The provided implementation only works on POSIX/Unix (including Linux,
   * BSD and OS X) and Windows. On other platforms, you can either disable that
   * module and provide your own implementations of the callbacks needed by
@@ -1463,7 +1463,7 @@ index c8567a34885b4f1d4f2c189ab629e45468b29cc2..feee5a7b8ea34ee7249f8136ca709890
   * your own implementation of the whole module by setting
   * \c MBEDTLS_TIMING_ALT in the current file.
   *
-@@ -2444,8 +2444,8 @@
+@@ -2442,8 +2442,8 @@
  /**
   * \def MBEDTLS_X509_TRUSTED_CERTIFICATE_CALLBACK
   *
@@ -1474,7 +1474,7 @@ index c8567a34885b4f1d4f2c189ab629e45468b29cc2..feee5a7b8ea34ee7249f8136ca709890
   * the set of trusted certificates through a callback instead of a linked
   * list.
   *
-@@ -2453,8 +2453,8 @@
+@@ -2451,8 +2451,8 @@
   * certificates is present and storing them in a linked list isn't efficient
   * enough, or when the set of trusted certificates changes frequently.
   *
@@ -1485,7 +1485,7 @@ index c8567a34885b4f1d4f2c189ab629e45468b29cc2..feee5a7b8ea34ee7249f8136ca709890
   *
   * Uncomment to enable trusted certificate callbacks.
   */
-@@ -2597,7 +2597,7 @@
+@@ -2595,7 +2595,7 @@
  /**
   * Allow SHA-1 in the default TLS configuration for TLS 1.2 handshake
   * signature and ciphersuite selection. Without this build-time option, SHA-1
@@ -1534,7 +1534,7 @@ index 788c6554eb431e02df4598e1114b673577a7fd53..253d53b92330324f49a33c97db63b433
  #endif /* MBEDTLS_MD5_ALT */
  
 diff --git a/esp-mbedtls/port/mbedtls_debug.c b/esp-mbedtls/port/mbedtls_debug.c
-index 5b7836bf256c1214c0dbb92c8b3d26af2c5b3bb5..dda4011ddf533d3bc7ef0f39d11f51de96ceeeff 100644
+index 23f7eab10ec90e15b950da45eaae20c7963eefc1..9af45be7216528f8088498211b2ec4955cd8f595 100644
 --- a/esp-mbedtls/port/mbedtls_debug.c
 +++ b/esp-mbedtls/port/mbedtls_debug.c
 @@ -22,8 +22,8 @@ static void mbedtls_esp_debug(void *ctx, int level,
@@ -2277,7 +2277,7 @@ index cc813f268579c226403e130dbd2448ff8a048b78..9caf0b0b8d7bc0cbddf90e7515bf03cf
      }
  
 diff --git a/esp-mbedtls/port/sha/esp_sha.c b/esp-mbedtls/port/sha/esp_sha.c
-index 53eb0a76c8d5c645da6baf1b4c5a8d2e5b6e32e8..64ea477de919784d36dc3718d03cbccc8fd11f0f 100644
+index 4648e4afc2cbbf8b3c81d6581fb5a3e49112d924..1e8c99e43d57b688f8f24381240dcfcbb5608550 100644
 --- a/esp-mbedtls/port/sha/esp_sha.c
 +++ b/esp-mbedtls/port/sha/esp_sha.c
 @@ -44,52 +44,52 @@ void esp_sha(esp_sha_type sha_type, const unsigned char *input, size_t ilen, uns
