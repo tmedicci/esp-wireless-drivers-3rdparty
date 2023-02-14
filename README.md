@@ -20,23 +20,21 @@ git -C ../esp-idf reset --hard
 git -C ../esp-idf/components/mbedtls/mbedtls reset --hard
 
 ./prefixer.sh ctags/mbedtls/tags ../esp-idf/components/mbedtls/mbedtls
-mkdir -p ../nuttx/patches/esp-idf/components/mbedtls/mbedtls
-git -C ../esp-idf/components/mbedtls/mbedtls diff --full-index --binary > ../nuttx/patches/esp-idf/components/mbedtls/mbedtls/0001-add_prefix.patch
+mkdir -p ../nuttx/patches/esp-idf/submodules/
+git -C ../esp-idf/components/mbedtls/mbedtls diff --full-index --binary > ../nuttx/patches/esp-idf/submodules/0001-mbedtls_add_prefix.patch
 git -C ../esp-idf/components/mbedtls/mbedtls reset --hard
 
 #### Generate Patch for ESP-IDF's mbedtls port
 
 git -C ../esp-idf reset --hard
 ./prefixer.sh ctags/mbedtls/tags ../esp-idf/components/mbedtls/port
-mkdir -p ../nuttx/patches/esp-idf/components/mbedtls/port
-git -C ../esp-idf diff --full-index --binary > ../nuttx/patches/esp-idf/components/mbedtls/port/0001-add_prefix.patch
+git -C ../esp-idf diff --full-index --binary > ../nuttx/patches/esp-idf/0001-mbedtls_port_add_prefix.patch
 
 #### Generate Patch for wpa_supplicant
 
 git -C ../esp-idf reset --hard
 ./prefixer.sh ctags/mbedtls/tags ../esp-idf/components/wpa_supplicant
-mkdir -p ../nuttx/patches/esp-idf/components/wpa_supplicant
-git -C ../esp-idf/ diff --full-index --binary > ../nuttx/patches/esp-idf/components/wpa_supplicant/0001-add_prefix.patch
+git -C ../esp-idf/ diff --full-index --binary > ../nuttx/patches/esp-idf/0002-add_prefix.patch
 
 ctags --kinds-c=fv ../esp-mbedtls/mbedtls/library/*.c
 ./prefixer.sh ./tags ../esp-mbedtls/mbedtls/
