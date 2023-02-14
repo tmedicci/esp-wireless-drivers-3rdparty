@@ -2,5 +2,5 @@
 	path = esp-mbedtls/mbedtls
 	url = https://github.com/espressif/mbedtls.git
 [submodule "libs"]
-	path = libs
+	path = esp_wifi/lib
 	url = https://github.com/espressif/esp32-wifi-lib.git
