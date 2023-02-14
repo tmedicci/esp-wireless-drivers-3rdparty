@@ -1,12 +1,3 @@
-[submodule "esp-mbedtls/mbedtls"]
-	path = esp-mbedtls/mbedtls
-	url = https://github.com/espressif/mbedtls.git
-[submodule "libs"]
-	path = esp_wifi/lib
-	url = https://github.com/espressif/esp32-wifi-lib.git
-[submodule "esp_phy/lib"]
-	path = esp_phy/lib
-	url = https://github.com/espressif/esp-phy-lib.git
 [submodule "esp-idf"]
 	path = esp-idf
 	url = https://github.com/espressif/esp-idf.git
