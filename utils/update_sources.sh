@@ -54,6 +54,7 @@ cp -r "${IDF_PATH}/components/esp_hw_support/include/esp_private" "${root_dir}/i
 cp -r "${IDF_PATH}/components/esp_rom/include/esp_rom_md5.h" "${root_dir}/include/esp_rom_md5.h"
 cp -r "${IDF_PATH}/components/esp_system/include/esp_system.h" "${root_dir}/include/esp_system.h"
 cp -r "${IDF_PATH}/components/esp_timer/include/esp_timer.h" "${root_dir}/include/esp_timer.h"
+cp -r "${IDF_PATH}/components/nvs_flash/include/nvs.h" "${root_dir}/include/nvs.h"
 
 git submodule update --init --recursive
 git -C "${root_dir}/libs" checkout "${wifi_lib_hash}"
