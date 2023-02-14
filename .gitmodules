@@ -7,3 +7,6 @@
 [submodule "esp_phy/lib"]
 	path = esp_phy/lib
 	url = https://github.com/espressif/esp-phy-lib.git
+[submodule "esp-idf"]
+	path = esp-idf
+	url = https://github.com/espressif/esp-idf.git
