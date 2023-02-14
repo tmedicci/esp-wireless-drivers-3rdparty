@@ -4,3 +4,6 @@
 [submodule "libs"]
 	path = esp_wifi/lib
 	url = https://github.com/espressif/esp32-wifi-lib.git
+[submodule "esp_phy/lib"]
+	path = esp_phy/lib
+	url = https://github.com/espressif/esp-phy-lib.git

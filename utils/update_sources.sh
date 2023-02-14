@@ -16,6 +16,11 @@ idf_commit_hash="$(git -C ${IDF_PATH} rev-parse HEAD)"
 echo "Copying sources from local ESP-IDF ${idf_tag}."
 echo "${idf_tag} commit ${idf_commit_hash}" > "${root_dir}/version"
 
+echo "Copying PHY library from ESP-IDF..."
+phy_lib_hash="$(git -C ${IDF_PATH}/components/esp_phy/lib rev-parse HEAD)"
+echo "ESP32 PHY lib submodule: ${phy_lib_hash}"
+rm -rf "${root_dir}/esp_phy/lib"
+
 echo "Copying Wi-Fi library from ESP-IDF..."
 wifi_lib_hash="$(git -C ${IDF_PATH}/components/esp_wifi/lib rev-parse HEAD)"
 echo "ESP32 Wi-Fi lib submodule: ${wifi_lib_hash}"
@@ -57,5 +62,6 @@ cp -r "${IDF_PATH}/components/esp_timer/include/esp_timer.h" "${root_dir}/includ
 cp -r "${IDF_PATH}/components/nvs_flash/include/nvs.h" "${root_dir}/include/nvs.h"
 
 git submodule update --init --recursive
+git -C "${root_dir}/esp_phy/lib" checkout "${phy_lib_hash}"
 git -C "${root_dir}/esp_wifi/lib" checkout "${wifi_lib_hash}"
 git -C "${root_dir}/esp-mbedtls/mbedtls" checkout "${mbedtls_hash}"
