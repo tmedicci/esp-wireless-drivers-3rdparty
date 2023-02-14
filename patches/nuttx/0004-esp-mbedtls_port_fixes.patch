@@ -108,3 +108,19 @@ index 23f7eab10ec90e15b950da45eaae20c7963eefc1..8178ccd3f87081aeaa19defb33f6d59b
  #include "mbedtls/platform.h"
  #include "mbedtls/debug.h"
  #include "mbedtls/ssl.h"
+diff --git a/esp-mbedtls/port/esp_mem.c b/esp-mbedtls/port/esp_mem.c
+index 4cceb809a0622836badcece9be1e57fd5bd3b1d3..0169e90d90e99990c86f8a6921f3987006b51e21 100644
+--- a/esp-mbedtls/port/esp_mem.c
++++ b/esp-mbedtls/port/esp_mem.c
+@@ -7,9 +7,10 @@
+ #include <stdlib.h>
+ #include <sys/types.h>
+ 
+-#include <esp_attr.h>
+ #include <sdkconfig.h>
+ 
++#include "xtensa_attr.h"
++
+ #ifndef CONFIG_MBEDTLS_CUSTOM_MEM_ALLOC
+ 
+ IRAM_ATTR void *esp_mbedtls_mem_calloc(size_t n, size_t size)
