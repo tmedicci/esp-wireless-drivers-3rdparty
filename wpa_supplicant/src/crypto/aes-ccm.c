@@ -10,7 +10,7 @@
 #ifdef CONFIG_IEEE80211W
 #include "includes.h"
 
-#include "common.h"
+#include "utils/common.h"
 #include "aes.h"
 #include "aes_wrap.h"
 
@@ -42,7 +42,7 @@ static void aes_ccm_auth_start(void *aes, size_t M, size_t L, const u8 *nonce,
 	WPA_PUT_BE16(&b[AES_BLOCK_SIZE - L], plain_len);
 
 	wpa_hexdump_key(MSG_DEBUG, "CCM B_0", b, AES_BLOCK_SIZE);
-	aes_encrypt(aes, b, x); /* X_1 = E(K, B_0) */
+	aes_encrypt(aes, b, x); /* X_1 = E(esp_K, B_0) */
 
 	if (!aad_len)
 		return;
@@ -52,11 +52,11 @@ static void aes_ccm_auth_start(void *aes, size_t M, size_t L, const u8 *nonce,
 	os_memset(aad_buf + 2 + aad_len, 0, sizeof(aad_buf) - 2 - aad_len);
 
 	xor_aes_block(aad_buf, x);
-	aes_encrypt(aes, aad_buf, x); /* X_2 = E(K, X_1 XOR B_1) */
+	aes_encrypt(aes, aad_buf, x); /* X_2 = E(esp_K, X_1 XOR B_1) */
 
 	if (aad_len > AES_BLOCK_SIZE - 2) {
 		xor_aes_block(&aad_buf[AES_BLOCK_SIZE], x);
-		/* X_3 = E(K, X_2 XOR B_2) */
+		/* X_3 = E(esp_K, X_2 XOR B_2) */
 		aes_encrypt(aes, &aad_buf[AES_BLOCK_SIZE], x);
 	}
 }
@@ -68,7 +68,7 @@ static void aes_ccm_auth(void *aes, const u8 *data, size_t len, u8 *x)
 	size_t i;
 
 	for (i = 0; i < len / AES_BLOCK_SIZE; i++) {
-		/* X_i+1 = E(K, X_i XOR B_i) */
+		/* X_i+1 = E(esp_K, X_i XOR B_i) */
 		xor_aes_block(x, data);
 		data += AES_BLOCK_SIZE;
 		aes_encrypt(aes, x, x);
@@ -99,7 +99,7 @@ static void aes_ccm_encr(void *aes, size_t L, const u8 *in, size_t len, u8 *out,
 	/* crypt = msg XOR (S_1 | S_2 | ... | S_n) */
 	for (i = 1; i <= len / AES_BLOCK_SIZE; i++) {
 		WPA_PUT_BE16(&a[AES_BLOCK_SIZE - 2], i);
-		/* S_i = E(K, A_i) */
+		/* S_i = E(esp_K, A_i) */
 		aes_encrypt(aes, a, out);
 		xor_aes_block(out, in);
 		out += AES_BLOCK_SIZE;
@@ -121,7 +121,7 @@ static void aes_ccm_encr_auth(void *aes, size_t M, u8 *x, u8 *a, u8 *auth)
 	u8 tmp[AES_BLOCK_SIZE];
 
 	wpa_hexdump_key(MSG_DEBUG, "CCM T", x, M);
-	/* U = T XOR S_0; S_0 = E(K, A_0) */
+	/* U = T XOR S_0; S_0 = E(esp_K, A_0) */
 	WPA_PUT_BE16(&a[AES_BLOCK_SIZE - 2], 0);
 	aes_encrypt(aes, a, tmp);
 	for (i = 0; i < M; i++)
@@ -136,7 +136,7 @@ static void aes_ccm_decr_auth(void *aes, size_t M, u8 *a, const u8 *auth, u8 *t)
 	u8 tmp[AES_BLOCK_SIZE];
 
 	wpa_hexdump_key(MSG_DEBUG, "CCM U", auth, M);
-	/* U = T XOR S_0; S_0 = E(K, A_0) */
+	/* U = T XOR S_0; S_0 = E(esp_K, A_0) */
 	WPA_PUT_BE16(&a[AES_BLOCK_SIZE - 2], 0);
 	aes_encrypt(aes, a, tmp);
 	for (i = 0; i < M; i++)
@@ -146,7 +146,7 @@ static void aes_ccm_decr_auth(void *aes, size_t M, u8 *a, const u8 *auth, u8 *t)
 
 
 /* AES-CCM with fixed L=2 and aad_len <= 30 assumption */
-int aes_ccm_ae(const u8 *key, size_t key_len, const u8 *nonce,
+int aes_ccm_ae(const u8 *key, size_t esp_key_len, const u8 *nonce,
 	       size_t M, const u8 *plain, size_t plain_len,
 	       const u8 *aad, size_t aad_len, u8 *crypt, u8 *auth)
 {
@@ -157,7 +157,7 @@ int aes_ccm_ae(const u8 *key, size_t key_len, const u8 *nonce,
 	if (aad_len > 30 || M > AES_BLOCK_SIZE)
 		return -1;
 
-	aes = aes_encrypt_init(key, key_len);
+	aes = aes_encrypt_init(key, esp_key_len);
 	if (aes == NULL)
 		return -1;
 
@@ -176,7 +176,7 @@ int aes_ccm_ae(const u8 *key, size_t key_len, const u8 *nonce,
 
 
 /* AES-CCM with fixed L=2 and aad_len <= 30 assumption */
-int aes_ccm_ad(const u8 *key, size_t key_len, const u8 *nonce,
+int aes_ccm_ad(const u8 *key, size_t esp_key_len, const u8 *nonce,
 	       size_t M, const u8 *crypt, size_t crypt_len,
 	       const u8 *aad, size_t aad_len, const u8 *auth, u8 *plain)
 {
@@ -188,7 +188,7 @@ int aes_ccm_ad(const u8 *key, size_t key_len, const u8 *nonce,
 	if (aad_len > 30 || M > AES_BLOCK_SIZE)
 		return -1;
 
-	aes = aes_encrypt_init(key, key_len);
+	aes = aes_encrypt_init(key, esp_key_len);
 	if (aes == NULL)
 		return -1;
 

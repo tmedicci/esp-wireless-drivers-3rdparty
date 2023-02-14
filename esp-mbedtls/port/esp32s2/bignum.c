@@ -153,7 +153,7 @@ void esp_mpi_mul_mpi_mod_hw_op(const mbedtls_mpi *X, const mbedtls_mpi *Y, const
 */
 void esp_mpi_exp_mpi_mod_hw_op(const mbedtls_mpi *X, const mbedtls_mpi *Y, const mbedtls_mpi *M, const mbedtls_mpi *Rinv, mbedtls_mpi_uint Mprime, size_t num_words)
 {
-    size_t y_bits = mbedtls_mpi_bitlen(Y);
+    size_t y_bits = esp_mbedtls_mpi_bitlen(Y);
 
     DPORT_REG_WRITE(RSA_LENGTH_REG, (num_words - 1));
 

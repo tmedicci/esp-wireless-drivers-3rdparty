@@ -30,7 +30,7 @@ extern const u8 rcons[10];
 
 #ifndef AES_SMALL_TABLES
 
-#define RCON(i) rcon[(i)]
+#define esp_RCON(i) rcon[(i)]
 
 #define TE0(i) Te0[((i) >> 24) & 0xff]
 #define TE1(i) Te1[((i) >> 16) & 0xff]
@@ -65,7 +65,7 @@ extern const u8 rcons[10];
 
 #else /* AES_SMALL_TABLES */
 
-#define RCON(i) ((u32) rcons[(i)] << 24)
+#define esp_RCON(i) ((u32) rcons[(i)] << 24)
 
 static inline u32 rotr(u32 val, int bits)
 {

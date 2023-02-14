@@ -6,7 +6,6 @@
 
 #include <strings.h>
 
-#include "esp_log.h"
 #include "mbedtls/platform.h"
 #include "mbedtls/debug.h"
 #include "mbedtls/ssl.h"
@@ -22,8 +21,8 @@ static void mbedtls_esp_debug(void *ctx, int level,
 void mbedtls_esp_enable_debug_log(mbedtls_ssl_config *conf, int threshold)
 {
     esp_log_level_t level = ESP_LOG_NONE;
-    mbedtls_debug_set_threshold(threshold);
-    mbedtls_ssl_conf_dbg(conf, mbedtls_esp_debug, NULL);
+    esp_mbedtls_debug_set_threshold(threshold);
+    esp_mbedtls_ssl_conf_dbg(conf, mbedtls_esp_debug, NULL);
     switch(threshold) {
     case 1:
         level = ESP_LOG_WARN;
@@ -43,7 +42,7 @@ void mbedtls_esp_enable_debug_log(mbedtls_ssl_config *conf, int threshold)
 
 void mbedtls_esp_disable_debug_log(mbedtls_ssl_config *conf)
 {
-    mbedtls_ssl_conf_dbg(conf, NULL, NULL);
+    esp_mbedtls_ssl_conf_dbg(conf, NULL, NULL);
 }
 
 

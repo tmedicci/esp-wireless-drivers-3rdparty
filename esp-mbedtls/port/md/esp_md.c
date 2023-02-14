@@ -44,7 +44,7 @@ void esp_md5_free( mbedtls_md5_context *ctx )
         return;
     }
 
-    mbedtls_platform_zeroize( ctx, sizeof( mbedtls_md5_context ) );
+    esp_mbedtls_platform_zeroize( ctx, sizeof( mbedtls_md5_context ) );
 }
 
 int esp_md5_process( mbedtls_md5_context *ctx, const unsigned char data[64] )

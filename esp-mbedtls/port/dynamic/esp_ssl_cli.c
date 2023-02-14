@@ -29,7 +29,7 @@ static int manage_resource(mbedtls_ssl_context *ssl, bool add)
         }
     }
 
-    /* Change state now, so that it is right in mbedtls_ssl_read_record(), used
+    /* Change state now, so that it is right in esp_mbedtls_ssl_read_record(), used
      * by DTLS for dropping out-of-sequence ChangeCipherSpec records */
 #if defined(MBEDTLS_SSL_SESSION_TICKETS)
     if( ssl->state == MBEDTLS_SSL_SERVER_CHANGE_CIPHER_SPEC &&

@@ -223,7 +223,7 @@ eap_peap_get_isk(struct eap_sm *sm, struct eap_peap_data *data,
 		 u8 *isk, size_t isk_len)
 {
 	u8 *key;
-	size_t key_len;
+	size_t esp_key_len;
 
 	os_memset(isk, 0, isk_len);
 	if (data->phase2_method == NULL || data->phase2_priv == NULL ||
@@ -233,15 +233,15 @@ eap_peap_get_isk(struct eap_sm *sm, struct eap_peap_data *data,
 
 	if (!data->phase2_method->isKeyAvailable(sm, data->phase2_priv) ||
 	    (key = data->phase2_method->getKey(sm, data->phase2_priv,
-					       &key_len)) == NULL) {
+					       &esp_key_len)) == NULL) {
 		wpa_printf(MSG_DEBUG, "EAP-PEAP: Could not get key material "
 			   "from Phase 2");
 		return -1;
 	}
 
-	if (key_len > isk_len)
-		key_len = isk_len;
-	os_memcpy(isk, key, key_len);
+	if (esp_key_len > isk_len)
+		esp_key_len = isk_len;
+	os_memcpy(isk, key, esp_key_len);
 	os_free(key);
 
 	return 0;

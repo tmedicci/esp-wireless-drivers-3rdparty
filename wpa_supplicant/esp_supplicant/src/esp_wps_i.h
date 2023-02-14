@@ -57,7 +57,7 @@ struct wps_sm {
     u8 ssid[MAX_CRED_COUNT][SSID_MAX_LEN];
     u8 ssid_len[MAX_CRED_COUNT];
     char key[MAX_CRED_COUNT][MAX_PASSPHRASE_LEN];
-    u8 key_len[MAX_CRED_COUNT];
+    u8 esp_key_len[MAX_CRED_COUNT];
     u8 ap_cred_cnt;
     struct wps_device_data *dev;
     u8 uuid[16];

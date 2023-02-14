@@ -1576,12 +1576,12 @@ static int wps_build_cred_network_key(struct wpabuf *msg,
 				      const struct wps_credential *cred)
 {
 	wpa_printf(MSG_DEBUG, "WPS:  * Network Key (len=%d)",
-		   (int) cred->key_len);
+		   (int) cred->esp_key_len);
 	wpa_hexdump_key(MSG_DEBUG, "WPS: Network Key",
-			cred->key, cred->key_len);
+			cred->key, cred->esp_key_len);
 	wpabuf_put_be16(msg, ATTR_NETWORK_KEY);
-	wpabuf_put_be16(msg, cred->key_len);
-	wpabuf_put_data(msg, cred->key, cred->key_len);
+	wpabuf_put_be16(msg, cred->esp_key_len);
+	wpabuf_put_data(msg, cred->key, cred->esp_key_len);
 	return 0;
 }
 
@@ -1656,7 +1656,7 @@ int wps_build_cred(struct wps_data *wps, struct wpabuf *msg)
 			os_memcpy(wps->cred.key,
 				  reg->multi_ap_backhaul_network_key,
 				  reg->multi_ap_backhaul_network_key_len);
-			wps->cred.key_len =
+			wps->cred.esp_key_len =
 				reg->multi_ap_backhaul_network_key_len;
 		}
 		goto use_provided;
@@ -1746,19 +1746,19 @@ int wps_build_cred(struct wps_data *wps, struct wpabuf *msg)
 		wpa_hexdump_ascii_key(MSG_DEBUG, "WPS: Generated passphrase",
 				      wps->new_psk, wps->new_psk_len);
 		os_memcpy(wps->cred.key, wps->new_psk, wps->new_psk_len);
-		wps->cred.key_len = wps->new_psk_len;
+		wps->cred.esp_key_len = wps->new_psk_len;
 	} else if (wps_cp_lookup_pskfile(reg, wps->mac_addr_e, &pskfile_psk)) {
 		wpa_hexdump_key(MSG_DEBUG, "WPS: Use PSK from wpa_psk_file",
 				pskfile_psk, PMK_LEN);
 		wpa_snprintf_hex(hex, sizeof(hex), pskfile_psk, PMK_LEN);
 		os_memcpy(wps->cred.key, hex, PMK_LEN * 2);
-		wps->cred.key_len = PMK_LEN * 2;
+		wps->cred.esp_key_len = PMK_LEN * 2;
 	} else if (!wps->wps->registrar->force_per_enrollee_psk &&
 		   wps->use_psk_key && wps->wps->psk_set) {
 		wpa_printf(MSG_DEBUG, "WPS: Use PSK format for Network Key");
 		wpa_snprintf_hex(hex, sizeof(hex), wps->wps->psk, PMK_LEN);
 		os_memcpy(wps->cred.key, hex, PMK_LEN * 2);
-		wps->cred.key_len = PMK_LEN * 2;
+		wps->cred.esp_key_len = PMK_LEN * 2;
 	} else
 		if ((!wps->wps->registrar->force_per_enrollee_psk ||
 		    wps->wps->use_passphrase) && wps->wps->network_key) {
@@ -1766,7 +1766,7 @@ int wps_build_cred(struct wps_data *wps, struct wpabuf *msg)
 			   "WPS: Use passphrase format for Network key");
 		os_memcpy(wps->cred.key, wps->wps->network_key,
 			  wps->wps->network_key_len);
-		wps->cred.key_len = wps->wps->network_key_len;
+		wps->cred.esp_key_len = wps->wps->network_key_len;
 	} else if (wps->auth_type & (WPS_AUTH_WPAPSK | WPS_AUTH_WPA2PSK)) {
 		/* Generate a random per-device PSK */
 		os_free(wps->new_psk);
@@ -1787,7 +1787,7 @@ int wps_build_cred(struct wps_data *wps, struct wpabuf *msg)
 		wpa_snprintf_hex(hex, sizeof(hex), wps->new_psk,
 				 wps->new_psk_len);
 		os_memcpy(wps->cred.key, hex, wps->new_psk_len * 2);
-		wps->cred.key_len = wps->new_psk_len * 2;
+		wps->cred.esp_key_len = wps->new_psk_len * 2;
 	}
 #endif
 
@@ -1806,7 +1806,7 @@ use_provided:
 		stub.auth_type = WPS_AUTH_WPA2PSK;
 		stub.encr_type = WPS_ENCR_AES;
 		os_memcpy(stub.key, "stub psk", 9);
-		stub.key_len = 9;
+		stub.esp_key_len = 9;
 		os_memcpy(stub.mac_addr, wps->mac_addr_e, ETH_ALEN);
 		wps_build_credential(cred, &stub);
 		wpa_hexdump_buf(MSG_DEBUG, "WPS: Stub Credential", cred);
@@ -2905,7 +2905,7 @@ static void wps_cred_update(struct wps_credential *dst,
 	dst->encr_type = src->encr_type;
 	dst->key_idx = src->key_idx;
 	os_memcpy(dst->key, src->key, sizeof(dst->key));
-	dst->key_len = src->key_len;
+	dst->esp_key_len = src->esp_key_len;
 }
 
 
@@ -3341,7 +3341,7 @@ static enum wps_process_res wps_process_wsc_done(struct wps_data *wps,
 			cred.encr_type = WPS_ENCR_TKIP | WPS_ENCR_AES;
 		}
 		os_memcpy(cred.key, wps->new_psk, wps->new_psk_len);
-		cred.key_len = wps->new_psk_len;
+		cred.esp_key_len = wps->new_psk_len;
 
 		wps->wps->wps_state = WPS_STATE_CONFIGURED;
 		wpa_hexdump_ascii_key(MSG_DEBUG,

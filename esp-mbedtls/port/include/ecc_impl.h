@@ -28,7 +28,7 @@ typedef struct {
 } ecc_point_t;
 
 /**
- * @brief Perform ECC point multiplication (R = K * (Px, Py))
+ * @brief Perform ECC point multiplication (R = esp_K * (Px, Py))
  *
  * @param point ECC point (multiplicand)
  * @param scalar Integer represented in byte array format (multiplier)

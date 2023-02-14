@@ -14,13 +14,12 @@
 
 #ifndef OS_H
 #define OS_H
-#include "esp_types.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "esp_err.h"
 #include "supplicant_opt.h"
-#include "esp_wifi.h"
+#include "espidf_wifi.h"
 
 typedef time_t os_time_t;
 
@@ -328,12 +327,12 @@ void forced_memzero(void *ptr, size_t len);
  * try go a bit further by storing the first octet (now zero) to make this even
  * a bit more difficult to optimize out. Once memset_s() is available, that
  * could be used here instead. */
-static void * (* const volatile memset_func)(void *, int, size_t) = memset;
+static void * (* const volatile esp_memset_func)(void *, int, size_t) = memset;
 static uint8_t forced_memzero_val;
 
 static inline void forced_memzero(void *ptr, size_t len)
 {
-	memset_func(ptr, 0, len);
+	esp_memset_func(ptr, 0, len);
 	if (len) {
 		forced_memzero_val = ((uint8_t *) ptr)[0];
 	}

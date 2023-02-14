@@ -171,7 +171,7 @@ struct crypto_hash;
  * crypto_hash_init - Initialize hash/HMAC function
  * @alg: Hash algorithm
  * @key: Key for keyed hash (e.g., HMAC) or %NULL if not needed
- * @key_len: Length of the key in bytes
+ * @esp_key_len: Length of the key in bytes
  * Returns: Pointer to hash context to use with other hash functions or %NULL
  * on failure
  *
@@ -180,7 +180,7 @@ struct crypto_hash;
  * to implement this.
  */
 struct crypto_hash * crypto_hash_init(enum crypto_hash_alg alg, const u8 *key,
-				      size_t key_len);
+				      size_t esp_key_len);
 
 /**
  * crypto_hash_update - Add data to hash calculation
@@ -226,7 +226,7 @@ struct crypto_cipher;
  * @alg: Cipher algorithm
  * @iv: Initialization vector for block ciphers or %NULL for stream ciphers
  * @key: Cipher key
- * @key_len: Length of key in bytes
+ * @esp_key_len: Length of key in bytes
  * Returns: Pointer to cipher context to use with other cipher functions or
  * %NULL on failure
  *
@@ -236,7 +236,7 @@ struct crypto_cipher;
  */
 struct crypto_cipher * crypto_cipher_init(enum crypto_cipher_alg alg,
 					  const u8 *iv, const u8 *key,
-					  size_t key_len);
+					  size_t esp_key_len);
 
 /**
  * crypto_cipher_encrypt - Cipher encrypt
@@ -1121,10 +1121,10 @@ void crypto_free_buffer(unsigned char *buf);
  * @crypto_ec_get_priv_key_der: get private key in der format
  * @key: key structure
  * @key_data: key data in charater buffer
- * @key_len = key length of charater buffer
+ * @esp_key_len = key length of charater buffer
  * Return : 0 if success
  */
-int crypto_ec_get_priv_key_der(struct crypto_key *key, unsigned char **key_data, int *key_len);
+int crypto_ec_get_priv_key_der(struct crypto_key *key, unsigned char **key_data, int *esp_key_len);
 
 /**
  * crypto_bignum_to_string: get big number in ascii format

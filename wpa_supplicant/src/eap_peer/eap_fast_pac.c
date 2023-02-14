@@ -345,10 +345,10 @@ static const char * eap_fast_parse_pac_type(struct eap_fast_pac *pac,
 static const char * eap_fast_parse_pac_key(struct eap_fast_pac *pac, char *pos)
 {
 	u8 *key;
-	size_t key_len;
+	size_t esp_key_len;
 
-	key = eap_fast_parse_hex(pos, &key_len);
-	if (key == NULL || key_len != EAP_FAST_PAC_KEY_LEN) {
+	key = eap_fast_parse_hex(pos, &esp_key_len);
+	if (key == NULL || esp_key_len != EAP_FAST_PAC_KEY_LEN) {
 		os_free(key);
 		return "Invalid PAC-Key";
 	}

@@ -34,7 +34,6 @@
 #include "sha384.h"
 #include "aes_wrap.h"
 #include "crypto.h"
-#include "mbedtls/esp_config.h"
 
 static int digest_vector(mbedtls_md_type_t md_type, size_t num_elem,
 			 const u8 *addr[], const size_t *len, u8 *mac)
@@ -44,37 +43,37 @@ static int digest_vector(mbedtls_md_type_t md_type, size_t num_elem,
 	mbedtls_md_context_t md_ctx;
 	int ret;
 
-	mbedtls_md_init(&md_ctx);
+	esp_mbedtls_md_init(&md_ctx);
 
-	md_info = mbedtls_md_info_from_type(md_type);
+	md_info = esp_mbedtls_md_info_from_type(md_type);
 	if (!md_info) {
-		wpa_printf(MSG_ERROR, "mbedtls_md_info_from_type() failed");
+		wpa_printf(MSG_ERROR, "esp_mbedtls_md_info_from_type() failed");
 		return -1;
 	}
 
-	ret = mbedtls_md_setup(&md_ctx, md_info, 0);
+	ret = esp_mbedtls_md_setup(&md_ctx, md_info, 0);
 	if (ret != 0) {
-		wpa_printf(MSG_ERROR, "mbedtls_md_setup() returned error");
+		wpa_printf(MSG_ERROR, "esp_mbedtls_md_setup() returned error");
 		goto cleanup;
 	}
 
-	ret = mbedtls_md_starts(&md_ctx);
+	ret = esp_mbedtls_md_starts(&md_ctx);
 	if (ret != 0) {
-		wpa_printf(MSG_ERROR, "mbedtls_md_starts returned error");
+		wpa_printf(MSG_ERROR, "esp_mbedtls_md_starts returned error");
 		goto cleanup;
 	}
 
 	for (i = 0; i < num_elem; i++) {
-		ret = mbedtls_md_update(&md_ctx, addr[i], len[i]);
+		ret = esp_mbedtls_md_update(&md_ctx, addr[i], len[i]);
 		if (ret != 0) {
-			wpa_printf(MSG_ERROR, "mbedtls_md_update ret=%d", ret);
+			wpa_printf(MSG_ERROR, "esp_mbedtls_md_update ret=%d", ret);
 			goto cleanup;
 		}
 	}
 
-	ret = mbedtls_md_finish(&md_ctx, mac);
+	ret = esp_mbedtls_md_finish(&md_ctx, mac);
 cleanup:
-	mbedtls_md_free(&md_ctx);
+	esp_mbedtls_md_free(&md_ctx);
 
 	return ret;
 
@@ -116,7 +115,7 @@ int md4_vector(size_t num_elem, const u8 *addr[], const size_t *len, u8 *mac)
 #endif
 
 struct crypto_hash * crypto_hash_init(enum crypto_hash_alg alg, const u8 *key,
-				      size_t key_len)
+				      size_t esp_key_len)
 {
 	mbedtls_md_context_t *ctx = NULL;
 	mbedtls_md_type_t md_type;
@@ -161,18 +160,18 @@ struct crypto_hash * crypto_hash_init(enum crypto_hash_alg alg, const u8 *key,
 		return NULL;
 	}
 
-	mbedtls_md_init(ctx);
-	md_info = mbedtls_md_info_from_type(md_type);
+	esp_mbedtls_md_init(ctx);
+	md_info = esp_mbedtls_md_info_from_type(md_type);
 	if (!md_info) {
 		goto cleanup;
 	}
-	if (mbedtls_md_setup(ctx, md_info, is_hmac) != 0) {
+	if (esp_mbedtls_md_setup(ctx, md_info, is_hmac) != 0) {
 		goto cleanup;
 	}
 	if (is_hmac) {
-		ret = mbedtls_md_hmac_starts(ctx, key, key_len);
+		ret = esp_mbedtls_md_hmac_starts(ctx, key, esp_key_len);
 	} else {
-		ret = mbedtls_md_starts(ctx);
+		ret = esp_mbedtls_md_starts(ctx);
 	}
 	if (ret < 0) {
 		goto cleanup;
@@ -180,7 +179,7 @@ struct crypto_hash * crypto_hash_init(enum crypto_hash_alg alg, const u8 *key,
 
 	return (struct crypto_hash *)ctx;
 cleanup:
-	mbedtls_md_free(ctx);
+	esp_mbedtls_md_free(ctx);
 	os_free(ctx);
 	return NULL;
 }
@@ -194,12 +193,12 @@ void crypto_hash_update(struct crypto_hash *crypto_ctx, const u8 *data, size_t l
 		return;
 	}
 	if (ctx->MBEDTLS_PRIVATE(hmac_ctx)) {
-		ret = mbedtls_md_hmac_update(ctx, data, len);
+		ret = esp_mbedtls_md_hmac_update(ctx, data, len);
 	} else {
-		ret = mbedtls_md_update(ctx, data, len);
+		ret = esp_mbedtls_md_update(ctx, data, len);
 	}
 	if (ret != 0) {
-		wpa_printf(MSG_ERROR, "%s: mbedtls_md_hmac_update failed", __func__);
+		wpa_printf(MSG_ERROR, "%s: esp_mbedtls_md_hmac_update failed", __func__);
 	}
 }
 
@@ -216,7 +215,7 @@ int crypto_hash_finish(struct crypto_hash *crypto_ctx, u8 *mac, size_t *len)
 	if (mac == NULL || len == NULL) {
 		goto err;
 	}
-	md_type = mbedtls_md_get_type(ctx->MBEDTLS_PRIVATE(md_info));
+	md_type = esp_mbedtls_md_get_type(ctx->MBEDTLS_PRIVATE(md_info));
 	switch(md_type) {
 	case MBEDTLS_MD_MD5:
 		if (*len < MD5_MAC_LEN) {
@@ -264,20 +263,20 @@ int crypto_hash_finish(struct crypto_hash *crypto_ctx, u8 *mac, size_t *len)
 		goto err;
 	}
 	if (ctx->MBEDTLS_PRIVATE(hmac_ctx)) {
-		ret = mbedtls_md_hmac_finish(ctx, mac);
+		ret = esp_mbedtls_md_hmac_finish(ctx, mac);
 	} else {
-		ret = mbedtls_md_finish(ctx, mac);
+		ret = esp_mbedtls_md_finish(ctx, mac);
 	}
 
 err:
-	mbedtls_md_free(ctx);
+	esp_mbedtls_md_free(ctx);
 	bin_clear_free(ctx, sizeof(*ctx));
 
 	return ret;
 }
 
 static int hmac_vector(mbedtls_md_type_t md_type,
-		       const u8 *key, size_t key_len,
+		       const u8 *key, size_t esp_key_len,
 		       size_t num_elem, const u8 *addr[],
 		       const size_t *len, u8 *mac)
 {
@@ -286,89 +285,89 @@ static int hmac_vector(mbedtls_md_type_t md_type,
 	mbedtls_md_context_t md_ctx;
 	int ret;
 
-	mbedtls_md_init(&md_ctx);
+	esp_mbedtls_md_init(&md_ctx);
 
-	md_info = mbedtls_md_info_from_type(md_type);
+	md_info = esp_mbedtls_md_info_from_type(md_type);
 	if (!md_info) {
 		return -1;
 	}
 
-	ret = mbedtls_md_setup(&md_ctx, md_info, 1);
+	ret = esp_mbedtls_md_setup(&md_ctx, md_info, 1);
 	if (ret != 0) {
 		return(ret);
 	}
 
-	ret = mbedtls_md_hmac_starts(&md_ctx, key, key_len);
+	ret = esp_mbedtls_md_hmac_starts(&md_ctx, key, esp_key_len);
 	if (ret != 0) {
 		return(ret);
 	}
 
 	for (i = 0; i < num_elem; i++) {
-		ret = mbedtls_md_hmac_update(&md_ctx, addr[i], len[i]);
+		ret = esp_mbedtls_md_hmac_update(&md_ctx, addr[i], len[i]);
 		if (ret != 0) {
 			return(ret);
 		}
 
 	}
 
-	ret = mbedtls_md_hmac_finish(&md_ctx, mac);
+	ret = esp_mbedtls_md_hmac_finish(&md_ctx, mac);
 
-	mbedtls_md_free(&md_ctx);
+	esp_mbedtls_md_free(&md_ctx);
 
 	return ret;
 }
 
-int hmac_sha384_vector(const u8 *key, size_t key_len, size_t num_elem,
+int hmac_sha384_vector(const u8 *key, size_t esp_key_len, size_t num_elem,
 		const u8 *addr[], const size_t *len, u8 *mac)
 {
-	return hmac_vector(MBEDTLS_MD_SHA384, key, key_len, num_elem, addr,
+	return hmac_vector(MBEDTLS_MD_SHA384, key, esp_key_len, num_elem, addr,
 			   len, mac);
 }
 
 
-int hmac_sha384(const u8 *key, size_t key_len, const u8 *data,
+int hmac_sha384(const u8 *key, size_t esp_key_len, const u8 *data,
 		size_t data_len, u8 *mac)
 {
-	return hmac_sha384_vector(key, key_len, 1, &data, &data_len, mac);
+	return hmac_sha384_vector(key, esp_key_len, 1, &data, &data_len, mac);
 }
 
-int hmac_sha256_vector(const u8 *key, size_t key_len, size_t num_elem,
+int hmac_sha256_vector(const u8 *key, size_t esp_key_len, size_t num_elem,
 		       const u8 *addr[], const size_t *len, u8 *mac)
 {
-	return hmac_vector(MBEDTLS_MD_SHA256, key, key_len, num_elem, addr,
+	return hmac_vector(MBEDTLS_MD_SHA256, key, esp_key_len, num_elem, addr,
 			   len, mac);
 }
 
-int hmac_sha256(const u8 *key, size_t key_len, const u8 *data,
+int hmac_sha256(const u8 *key, size_t esp_key_len, const u8 *data,
 		size_t data_len, u8 *mac)
 {
-	return hmac_sha256_vector(key, key_len, 1, &data, &data_len, mac);
+	return hmac_sha256_vector(key, esp_key_len, 1, &data, &data_len, mac);
 }
 
-int hmac_md5_vector(const u8 *key, size_t key_len, size_t num_elem,
+int hmac_md5_vector(const u8 *key, size_t esp_key_len, size_t num_elem,
 		    const u8 *addr[], const size_t *len, u8 *mac)
 {
-	return hmac_vector(MBEDTLS_MD_MD5, key, key_len,
+	return hmac_vector(MBEDTLS_MD_MD5, key, esp_key_len,
 			   num_elem, addr, len, mac);
 }
 
-int hmac_md5(const u8 *key, size_t key_len, const u8 *data, size_t data_len,
+int hmac_md5(const u8 *key, size_t esp_key_len, const u8 *data, size_t data_len,
 	     u8 *mac)
 {
-	return hmac_md5_vector(key, key_len, 1, &data, &data_len, mac);
+	return hmac_md5_vector(key, esp_key_len, 1, &data, &data_len, mac);
 }
 
-int hmac_sha1_vector(const u8 *key, size_t key_len, size_t num_elem,
+int hmac_sha1_vector(const u8 *key, size_t esp_key_len, size_t num_elem,
 		     const u8 *addr[], const size_t *len, u8 *mac)
 {
-	return hmac_vector(MBEDTLS_MD_SHA1, key, key_len, num_elem, addr,
+	return hmac_vector(MBEDTLS_MD_SHA1, key, esp_key_len, num_elem, addr,
 			   len, mac);
 }
 
-int hmac_sha1(const u8 *key, size_t key_len, const u8 *data, size_t data_len,
+int hmac_sha1(const u8 *key, size_t esp_key_len, const u8 *data, size_t data_len,
 	      u8 *mac)
 {
-	return hmac_sha1_vector(key, key_len, 1, &data, &data_len, mac);
+	return hmac_sha1_vector(key, esp_key_len, 1, &data, &data_len, mac);
 }
 
 static void *aes_crypt_init(int mode, const u8 *key, size_t len)
@@ -378,17 +377,17 @@ static void *aes_crypt_init(int mode, const u8 *key, size_t len)
 	if (!aes) {
 		return NULL;
 	}
-	mbedtls_aes_init(aes);
+	esp_mbedtls_aes_init(aes);
 
 	if (mode == MBEDTLS_AES_ENCRYPT) {
-		ret = mbedtls_aes_setkey_enc(aes, key, len * 8);
+		ret = esp_mbedtls_aes_setkey_enc(aes, key, len * 8);
 	} else if (mode == MBEDTLS_AES_DECRYPT){
-		ret = mbedtls_aes_setkey_dec(aes, key, len * 8);
+		ret = esp_mbedtls_aes_setkey_dec(aes, key, len * 8);
 	}
 	if (ret < 0) {
-		mbedtls_aes_free(aes);
+		esp_mbedtls_aes_free(aes);
 		os_free(aes);
-		wpa_printf(MSG_ERROR, "%s: mbedtls_aes_setkey_enc/mbedtls_aes_setkey_dec failed", __func__);
+		wpa_printf(MSG_ERROR, "%s: esp_mbedtls_aes_setkey_enc/esp_mbedtls_aes_setkey_dec failed", __func__);
 		return NULL;
 	}
 
@@ -397,13 +396,13 @@ static void *aes_crypt_init(int mode, const u8 *key, size_t len)
 
 static int aes_crypt(void *ctx, int mode, const u8 *in, u8 *out)
 {
-	return mbedtls_aes_crypt_ecb((mbedtls_aes_context *)ctx,
+	return esp_mbedtls_aes_crypt_ecb((mbedtls_aes_context *)ctx,
 				     mode, in, out);
 }
 
 static void aes_crypt_deinit(void *ctx)
 {
-	mbedtls_aes_free((mbedtls_aes_context *)ctx);
+	esp_mbedtls_aes_free((mbedtls_aes_context *)ctx);
 	os_free(ctx);
 }
 
@@ -443,18 +442,18 @@ int aes_128_cbc_encrypt(const u8 *key, const u8 *iv, u8 *data, size_t data_len)
 	mbedtls_aes_context ctx;
 	u8 cbc[MBEDTLS_AES_BLOCK_SIZE];
 
-	mbedtls_aes_init(&ctx);
+	esp_mbedtls_aes_init(&ctx);
 
-	ret = mbedtls_aes_setkey_enc(&ctx, key, 128);
+	ret = esp_mbedtls_aes_setkey_enc(&ctx, key, 128);
 	if (ret < 0) {
-		mbedtls_aes_free(&ctx);
+		esp_mbedtls_aes_free(&ctx);
 		return ret;
 	}
 
 	os_memcpy(cbc, iv, MBEDTLS_AES_BLOCK_SIZE);
-	ret = mbedtls_aes_crypt_cbc(&ctx, MBEDTLS_AES_ENCRYPT,
+	ret = esp_mbedtls_aes_crypt_cbc(&ctx, MBEDTLS_AES_ENCRYPT,
 				    data_len, cbc, data, data);
-	mbedtls_aes_free(&ctx);
+	esp_mbedtls_aes_free(&ctx);
 
 	return ret;
 }
@@ -465,18 +464,18 @@ int aes_128_cbc_decrypt(const u8 *key, const u8 *iv, u8 *data, size_t data_len)
 	mbedtls_aes_context ctx;
 	u8 cbc[MBEDTLS_AES_BLOCK_SIZE];
 
-	mbedtls_aes_init(&ctx);
+	esp_mbedtls_aes_init(&ctx);
 
-	ret = mbedtls_aes_setkey_dec(&ctx, key, 128);
+	ret = esp_mbedtls_aes_setkey_dec(&ctx, key, 128);
 	if (ret < 0) {
-		mbedtls_aes_free(&ctx);
+		esp_mbedtls_aes_free(&ctx);
 		return ret;
 	}
 
 	os_memcpy(cbc, iv, MBEDTLS_AES_BLOCK_SIZE);
-	ret = mbedtls_aes_crypt_cbc(&ctx, MBEDTLS_AES_DECRYPT,
+	ret = esp_mbedtls_aes_crypt_cbc(&ctx, MBEDTLS_AES_DECRYPT,
 				    data_len, cbc, data, data);
-	mbedtls_aes_free(&ctx);
+	esp_mbedtls_aes_free(&ctx);
 
 	return ret;
 
@@ -490,27 +489,27 @@ struct crypto_cipher {
 
 static int crypto_init_cipher_ctx(mbedtls_cipher_context_t *ctx,
 				  const mbedtls_cipher_info_t *cipher_info,
-				  const u8 *iv, const u8 *key, size_t key_len,
+				  const u8 *iv, const u8 *key, size_t esp_key_len,
 				  mbedtls_operation_t operation)
 {
-	mbedtls_cipher_init(ctx);
+	esp_mbedtls_cipher_init(ctx);
 	int ret;
 
-	ret = mbedtls_cipher_setup(ctx, cipher_info);
+	ret = esp_mbedtls_cipher_setup(ctx, cipher_info);
 	if (ret != 0) {
 		return -1;
 	}
 
-	if (mbedtls_cipher_setkey(ctx, key, key_len * 8, operation) != 0) {
-		wpa_printf(MSG_ERROR, "mbedtls_cipher_setkey returned error");
+	if (esp_mbedtls_cipher_setkey(ctx, key, esp_key_len * 8, operation) != 0) {
+		wpa_printf(MSG_ERROR, "esp_mbedtls_cipher_setkey returned error");
 		return -1;
 	}
-	if (mbedtls_cipher_set_iv(ctx, iv, cipher_info->MBEDTLS_PRIVATE(iv_size)) != 0) {
-		wpa_printf(MSG_ERROR, "mbedtls_cipher_set_iv returned error");
+	if (esp_mbedtls_cipher_set_iv(ctx, iv, cipher_info->MBEDTLS_PRIVATE(iv_size)) != 0) {
+		wpa_printf(MSG_ERROR, "esp_mbedtls_cipher_set_iv returned error");
 		return -1;
 	}
-	if (mbedtls_cipher_reset(ctx) != 0) {
-		wpa_printf(MSG_ERROR, "mbedtls_cipher_reset() returned error");
+	if (esp_mbedtls_cipher_reset(ctx) != 0) {
+		wpa_printf(MSG_ERROR, "esp_mbedtls_cipher_reset() returned error");
 		return -1;
 	}
 
@@ -518,17 +517,17 @@ static int crypto_init_cipher_ctx(mbedtls_cipher_context_t *ctx,
 }
 
 static mbedtls_cipher_type_t alg_to_mbedtls_cipher(enum crypto_cipher_alg alg,
-						   size_t key_len)
+						   size_t esp_key_len)
 {
 	switch (alg) {
 	case CRYPTO_CIPHER_ALG_AES:
-		if (key_len == 16) {
+		if (esp_key_len == 16) {
 			return MBEDTLS_CIPHER_AES_128_CBC;
 		}
-		if (key_len == 24) {
+		if (esp_key_len == 24) {
 			return MBEDTLS_CIPHER_AES_192_CBC;
 		}
-		if (key_len == 32) {
+		if (esp_key_len == 32) {
 			return MBEDTLS_CIPHER_AES_256_CBC;
 		}
 		break;
@@ -547,7 +546,7 @@ static mbedtls_cipher_type_t alg_to_mbedtls_cipher(enum crypto_cipher_alg alg,
 
 struct crypto_cipher *crypto_cipher_init(enum crypto_cipher_alg alg,
 					 const u8 *iv, const u8 *key,
-					 size_t key_len)
+					 size_t esp_key_len)
 {
 	struct crypto_cipher *ctx;
 	mbedtls_cipher_type_t cipher_type;
@@ -558,31 +557,31 @@ struct crypto_cipher *crypto_cipher_init(enum crypto_cipher_alg alg,
 		return NULL;
 	}
 
-	cipher_type = alg_to_mbedtls_cipher(alg, key_len);
+	cipher_type = alg_to_mbedtls_cipher(alg, esp_key_len);
 	if (cipher_type == MBEDTLS_CIPHER_NONE) {
 		goto cleanup;
 	}
 
-	cipher_info = mbedtls_cipher_info_from_type(cipher_type);
+	cipher_info = esp_mbedtls_cipher_info_from_type(cipher_type);
 	if (cipher_info == NULL) {
 		goto cleanup;
 	}
 
 	/* Init both ctx encryption/decryption */
 	if (crypto_init_cipher_ctx(&ctx->ctx_enc, cipher_info, iv, key,
-				   key_len, MBEDTLS_ENCRYPT) < 0) {
+				   esp_key_len, MBEDTLS_ENCRYPT) < 0) {
 		goto cleanup;
 	}
 
 	if (crypto_init_cipher_ctx(&ctx->ctx_dec, cipher_info, iv, key,
-				   key_len, MBEDTLS_DECRYPT) < 0) {
+				   esp_key_len, MBEDTLS_DECRYPT) < 0) {
 		goto cleanup;
 	}
 
-	if (mbedtls_cipher_set_padding_mode(&ctx->ctx_enc, MBEDTLS_PADDING_NONE) < 0) {
+	if (esp_mbedtls_cipher_set_padding_mode(&ctx->ctx_enc, MBEDTLS_PADDING_NONE) < 0) {
 		goto cleanup;
 	}
-	if (mbedtls_cipher_set_padding_mode(&ctx->ctx_dec, MBEDTLS_PADDING_NONE) < 0) {
+	if (esp_mbedtls_cipher_set_padding_mode(&ctx->ctx_dec, MBEDTLS_PADDING_NONE) < 0) {
 		goto cleanup;
 	}
 	return ctx;
@@ -598,12 +597,12 @@ int crypto_cipher_encrypt(struct crypto_cipher *ctx, const u8 *plain,
 	int ret;
 	size_t olen = 0;
 
-	ret = mbedtls_cipher_update(&ctx->ctx_enc, plain, len, crypt, &olen);
+	ret = esp_mbedtls_cipher_update(&ctx->ctx_enc, plain, len, crypt, &olen);
 	if (ret != 0) {
 		return -1;
 	}
 
-	ret = mbedtls_cipher_finish(&ctx->ctx_enc, crypt + olen, &olen);
+	ret = esp_mbedtls_cipher_finish(&ctx->ctx_enc, crypt + olen, &olen);
 	if (ret != 0) {
 		return -1;
 	}
@@ -617,12 +616,12 @@ int crypto_cipher_decrypt(struct crypto_cipher *ctx, const u8 *crypt,
 	int ret;
 	size_t olen = 0;
 
-	ret = mbedtls_cipher_update(&ctx->ctx_dec, crypt, len, plain, &olen);
+	ret = esp_mbedtls_cipher_update(&ctx->ctx_dec, crypt, len, plain, &olen);
 	if (ret != 0) {
 		return -1;
 	}
 
-	ret = mbedtls_cipher_finish(&ctx->ctx_dec, plain + olen, &olen);
+	ret = esp_mbedtls_cipher_finish(&ctx->ctx_dec, plain + olen, &olen);
 	if (ret != 0) {
 		return -1;
 	}
@@ -632,13 +631,13 @@ int crypto_cipher_decrypt(struct crypto_cipher *ctx, const u8 *crypt,
 
 void crypto_cipher_deinit(struct crypto_cipher *ctx)
 {
-	mbedtls_cipher_free(&ctx->ctx_enc);
-	mbedtls_cipher_free(&ctx->ctx_dec);
+	esp_mbedtls_cipher_free(&ctx->ctx_enc);
+	esp_mbedtls_cipher_free(&ctx->ctx_dec);
 	os_free(ctx);
 }
 #endif
 
-int aes_ctr_encrypt(const u8 *key, size_t key_len, const u8 *nonce,
+int aes_ctr_encrypt(const u8 *key, size_t esp_key_len, const u8 *nonce,
 		    u8 *data, size_t data_len)
 {
 	int ret;
@@ -646,15 +645,15 @@ int aes_ctr_encrypt(const u8 *key, size_t key_len, const u8 *nonce,
 	uint8_t stream_block[MBEDTLS_AES_BLOCK_SIZE];
 	size_t offset = 0;
 
-	mbedtls_aes_init(&ctx);
-	ret = mbedtls_aes_setkey_enc(&ctx, key, key_len * 8);
+	esp_mbedtls_aes_init(&ctx);
+	ret = esp_mbedtls_aes_setkey_enc(&ctx, key, esp_key_len * 8);
 	if (ret < 0) {
 		goto cleanup;
 	}
-	ret = mbedtls_aes_crypt_ctr(&ctx, data_len, &offset, (u8 *)nonce,
+	ret = esp_mbedtls_aes_crypt_ctr(&ctx, data_len, &offset, (u8 *)nonce,
 				    stream_block, data, data);
 cleanup:
-	mbedtls_aes_free(&ctx);
+	esp_mbedtls_aes_free(&ctx);
 	return ret;
 }
 
@@ -671,18 +670,18 @@ int aes_wrap(const u8 *kek, size_t kek_len, int n, const u8 *plain, u8 *cipher)
 	mbedtls_nist_kw_context ctx;
 	size_t olen;
 	int ret = 0;
-	mbedtls_nist_kw_init(&ctx);
+	esp_mbedtls_nist_kw_init(&ctx);
 
-	ret = mbedtls_nist_kw_setkey(&ctx, MBEDTLS_CIPHER_ID_AES,
+	ret = esp_mbedtls_nist_kw_setkey(&ctx, MBEDTLS_CIPHER_ID_AES,
 			kek, kek_len * 8, 1);
 	if (ret != 0) {
 		return ret;
 	}
 
-	ret = mbedtls_nist_kw_wrap(&ctx, MBEDTLS_KW_MODE_KW, plain,
+	ret = esp_mbedtls_nist_kw_wrap(&ctx, MBEDTLS_KW_MODE_KW, plain,
 			n * 8, cipher, &olen, (n + 1) * 8);
 
-	mbedtls_nist_kw_free(&ctx);
+	esp_mbedtls_nist_kw_free(&ctx);
 	return ret;
 }
 
@@ -692,18 +691,18 @@ int aes_unwrap(const u8 *kek, size_t kek_len, int n, const u8 *cipher,
 	mbedtls_nist_kw_context ctx;
 	size_t olen;
 	int ret = 0;
-	mbedtls_nist_kw_init(&ctx);
+	esp_mbedtls_nist_kw_init(&ctx);
 
-	ret = mbedtls_nist_kw_setkey(&ctx, MBEDTLS_CIPHER_ID_AES,
+	ret = esp_mbedtls_nist_kw_setkey(&ctx, MBEDTLS_CIPHER_ID_AES,
 			kek, kek_len * 8, 0);
 	if (ret != 0) {
 		return ret;
 	}
 
-	ret = mbedtls_nist_kw_unwrap(&ctx, MBEDTLS_KW_MODE_KW, cipher,
+	ret = esp_mbedtls_nist_kw_unwrap(&ctx, MBEDTLS_KW_MODE_KW, cipher,
 			(n + 1) * 8, plain, &olen, (n * 8));
 
-	mbedtls_nist_kw_free(&ctx);
+	esp_mbedtls_nist_kw_free(&ctx);
 	return ret;
 }
 #endif
@@ -716,27 +715,27 @@ int crypto_mod_exp(const uint8_t *base, size_t base_len,
 	mbedtls_mpi bn_base, bn_exp, bn_modulus, bn_result, bn_rinv;
 	int ret = 0;
 
-	mbedtls_mpi_init(&bn_base);
-	mbedtls_mpi_init(&bn_exp);
-	mbedtls_mpi_init(&bn_modulus);
-	mbedtls_mpi_init(&bn_result);
-	mbedtls_mpi_init(&bn_rinv);
+	esp_mbedtls_mpi_init(&bn_base);
+	esp_mbedtls_mpi_init(&bn_exp);
+	esp_mbedtls_mpi_init(&bn_modulus);
+	esp_mbedtls_mpi_init(&bn_result);
+	esp_mbedtls_mpi_init(&bn_rinv);
 
-	MBEDTLS_MPI_CHK(mbedtls_mpi_read_binary(&bn_base, base, base_len));
-	MBEDTLS_MPI_CHK(mbedtls_mpi_read_binary(&bn_exp, power, power_len));
-	MBEDTLS_MPI_CHK(mbedtls_mpi_read_binary(&bn_modulus, modulus, modulus_len));
+	MBEDTLS_MPI_CHK(esp_mbedtls_mpi_read_binary(&bn_base, base, base_len));
+	MBEDTLS_MPI_CHK(esp_mbedtls_mpi_read_binary(&bn_exp, power, power_len));
+	MBEDTLS_MPI_CHK(esp_mbedtls_mpi_read_binary(&bn_modulus, modulus, modulus_len));
 
-	MBEDTLS_MPI_CHK(mbedtls_mpi_exp_mod(&bn_result, &bn_base, &bn_exp, &bn_modulus,
+	MBEDTLS_MPI_CHK(esp_mbedtls_mpi_exp_mod(&bn_result, &bn_base, &bn_exp, &bn_modulus,
 					    &bn_rinv));
 
-	ret = mbedtls_mpi_write_binary(&bn_result, result, *result_len);
+	ret = esp_mbedtls_mpi_write_binary(&bn_result, result, *result_len);
 
 cleanup:
-	mbedtls_mpi_free(&bn_base);
-	mbedtls_mpi_free(&bn_exp);
-	mbedtls_mpi_free(&bn_modulus);
-	mbedtls_mpi_free(&bn_result);
-	mbedtls_mpi_free(&bn_rinv);
+	esp_mbedtls_mpi_free(&bn_base);
+	esp_mbedtls_mpi_free(&bn_exp);
+	esp_mbedtls_mpi_free(&bn_modulus);
+	esp_mbedtls_mpi_free(&bn_result);
+	esp_mbedtls_mpi_free(&bn_rinv);
 
 	return ret;
 }
@@ -749,20 +748,20 @@ int pbkdf2_sha1(const char *passphrase, const u8 *ssid, size_t ssid_len,
 	const mbedtls_md_info_t *info_sha1;
 	int ret;
 
-	mbedtls_md_init(&sha1_ctx);
+	esp_mbedtls_md_init(&sha1_ctx);
 
-	info_sha1 = mbedtls_md_info_from_type(MBEDTLS_MD_SHA1);
+	info_sha1 = esp_mbedtls_md_info_from_type(MBEDTLS_MD_SHA1);
 	if (info_sha1 == NULL) {
 		ret = -1;
 		goto cleanup;
 	}
 
-	if ((ret = mbedtls_md_setup(&sha1_ctx, info_sha1, 1)) != 0) {
+	if ((ret = esp_mbedtls_md_setup(&sha1_ctx, info_sha1, 1)) != 0) {
 		ret = -1;
 		goto cleanup;
 	}
 
-	ret = mbedtls_pkcs5_pbkdf2_hmac(&sha1_ctx, (const u8 *) passphrase,
+	ret = esp_mbedtls_pkcs5_pbkdf2_hmac(&sha1_ctx, (const u8 *) passphrase,
 					os_strlen(passphrase) , ssid,
 					ssid_len, iterations, 32, buf);
 	if (ret != 0) {
@@ -771,7 +770,7 @@ int pbkdf2_sha1(const char *passphrase, const u8 *ssid, size_t ssid_len,
 	}
 
 cleanup:
-	mbedtls_md_free(&sha1_ctx);
+	esp_mbedtls_md_free(&sha1_ctx);
 	return ret;
 }
 
@@ -792,13 +791,13 @@ int des_encrypt(const u8 *clear, const u8 *key, u8 *cypher)
 	}
 	pkey[i] = next | 1;
 
-	mbedtls_des_init(&des);
-	ret = mbedtls_des_setkey_enc(&des, pkey);
+	esp_mbedtls_des_init(&des);
+	ret = esp_mbedtls_des_setkey_enc(&des, pkey);
 	if (ret < 0) {
 		return ret;
 	}
-	ret = mbedtls_des_crypt_ecb(&des, clear, cypher);
-	mbedtls_des_free(&des);
+	ret = esp_mbedtls_des_crypt_ecb(&des, clear, cypher);
+	esp_mbedtls_des_free(&des);
 
 	return ret;
 }
@@ -806,32 +805,32 @@ int des_encrypt(const u8 *clear, const u8 *key, u8 *cypher)
 
 /* Only enable this if all other ciphers are using MbedTLS implementation */
 #if defined(MBEDTLS_CCM_C) && defined(MBEDTLS_CMAC_C) && defined(MBEDTLS_NIST_KW_C)
-int aes_ccm_ae(const u8 *key, size_t key_len, const u8 *nonce,
+int aes_ccm_ae(const u8 *key, size_t esp_key_len, const u8 *nonce,
 	       size_t M, const u8 *plain, size_t plain_len,
 	       const u8 *aad, size_t aad_len, u8 *crypt, u8 *auth)
 {
 	int ret;
 	mbedtls_ccm_context ccm;
 
-	mbedtls_ccm_init(&ccm);
+	esp_mbedtls_ccm_init(&ccm);
 
-	ret = mbedtls_ccm_setkey(&ccm, MBEDTLS_CIPHER_ID_AES,
-				 key, key_len * 8);
+	ret = esp_mbedtls_ccm_setkey(&ccm, MBEDTLS_CIPHER_ID_AES,
+				 key, esp_key_len * 8);
 	if (ret < 0) {
-		wpa_printf(MSG_ERROR, "mbedtls_ccm_setkey failed");
+		wpa_printf(MSG_ERROR, "esp_mbedtls_ccm_setkey failed");
 		goto cleanup;
 	}
 
-	ret = mbedtls_ccm_encrypt_and_tag(&ccm, plain_len, nonce, 13, aad,
+	ret = esp_mbedtls_ccm_encrypt_and_tag(&ccm, plain_len, nonce, 13, aad,
 					  aad_len, plain, crypt, auth, M);
 
 cleanup:
-	mbedtls_ccm_free(&ccm);
+	esp_mbedtls_ccm_free(&ccm);
 
 	return ret;
 }
 
-int aes_ccm_ad(const u8 *key, size_t key_len, const u8 *nonce,
+int aes_ccm_ad(const u8 *key, size_t esp_key_len, const u8 *nonce,
 	       size_t M, const u8 *crypt, size_t crypt_len,
 	       const u8 *aad, size_t aad_len, const u8 *auth,
 	       u8 *plain)
@@ -839,27 +838,27 @@ int aes_ccm_ad(const u8 *key, size_t key_len, const u8 *nonce,
 	int ret;
 	mbedtls_ccm_context ccm;
 
-	mbedtls_ccm_init(&ccm);
+	esp_mbedtls_ccm_init(&ccm);
 
-	ret = mbedtls_ccm_setkey(&ccm, MBEDTLS_CIPHER_ID_AES,
-				 key, key_len * 8);
+	ret = esp_mbedtls_ccm_setkey(&ccm, MBEDTLS_CIPHER_ID_AES,
+				 key, esp_key_len * 8);
 	if (ret < 0) {
 		goto cleanup;;
 	}
 
-	ret = mbedtls_ccm_star_auth_decrypt(&ccm, crypt_len,
+	ret = esp_mbedtls_ccm_star_auth_decrypt(&ccm, crypt_len,
 					    nonce, 13, aad, aad_len,
 					    crypt, plain, auth, M);
 
 cleanup:
-	mbedtls_ccm_free(&ccm);
+	esp_mbedtls_ccm_free(&ccm);
 
 	return ret;
 }
 #endif
 
 #ifdef MBEDTLS_CMAC_C
-int omac1_aes_vector(const u8 *key, size_t key_len, size_t num_elem,
+int omac1_aes_vector(const u8 *key, size_t esp_key_len, size_t num_elem,
 		     const u8 *addr[], const size_t *len, u8 *mac)
 {
 	const mbedtls_cipher_info_t *cipher_info;
@@ -867,7 +866,7 @@ int omac1_aes_vector(const u8 *key, size_t key_len, size_t num_elem,
 	mbedtls_cipher_type_t cipher_type;
 	mbedtls_cipher_context_t ctx;
 
-	switch (key_len) {
+	switch (esp_key_len) {
 	case 16:
 		cipher_type = MBEDTLS_CIPHER_AES_128_ECB;
 		break;
@@ -881,7 +880,7 @@ int omac1_aes_vector(const u8 *key, size_t key_len, size_t num_elem,
 		cipher_type = MBEDTLS_CIPHER_NONE;
 		break;
 	}
-	cipher_info = mbedtls_cipher_info_from_type(cipher_type);
+	cipher_info = esp_mbedtls_cipher_info_from_type(cipher_type);
 	if (cipher_info == NULL) {
 		/* Failing at this point must be due to a build issue */
 		ret = MBEDTLS_ERR_CIPHER_FEATURE_UNAVAILABLE;
@@ -892,28 +891,28 @@ int omac1_aes_vector(const u8 *key, size_t key_len, size_t num_elem,
 		return -1;
 	}
 
-	mbedtls_cipher_init(&ctx);
+	esp_mbedtls_cipher_init(&ctx);
 
-	ret = mbedtls_cipher_setup(&ctx, cipher_info);
+	ret = esp_mbedtls_cipher_setup(&ctx, cipher_info);
 	if (ret != 0) {
 		goto cleanup;
 	}
 
-	ret = mbedtls_cipher_cmac_starts(&ctx, key, key_len * 8);
+	ret = esp_mbedtls_cipher_cmac_starts(&ctx, key, esp_key_len * 8);
 	if (ret != 0) {
 		goto cleanup;
 	}
 
 	for (i = 0 ; i < num_elem; i++) {
-		ret = mbedtls_cipher_cmac_update(&ctx, addr[i], len[i]);
+		ret = esp_mbedtls_cipher_cmac_update(&ctx, addr[i], len[i]);
 		if (ret != 0) {
 			goto cleanup;
 		}
 	}
 
-	ret = mbedtls_cipher_cmac_finish(&ctx, mac);
+	ret = esp_mbedtls_cipher_cmac_finish(&ctx, mac);
 cleanup:
-	mbedtls_cipher_free(&ctx);
+	esp_mbedtls_cipher_free(&ctx);
 	return(ret);
 }
 

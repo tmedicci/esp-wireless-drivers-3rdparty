@@ -46,8 +46,8 @@ int sha256_vector(size_t num_elem, const u8 *addr[], const size_t *len,
 /* This is based on SHA256 implementation in LibTomCrypt that was released into
  * public domain by Tom St Denis. */
 
-/* the K array */
-static const unsigned long K[64] = {
+/* the esp_K array */
+static const unsigned long esp_K[64] = {
 	0x428a2f98UL, 0x71374491UL, 0xb5c0fbcfUL, 0xe9b5dba5UL, 0x3956c25bUL,
 	0x59f111f1UL, 0x923f82a4UL, 0xab1c5ed5UL, 0xd807aa98UL, 0x12835b01UL,
 	0x243185beUL, 0x550c7dc3UL, 0x72be5d74UL, 0x80deb1feUL, 0x9bdc06a7UL,
@@ -104,7 +104,7 @@ static int sha256_compress(struct sha256_state *md, unsigned char *buf)
 
 	/* Compress */
 #define RND(a,b,c,d,e,f,g,h,i)                          \
-	t0 = h + Sigma1(e) + Ch(e, f, g) + K[i] + W[i];	\
+	t0 = h + Sigma1(e) + Ch(e, f, g) + esp_K[i] + W[i];	\
 	t1 = Sigma0(a) + Maj(a, b, c);			\
 	d += t0;					\
 	h  = t0 + t1;

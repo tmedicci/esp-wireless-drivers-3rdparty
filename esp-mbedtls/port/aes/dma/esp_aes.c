@@ -330,7 +330,7 @@ static int esp_aes_process_dma(esp_aes_context *ctx, const unsigned char *input,
     assert(stream_bytes == 0 || stream_out != NULL); // stream_out can be NULL if we're processing full block(s)
 
     /* If no key is written to hardware yet, either the user hasn't called
-       mbedtls_aes_setkey_enc/mbedtls_aes_setkey_dec - meaning we also don't
+       esp_mbedtls_aes_setkey_enc/esp_mbedtls_aes_setkey_dec - meaning we also don't
        know which mode to use - or a fault skipped the
        key write to hardware. Treat this as a fatal error and zero the output block.
     */
@@ -479,7 +479,7 @@ int esp_aes_process_dma_gcm(esp_aes_context *ctx, const unsigned char *input, un
     int ret = 0;
 
     /* If no key is written to hardware yet, either the user hasn't called
-       mbedtls_aes_setkey_enc/mbedtls_aes_setkey_dec - meaning we also don't
+       esp_mbedtls_aes_setkey_enc/esp_mbedtls_aes_setkey_dec - meaning we also don't
        know which mode to use - or a fault skipped the
        key write to hardware. Treat this as a fatal error and zero the output block.
     */

@@ -648,7 +648,7 @@ static int eap_fast_get_phase2_key(struct eap_sm *sm,
 				   u8 *isk, size_t isk_len)
 {
 	u8 *key;
-	size_t key_len;
+	size_t esp_key_len;
 
 	os_memset(isk, 0, isk_len);
 
@@ -664,15 +664,15 @@ static int eap_fast_get_phase2_key(struct eap_sm *sm,
 
 	if (!data->phase2_method->isKeyAvailable(sm, data->phase2_priv) ||
 	    (key = data->phase2_method->getKey(sm, data->phase2_priv,
-					       &key_len)) == NULL) {
+					       &esp_key_len)) == NULL) {
 		wpa_printf(MSG_DEBUG, "EAP-FAST: Could not get key material "
 			   "from Phase 2");
 		return -1;
 	}
 
-	if (key_len > isk_len)
-		key_len = isk_len;
-	if (key_len == 32 &&
+	if (esp_key_len > isk_len)
+		esp_key_len = isk_len;
+	if (esp_key_len == 32 &&
 	    data->phase2_method->vendor == EAP_VENDOR_IETF &&
 	    data->phase2_method->method == EAP_TYPE_MSCHAPV2) {
 		/*
@@ -683,7 +683,7 @@ static int eap_fast_get_phase2_key(struct eap_sm *sm,
 		os_memcpy(isk, key + 16, 16);
 		os_memcpy(isk + 16, key, 16);
 	} else
-		os_memcpy(isk, key, key_len);
+		os_memcpy(isk, key, esp_key_len);
 	os_free(key);
 
 	return 0;

@@ -16,14 +16,14 @@
 /**
  * hmac_md5_vector - HMAC-MD5 over data vector (RFC 2104)
  * @key: Key for HMAC operations
- * @key_len: Length of the key in bytes
+ * @esp_key_len: Length of the key in bytes
  * @num_elem: Number of elements in the data vector
  * @addr: Pointers to the data areas
  * @len: Lengths of the data blocks
  * @mac: Buffer for the hash (16 bytes)
  * Returns: 0 on success, -1 on failure
  */
-int hmac_md5_vector(const u8 *key, size_t key_len, size_t num_elem,
+int hmac_md5_vector(const u8 *key, size_t esp_key_len, size_t num_elem,
 		    const u8 *addr[], const size_t *len, u8 *mac)
 {
 	u8 k_pad[64]; /* padding - key XORd with ipad/opad */
@@ -41,25 +41,25 @@ int hmac_md5_vector(const u8 *key, size_t key_len, size_t num_elem,
 	}
 
         /* if key is longer than 64 bytes reset it to key = MD5(key) */
-        if (key_len > 64) {
-		if (md5_vector(1, &key, &key_len, tk))
+        if (esp_key_len > 64) {
+		if (md5_vector(1, &key, &esp_key_len, tk))
 			return -1;
 		key = tk;
-		key_len = 16;
+		esp_key_len = 16;
         }
 
 	/* the HMAC_MD5 transform looks like:
 	 *
-	 * MD5(K XOR opad, MD5(K XOR ipad, text))
+	 * MD5(esp_K XOR opad, MD5(esp_K XOR ipad, text))
 	 *
-	 * where K is an n byte key
+	 * where esp_K is an n byte key
 	 * ipad is the byte 0x36 repeated 64 times
 	 * opad is the byte 0x5c repeated 64 times
 	 * and text is the data being protected */
 
 	/* start out by storing key in ipad */
 	os_memset(k_pad, 0, sizeof(k_pad));
-	os_memcpy(k_pad, key, key_len);
+	os_memcpy(k_pad, key, esp_key_len);
 
 	/* XOR key with ipad values */
 	for (i = 0; i < 64; i++)
@@ -76,7 +76,7 @@ int hmac_md5_vector(const u8 *key, size_t key_len, size_t num_elem,
 		return -1;
 
 	os_memset(k_pad, 0, sizeof(k_pad));
-	os_memcpy(k_pad, key, key_len);
+	os_memcpy(k_pad, key, esp_key_len);
 	/* XOR key with opad values */
 	for (i = 0; i < 64; i++)
 		k_pad[i] ^= 0x5c;
@@ -96,14 +96,14 @@ int hmac_md5_vector(const u8 *key, size_t key_len, size_t num_elem,
 /**
  * hmac_md5 - HMAC-MD5 over data buffer (RFC 2104)
  * @key: Key for HMAC operations
- * @key_len: Length of the key in bytes
+ * @esp_key_len: Length of the key in bytes
  * @data: Pointers to the data area
  * @data_len: Length of the data area
  * @mac: Buffer for the hash (16 bytes)
  * Returns: 0 on success, -1 on failure
  */
-int hmac_md5(const u8 *key, size_t key_len, const u8 *data, size_t data_len,
+int hmac_md5(const u8 *key, size_t esp_key_len, const u8 *data, size_t data_len,
 	      u8 *mac)
 {
-	return hmac_md5_vector(key, key_len, 1, &data, &data_len, mac);
+	return hmac_md5_vector(key, esp_key_len, 1, &data, &data_len, mac);
 }

@@ -1422,28 +1422,28 @@ int sae_prepare_commit_pt(struct sae_data *sae, struct sae_pt *pt,
 
 static int sae_derive_k_ecc(struct sae_data *sae, u8 *k)
 {
-	struct crypto_ec_point *K;
+	struct crypto_ec_point *esp_K;
 	int ret = -1;
 
-	K = crypto_ec_point_init(sae->tmp->ec);
-	if (K == NULL)
+	esp_K = crypto_ec_point_init(sae->tmp->ec);
+	if (esp_K == NULL)
 		goto fail;
 
 	/*
-	 * K = scalar-op(rand, (elem-op(scalar-op(peer-commit-scalar, PWE),
+	 * esp_K = scalar-op(rand, (elem-op(scalar-op(peer-commit-scalar, PWE),
 	 *                                        PEER-COMMIT-ELEMENT)))
-	 * If K is identity element (point-at-infinity), reject
-	 * k = F(K) (= x coordinate)
+	 * If esp_K is identity element (point-at-infinity), reject
+	 * k = F(esp_K) (= x coordinate)
 	 */
 
 	if (crypto_ec_point_mul(sae->tmp->ec, sae->tmp->pwe_ecc,
-				sae->peer_commit_scalar, K) < 0 ||
-	    crypto_ec_point_add(sae->tmp->ec, K,
-				sae->tmp->peer_commit_element_ecc, K) < 0 ||
-	    crypto_ec_point_mul(sae->tmp->ec, K, sae->tmp->sae_rand, K) < 0 ||
-	    crypto_ec_point_is_at_infinity(sae->tmp->ec, K) ||
-	    crypto_ec_point_to_bin(sae->tmp->ec, K, k, NULL) < 0) {
-		wpa_printf(MSG_DEBUG, "SAE: Failed to calculate K and k");
+				sae->peer_commit_scalar, esp_K) < 0 ||
+	    crypto_ec_point_add(sae->tmp->ec, esp_K,
+				sae->tmp->peer_commit_element_ecc, esp_K) < 0 ||
+	    crypto_ec_point_mul(sae->tmp->ec, esp_K, sae->tmp->sae_rand, esp_K) < 0 ||
+	    crypto_ec_point_is_at_infinity(sae->tmp->ec, esp_K) ||
+	    crypto_ec_point_to_bin(sae->tmp->ec, esp_K, k, NULL) < 0) {
+		wpa_printf(MSG_DEBUG, "SAE: Failed to calculate esp_K and k");
 		goto fail;
 	}
 
@@ -1451,36 +1451,36 @@ static int sae_derive_k_ecc(struct sae_data *sae, u8 *k)
 
 	ret = 0;
 fail:
-	crypto_ec_point_deinit(K, 1);
+	crypto_ec_point_deinit(esp_K, 1);
 	return ret;
 }
 
 static int sae_derive_k_ffc(struct sae_data *sae, u8 *k)
 {
-	struct crypto_bignum *K;
+	struct crypto_bignum *esp_K;
 	int ret = -1;
 
-	K = crypto_bignum_init();
-	if (K == NULL)
+	esp_K = crypto_bignum_init();
+	if (esp_K == NULL)
 		goto fail;
 
 	/*
-	 * K = scalar-op(rand, (elem-op(scalar-op(peer-commit-scalar, PWE),
+	 * esp_K = scalar-op(rand, (elem-op(scalar-op(peer-commit-scalar, PWE),
 	 *                                        PEER-COMMIT-ELEMENT)))
-	 * If K is identity element (one), reject.
-	 * k = F(K) (= x coordinate)
+	 * If esp_K is identity element (one), reject.
+	 * k = F(esp_K) (= x coordinate)
 	 */
 
 	if (crypto_bignum_exptmod(sae->tmp->pwe_ffc, sae->peer_commit_scalar,
-				  sae->tmp->prime, K) < 0 ||
-	    crypto_bignum_mulmod(K, sae->tmp->peer_commit_element_ffc,
-				 sae->tmp->prime, K) < 0 ||
-	    crypto_bignum_exptmod(K, sae->tmp->sae_rand, sae->tmp->prime, K) < 0
+				  sae->tmp->prime, esp_K) < 0 ||
+	    crypto_bignum_mulmod(esp_K, sae->tmp->peer_commit_element_ffc,
+				 sae->tmp->prime, esp_K) < 0 ||
+	    crypto_bignum_exptmod(esp_K, sae->tmp->sae_rand, sae->tmp->prime, esp_K) < 0
 	    ||
-	    crypto_bignum_is_one(K) ||
-	    crypto_bignum_to_bin(K, k, SAE_MAX_PRIME_LEN, sae->tmp->prime_len) <
+	    crypto_bignum_is_one(esp_K) ||
+	    crypto_bignum_to_bin(esp_K, k, SAE_MAX_PRIME_LEN, sae->tmp->prime_len) <
 	    0) {
-		wpa_printf(MSG_DEBUG, "SAE: Failed to calculate K and k");
+		wpa_printf(MSG_DEBUG, "SAE: Failed to calculate esp_K and k");
 		goto fail;
 	}
 
@@ -1488,7 +1488,7 @@ static int sae_derive_k_ffc(struct sae_data *sae, u8 *k)
 
 	ret = 0;
 fail:
-	crypto_bignum_deinit(K, 1);
+	crypto_bignum_deinit(esp_K, 1);
 	return ret;
 }
 

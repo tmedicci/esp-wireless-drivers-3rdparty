@@ -186,7 +186,7 @@ struct wpa_auth_callbacks {
 	const u8 * (*get_psk)(void *ctx, const u8 *addr, const u8 *prev_psk);
 	int (*get_msk)(void *ctx, const u8 *addr, u8 *msk, size_t *len);
 	int (*set_key)(void *ctx, int vlan_id, enum wpa_alg alg,
-		       const u8 *addr, int idx, u8 *key, size_t key_len);
+		       const u8 *addr, int idx, u8 *key, size_t esp_key_len);
 	int (*get_seqnum)(void *ctx, const u8 *addr, int idx, u8 *seq);
 	int (*send_eapol)(void *ctx, const u8 *addr, const u8 *data,
 			  size_t data_len, int encrypt);

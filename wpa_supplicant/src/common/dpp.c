@@ -130,35 +130,35 @@ static int dpp_hkdf_expand(size_t hash_len, const u8 *secret, size_t secret_len,
 }
 
 
-static int dpp_hmac_vector(size_t hash_len, const u8 *key, size_t key_len,
+static int dpp_hmac_vector(size_t hash_len, const u8 *key, size_t esp_key_len,
 			   size_t num_elem, const u8 *addr[],
 			   const size_t *len, u8 *mac)
 {
 	if (hash_len == 32)
-		return hmac_sha256_vector(key, key_len, num_elem, addr, len,
+		return hmac_sha256_vector(key, esp_key_len, num_elem, addr, len,
 					  mac);
 #ifndef ESP_SUPPLICANT
 	if (hash_len == 48)
-		return hmac_sha384_vector(key, key_len, num_elem, addr, len,
+		return hmac_sha384_vector(key, esp_key_len, num_elem, addr, len,
 					  mac);
 	if (hash_len == 64)
-		return hmac_sha512_vector(key, key_len, num_elem, addr, len,
+		return hmac_sha512_vector(key, esp_key_len, num_elem, addr, len,
 					  mac);
 #endif
 	return -1;
 }
 
 
-static int dpp_hmac(size_t hash_len, const u8 *key, size_t key_len,
+static int dpp_hmac(size_t hash_len, const u8 *key, size_t esp_key_len,
 		    const u8 *data, size_t data_len, u8 *mac)
 {
 	if (hash_len == 32)
-		return hmac_sha256(key, key_len, data, data_len, mac);
+		return hmac_sha256(key, esp_key_len, data, data_len, mac);
 #ifndef ESP_SUPPLICANT
 	if (hash_len == 48)
-		return hmac_sha384(key, key_len, data, data_len, mac);
+		return hmac_sha384(key, esp_key_len, data, data_len, mac);
 	if (hash_len == 64)
-		return hmac_sha512(key, key_len, data, data_len, mac);
+		return hmac_sha512(key, esp_key_len, data, data_len, mac);
 #endif
 	return -1;
 }
@@ -625,7 +625,7 @@ static struct dpp_bootstrap_info * dpp_parse_uri(const char *uri)
 			mac = pos + 2;
 		else if (pos[0] == 'I' && pos[1] == ':' && !info)
 			info = pos + 2;
-		else if (pos[0] == 'K' && pos[1] == ':' && !pk)
+		else if (pos[0] == 'esp_K' && pos[1] == ':' && !pk)
 			pk = pos + 2;
 		else
 			wpa_hexdump_ascii(MSG_DEBUG,
@@ -1493,7 +1493,7 @@ static int dpp_autogen_bootstrap_key(struct dpp_authentication *auth)
 	bi->uri = os_malloc(len + 1);
 	if (!bi->uri)
 		goto fail;
-	os_snprintf(bi->uri, len + 1, "DPP:K:%s;;", pk);
+	os_snprintf(bi->uri, len + 1, "DPP:esp_K:%s;;", pk);
 	wpa_printf(MSG_DEBUG,
 		   "DPP: Auto-generated own bootstrapping key info: URI %s",
 		   bi->uri);

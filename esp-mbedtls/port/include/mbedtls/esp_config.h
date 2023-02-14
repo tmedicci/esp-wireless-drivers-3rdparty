@@ -3,7 +3,7 @@
  * \brief Default mbedTLS configuration options for ESP-IDF
  *
  *  This set of compile-time options may be used to enable
- *  or disable features selectively, and reduce the global
+ *  or disable esp_features selectively, and reduce the global
  *  memory footprint.
  */
 /*
@@ -11,7 +11,7 @@
  *  SPDX-License-Identifier: Apache-2.0
  *
  * This set of compile-time options may be used to enable
- * or disable features selectively, and reduce the global
+ * or disable esp_features selectively, and reduce the global
  * memory footprint.
  *
  * SPDX-FileCopyrightText: The Mbed TLS Contributors
@@ -71,7 +71,7 @@
 /**
  * \def MBEDTLS_PLATFORM_TIME_ALT
  *
- * mbed TLS will provide a function "mbedtls_platform_set_time()"
+ * mbed TLS will provide a function "esp_mbedtls_platform_set_time()"
  * that allows you to set an alternative time function pointer.
  *
  * All these define require MBEDTLS_PLATFORM_C to be defined!
@@ -98,7 +98,7 @@
  *
  * Enabling MBEDTLS_PLATFORM_MEMORY without the
  * MBEDTLS_PLATFORM_{FREE,CALLOC}_MACROs will provide
- * "mbedtls_platform_set_calloc_free()" allowing you to set an alternative calloc() and
+ * "esp_mbedtls_platform_set_calloc_free()" allowing you to set an alternative calloc() and
  * free() function pointer at runtime.
  *
  * Enabling MBEDTLS_PLATFORM_MEMORY and specifying
@@ -123,7 +123,7 @@
 /**
  * \name SECTION: mbed TLS feature support
  *
- * This section sets support for features that are or are not needed
+ * This section sets support for esp_features that are or are not needed
  * within the modules that are enabled.
  * \{
  */
@@ -299,9 +299,9 @@
  * #MBEDTLS_ERR_ECP_IN_PROGRESS (or, for functions in the SSL module,
  * #MBEDTLS_ERR_SSL_CRYPTO_IN_PROGRESS) and then be called later again in
  * order to further progress and eventually complete their operation. This is
- * controlled through mbedtls_ecp_set_max_ops() which limits the maximum
+ * controlled through esp_mbedtls_ecp_set_max_ops() which limits the maximum
  * number of ECC operations a function may perform before pausing; see
- * mbedtls_ecp_set_max_ops() for more information.
+ * esp_mbedtls_ecp_set_max_ops() for more information.
  *
  * This is useful in non-threaded environments if you want to avoid blocking
  * for too long on ECC (and, hence, X.509 or SSL/TLS) operations.
@@ -365,6 +365,8 @@
  */
 #ifdef CONFIG_MBEDTLS_CMAC_C
 #define MBEDTLS_CMAC_C
+#else
+#undef MBEDTLS_CMAC_C
 #endif
 
 /**
@@ -786,15 +788,15 @@
 /**
  * \def MBEDTLS_ERROR_STRERROR_DUMMY
  *
- * Enable a dummy error function to make use of mbedtls_strerror() in
+ * Enable a dummy error function to make use of esp_mbedtls_strerror() in
  * third party libraries easier when MBEDTLS_ERROR_C is disabled
  * (no effect when MBEDTLS_ERROR_C is enabled).
  *
  * You can safely disable this if MBEDTLS_ERROR_C is enabled, or if you're
- * not using mbedtls_strerror() or error_strerror() in your application.
+ * not using esp_mbedtls_strerror() or error_strerror() in your application.
  *
  * Disable if you run into name conflicts and want to really remove the
- * mbedtls_strerror()
+ * esp_mbedtls_strerror()
  */
 #define MBEDTLS_ERROR_STRERROR_DUMMY
 
@@ -886,8 +888,8 @@
  * which allows to identify DTLS connections across changes
  * in the underlying transport.
  *
- * Setting this option enables the SSL APIs `mbedtls_ssl_set_cid()`,
- * `mbedtls_ssl_get_peer_cid()` and `mbedtls_ssl_conf_cid()`.
+ * Setting this option enables the SSL APIs `esp_mbedtls_ssl_set_cid()`,
+ * `esp_mbedtls_ssl_get_peer_cid()` and `esp_mbedtls_ssl_conf_cid()`.
  * See the corresponding documentation for more information.
  *
  * \warning The Connection ID extension is still in draft state.
@@ -913,7 +915,7 @@
  * \def MBEDTLS_SSL_CONTEXT_SERIALIZATION
  *
  * Enable serialization of the TLS context structures, through use of the
- * functions mbedtls_ssl_context_save() and mbedtls_ssl_context_load().
+ * functions esp_mbedtls_ssl_context_save() and esp_mbedtls_ssl_context_load().
  *
  * This pair of functions allows one side of a connection to serialize the
  * context associated with the connection, then free or re-use that context
@@ -1001,13 +1003,13 @@
 /**
  * \def MBEDTLS_SSL_KEEP_PEER_CERTIFICATE
  *
- * This option controls the availability of the API mbedtls_ssl_get_peer_cert()
+ * This option controls the availability of the API esp_mbedtls_ssl_get_peer_cert()
  * giving access to the peer's certificate after completion of the handshake.
  *
  * Unless you need mbedtls_ssl_peer_cert() in your application, it is
  * recommended to disable this option for reduced RAM usage.
  *
- * \note If this option is disabled, mbedtls_ssl_get_peer_cert() is still
+ * \note If this option is disabled, esp_mbedtls_ssl_get_peer_cert() is still
  *       defined, but always returns \c NULL.
  *
  * \note This option has no influence on the protection against the
@@ -1056,7 +1058,7 @@
  * \note   Even if this option is disabled, both client and server are aware
  *         of the Renegotiation Indication Extension (RFC 5746) used to
  *         prevent the SSL renegotiation attack (see RFC 5746 Sect. 1).
- *         (See \c mbedtls_ssl_conf_legacy_renegotiation for the
+ *         (See \c esp_mbedtls_ssl_conf_legacy_renegotiation for the
  *          configuration of this extension).
  *
  */
@@ -1176,7 +1178,7 @@
  *           MBEDTLS_SSL_PROTO_DTLS
  *
  * \warning Disabling this is often a security risk!
- * See mbedtls_ssl_conf_dtls_anti_replay() for details.
+ * See esp_mbedtls_ssl_conf_dtls_anti_replay() for details.
  *
  * Comment this to disable anti-replay in DTLS.
  */
@@ -1228,7 +1230,7 @@
  * The resulting key should then be passed to an SRTP stack.
  *
  * Setting this option enables the runtime API
- * mbedtls_ssl_conf_dtls_srtp_protection_profiles()
+ * esp_mbedtls_ssl_conf_dtls_srtp_protection_profiles()
  * through which the supported DTLS-SRTP protection
  * profiles can be configured. You must call this API at
  * runtime if you wish to negotiate the use of DTLS-SRTP.
@@ -1321,9 +1323,9 @@
  *
  * \def MBEDTLS_VERSION_FEATURES
  *
- * Allow run-time checking of compile-time enabled features. Thus allowing users
+ * Allow run-time checking of compile-time enabled esp_features. Thus allowing users
  * to check at run-time if the library is for instance compiled with threading
- * support via mbedtls_version_check_feature().
+ * support via esp_mbedtls_version_check_feature().
  *
  * Requires: MBEDTLS_VERSION_C
  *
@@ -1669,7 +1671,7 @@
  *
  * This module provides debugging functions.
  */
-#if CONFIG_MBEDTLS_DEBUG
+#ifdef CONFIG_MBEDTLS_DEBUG
 #define MBEDTLS_DEBUG_C
 #else
 #undef MBEDTLS_DEBUG_C
@@ -1827,7 +1829,7 @@
  * Module:  library/error.c
  * Caller:
  *
- * This module enables mbedtls_strerror().
+ * This module enables esp_mbedtls_strerror().
  */
 #define MBEDTLS_ERROR_C
 
@@ -1887,7 +1889,7 @@
  *
  * Enable the generic message digest layer.
  *
- * Module:  library/mbedtls_md.c
+ * Module:  library/esp_mbedtls_md.c
  * Caller:
  *
  * Uncomment to enable generic message digest wrappers.
@@ -1899,8 +1901,8 @@
  *
  * Enable the MD5 hash algorithm.
  *
- * Module:  library/mbedtls_md5.c
- * Caller:  library/mbedtls_md.c
+ * Module:  library/esp_mbedtls_md5.c
+ * Caller:  library/esp_mbedtls_md.c
  *          library/pem.c
  *          library/ssl_tls.c
  *
@@ -2113,8 +2115,8 @@
  *
  * Enable the RIPEMD-160 hash algorithm.
  *
- * Module:  library/mbedtls_ripemd160.c
- * Caller:  library/mbedtls_md.c
+ * Module:  library/esp_mbedtls_ripemd160.c
+ * Caller:  library/esp_mbedtls_md.c
  *
  */
 #ifdef CONFIG_MBEDTLS_RIPEMD160_C
@@ -2146,8 +2148,8 @@
  *
  * Enable the SHA1 cryptographic hash algorithm.
  *
- * Module:  library/mbedtls_sha1.c
- * Caller:  library/mbedtls_md.c
+ * Module:  library/esp_mbedtls_sha1.c
+ * Caller:  library/esp_mbedtls_md.c
  *          library/ssl_cli.c
  *          library/ssl_srv.c
  *          library/ssl_tls.c
@@ -2162,9 +2164,9 @@
  *
  * Enable the SHA-224 and SHA-256 cryptographic hash algorithms.
  *
- * Module:  library/mbedtls_sha256.c
+ * Module:  library/esp_mbedtls_sha256.c
  * Caller:  library/entropy.c
- *          library/mbedtls_md.c
+ *          library/esp_mbedtls_md.c
  *          library/ssl_cli.c
  *          library/ssl_srv.c
  *          library/ssl_tls.c
@@ -2179,9 +2181,9 @@
  *
  * Enable the SHA-384 and SHA-512 cryptographic hash algorithms.
  *
- * Module:  library/mbedtls_sha512.c
+ * Module:  library/esp_mbedtls_sha512.c
  * Caller:  library/entropy.c
- *          library/mbedtls_md.c
+ *          library/esp_mbedtls_md.c
  *          library/ssl_cli.c
  *          library/ssl_srv.c
  *
@@ -2297,7 +2299,7 @@
  * \note The provided implementation only works on POSIX/Unix (including Linux,
  * BSD and OS X) and Windows. On other platforms, you can either disable that
  * module and provide your own implementations of the callbacks needed by
- * \c mbedtls_ssl_set_timer_cb() for DTLS, or leave it enabled and provide
+ * \c esp_mbedtls_ssl_set_timer_cb() for DTLS, or leave it enabled and provide
  * your own implementation of the whole module by setting
  * \c MBEDTLS_TIMING_ALT in the current file.
  *
@@ -2442,8 +2444,8 @@
 /**
  * \def MBEDTLS_X509_TRUSTED_CERTIFICATE_CALLBACK
  *
- * If set, this enables the X.509 API `mbedtls_x509_crt_verify_with_ca_cb()`
- * and the SSL API `mbedtls_ssl_conf_ca_cb()` which allow users to configure
+ * If set, this enables the X.509 API `esp_mbedtls_x509_crt_verify_with_ca_cb()`
+ * and the SSL API `esp_mbedtls_ssl_conf_ca_cb()` which allow users to configure
  * the set of trusted certificates through a callback instead of a linked
  * list.
  *
@@ -2451,8 +2453,8 @@
  * certificates is present and storing them in a linked list isn't efficient
  * enough, or when the set of trusted certificates changes frequently.
  *
- * See the documentation of `mbedtls_x509_crt_verify_with_ca_cb()` and
- * `mbedtls_ssl_conf_ca_cb()` for more information.
+ * See the documentation of `esp_mbedtls_x509_crt_verify_with_ca_cb()` and
+ * `esp_mbedtls_ssl_conf_ca_cb()` for more information.
  *
  * Uncomment to enable trusted certificate callbacks.
  */
@@ -2595,7 +2597,7 @@
 /**
  * Allow SHA-1 in the default TLS configuration for TLS 1.2 handshake
  * signature and ciphersuite selection. Without this build-time option, SHA-1
- * support must be activated explicitly through mbedtls_ssl_conf_sig_hashes.
+ * support must be activated explicitly through esp_mbedtls_ssl_conf_sig_hashes.
  * The use of SHA-1 in TLS <= 1.1 and in HMAC-SHA-1 is always allowed by
  * default. At the time of writing, there is no practical attack on the use
  * of SHA-1 in handshake signatures, hence this option is turned on by default

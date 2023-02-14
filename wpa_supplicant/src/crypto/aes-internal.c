@@ -790,7 +790,7 @@ int rijndaelKeySetupEnc(u32 rk[], const u8 cipherKey[], int keyBits)
 		for (i = 0; i < 10; i++) {
 			temp  = rk[3];
 			rk[4] = rk[0] ^ TE421(temp) ^ TE432(temp) ^
-				TE443(temp) ^ TE414(temp) ^ RCON(i);
+				TE443(temp) ^ TE414(temp) ^ esp_RCON(i);
 			rk[5] = rk[1] ^ rk[4];
 			rk[6] = rk[2] ^ rk[5];
 			rk[7] = rk[3] ^ rk[6];
@@ -806,7 +806,7 @@ int rijndaelKeySetupEnc(u32 rk[], const u8 cipherKey[], int keyBits)
 		for (i = 0; i < 8; i++) {
 			temp  = rk[5];
 			rk[6] = rk[0] ^ TE421(temp) ^ TE432(temp) ^
-				TE443(temp) ^ TE414(temp) ^ RCON(i);
+				TE443(temp) ^ TE414(temp) ^ esp_RCON(i);
 			rk[7] = rk[1] ^ rk[6];
 			rk[8] = rk[2] ^ rk[7];
 			rk[9] = rk[3] ^ rk[8];
@@ -825,7 +825,7 @@ int rijndaelKeySetupEnc(u32 rk[], const u8 cipherKey[], int keyBits)
 		for (i = 0; i < 7; i++) {
 			temp  = rk[7];
 			rk[8] = rk[0] ^ TE421(temp) ^ TE432(temp) ^
-				TE443(temp) ^ TE414(temp) ^ RCON(i);
+				TE443(temp) ^ TE414(temp) ^ esp_RCON(i);
 			rk[9] = rk[1] ^ rk[8];
 			rk[10] = rk[2] ^ rk[9];
 			rk[11] = rk[3] ^ rk[10];

@@ -13,7 +13,7 @@
 #include "drivers/driver.h"
 #include "common/ieee802_11_defs.h"
 /*
- * struct rrm_data - Data used for managing RRM features
+ * struct rrm_data - Data used for managing RRM esp_features
  */
 struct rrm_data {
 	/* rrm_used - indication regarding the current connection */

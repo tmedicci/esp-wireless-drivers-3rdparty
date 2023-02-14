@@ -36,11 +36,11 @@ static void esp_aes_decrypt(void *ctx, const u8 *crypt, u8 *plain)
 	aes_decrypt(ctx, crypt, plain);
 }
 
-static int esp_aes_gmac(const u8 *key, size_t key_len, const u8 *iv, size_t iv_len,
+static int esp_aes_gmac(const u8 *key, size_t esp_key_len, const u8 *iv, size_t iv_len,
 			const u8 *aad, size_t aad_len, u8 *tag)
 {
-#if CONFIG_GMAC
-	return aes_gmac(key, key_len, iv, iv_len, aad, aad_len, tag);
+#ifdef CONFIG_GMAC
+	return aes_gmac(key, esp_key_len, iv, iv_len, aad, aad_len, tag);
 #else
 	return 0;
 #endif

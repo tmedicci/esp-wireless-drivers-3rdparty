@@ -513,8 +513,8 @@ int hostapd_wps_config_ap(struct hostapd_data *hapd, struct wps_data *wps_data)
 	}
 
 	if (hapd->conf->ssid.wpa_passphrase) {
-		cred.key_len = os_strlen(hapd->conf->ssid.wpa_passphrase);
-		memcpy(cred.key, hapd->conf->ssid.wpa_passphrase, cred.key_len);
+		cred.esp_key_len = os_strlen(hapd->conf->ssid.wpa_passphrase);
+		memcpy(cred.key, hapd->conf->ssid.wpa_passphrase, cred.esp_key_len);
 	}
 	wps_data->use_cred = os_malloc(sizeof(struct wps_credential));
 	if (!wps_data->use_cred) {

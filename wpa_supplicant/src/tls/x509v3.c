@@ -570,7 +570,7 @@ static int parse_uint4(const char *pos, size_t len)
 }
 
 
-int x509_parse_time(const u8 *buf, size_t len, u8 asn1_tag, os_time_t *val)
+int esp_x509_parse_time(const u8 *buf, size_t len, u8 asn1_tag, os_time_t *val)
 {
 	const char *pos, *end;
 	int year, month, day, hour, min, sec;
@@ -720,7 +720,7 @@ static int x509_parse_validity(const u8 *buf, size_t len,
 
 	if (asn1_get_next(pos, plen, &hdr) < 0 ||
 	    (!asn1_is_utctime(&hdr) && !asn1_is_generalizedtime(&hdr)) ||
-	    x509_parse_time(hdr.payload, hdr.length, hdr.tag,
+	    esp_x509_parse_time(hdr.payload, hdr.length, hdr.tag,
 			    &cert->not_before) < 0) {
 		wpa_hexdump_ascii(MSG_DEBUG, "X509: Failed to parse notBefore "
 				  "Time", hdr.payload, hdr.length);
@@ -732,7 +732,7 @@ static int x509_parse_validity(const u8 *buf, size_t len,
 
 	if (asn1_get_next(pos, plen, &hdr) < 0 ||
 	    (!asn1_is_utctime(&hdr) && !asn1_is_generalizedtime(&hdr)) ||
-	    x509_parse_time(hdr.payload, hdr.length, hdr.tag,
+	    esp_x509_parse_time(hdr.payload, hdr.length, hdr.tag,
 			    &cert->not_after) < 0) {
 		wpa_hexdump_ascii(MSG_DEBUG, "X509: Failed to parse notAfter "
 				  "Time", hdr.payload, hdr.length);

@@ -407,7 +407,7 @@ struct wpabuf * wps_get_oob_cred(struct wps_context *wps, int rf_band,
 		cred.auth_type = WPS_AUTH_WPAPSK | WPS_AUTH_WPA2PSK;
 		cred.encr_type = WPS_ENCR_TKIP | WPS_ENCR_AES;
 		os_memcpy(cred.key, data.new_psk, data.new_psk_len);
-		cred.key_len = data.new_psk_len;
+		cred.esp_key_len = data.new_psk_len;
 
 		wps->wps_state = WPS_STATE_CONFIGURED;
 		wpa_hexdump_ascii_key(MSG_DEBUG,

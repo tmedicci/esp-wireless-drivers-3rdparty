@@ -87,13 +87,13 @@ static void tls_mbedtls_cleanup(tls_context_t *tls)
 		return;
 	}
 	tls->cacert_ptr = NULL;
-	mbedtls_x509_crt_free(&tls->cacert);
-	mbedtls_x509_crt_free(&tls->clientcert);
-	mbedtls_pk_free(&tls->clientkey);
-	mbedtls_entropy_free(&tls->entropy);
-	mbedtls_ssl_config_free(&tls->conf);
-	mbedtls_ctr_drbg_free(&tls->ctr_drbg);
-	mbedtls_ssl_free(&tls->ssl);
+	esp_mbedtls_x509_crt_free(&tls->cacert);
+	esp_mbedtls_x509_crt_free(&tls->clientcert);
+	esp_mbedtls_pk_free(&tls->clientkey);
+	esp_mbedtls_entropy_free(&tls->entropy);
+	esp_mbedtls_ssl_config_free(&tls->conf);
+	esp_mbedtls_ctr_drbg_free(&tls->ctr_drbg);
+	esp_mbedtls_ssl_free(&tls->ssl);
 }
 
 static void tls_mbedtls_conn_delete(tls_context_t *tls)
@@ -153,27 +153,27 @@ static int set_pki_context(tls_context_t *tls, const struct tls_connection_param
 		return -1;
 	}
 
-	mbedtls_x509_crt_init(&tls->clientcert);
-	mbedtls_pk_init(&tls->clientkey);
+	esp_mbedtls_x509_crt_init(&tls->clientcert);
+	esp_mbedtls_pk_init(&tls->clientkey);
 
-	ret = mbedtls_x509_crt_parse(&tls->clientcert,
+	ret = esp_mbedtls_x509_crt_parse(&tls->clientcert,
 				     cfg->client_cert_blob, cfg->client_cert_blob_len);
 	if (ret < 0) {
-		wpa_printf(MSG_ERROR, "mbedtls_x509_crt_parse returned -0x%x", -ret);
+		wpa_printf(MSG_ERROR, "esp_mbedtls_x509_crt_parse returned -0x%x", -ret);
 		return ret;
 	}
 
-	ret = mbedtls_pk_parse_key(&tls->clientkey, cfg->private_key_blob, cfg->private_key_blob_len,
+	ret = esp_mbedtls_pk_parse_key(&tls->clientkey, cfg->private_key_blob, cfg->private_key_blob_len,
 				   (const unsigned char *)cfg->private_key_passwd,
-				   cfg->private_key_passwd ? os_strlen(cfg->private_key_passwd) : 0, mbedtls_ctr_drbg_random, &tls->ctr_drbg);
+				   cfg->private_key_passwd ? os_strlen(cfg->private_key_passwd) : 0, esp_mbedtls_ctr_drbg_random, &tls->ctr_drbg);
 	if (ret < 0) {
-		wpa_printf(MSG_ERROR, "mbedtls_pk_parse_keyfile returned -0x%x", -ret);
+		wpa_printf(MSG_ERROR, "esp_mbedtls_pk_parse_keyfile returned -0x%x", -ret);
 		return ret;
 	}
 
-	ret = mbedtls_ssl_conf_own_cert(&tls->conf, &tls->clientcert, &tls->clientkey);
+	ret = esp_mbedtls_ssl_conf_own_cert(&tls->conf, &tls->clientcert, &tls->clientkey);
 	if (ret < 0) {
-		wpa_printf(MSG_ERROR, "mbedtls_ssl_conf_own_cert returned -0x%x", -ret);
+		wpa_printf(MSG_ERROR, "esp_mbedtls_ssl_conf_own_cert returned -0x%x", -ret);
 		return ret;
 	}
 
@@ -183,14 +183,14 @@ static int set_pki_context(tls_context_t *tls, const struct tls_connection_param
 static int set_ca_cert(tls_context_t *tls, const unsigned char *cacert, size_t cacert_len)
 {
 	tls->cacert_ptr = &tls->cacert;
-	mbedtls_x509_crt_init(tls->cacert_ptr);
-	int ret = mbedtls_x509_crt_parse(tls->cacert_ptr, cacert, cacert_len);
+	esp_mbedtls_x509_crt_init(tls->cacert_ptr);
+	int ret = esp_mbedtls_x509_crt_parse(tls->cacert_ptr, cacert, cacert_len);
 	if (ret < 0) {
-		wpa_printf(MSG_ERROR, "mbedtls_x509_crt_parse returned -0x%x", -ret);
+		wpa_printf(MSG_ERROR, "esp_mbedtls_x509_crt_parse returned -0x%x", -ret);
 		return ret;
 	}
-	mbedtls_ssl_conf_authmode(&tls->conf, MBEDTLS_SSL_VERIFY_REQUIRED);
-	mbedtls_ssl_conf_ca_chain(&tls->conf, tls->cacert_ptr, NULL);
+	esp_mbedtls_ssl_conf_authmode(&tls->conf, MBEDTLS_SSL_VERIFY_REQUIRED);
+	esp_mbedtls_ssl_conf_ca_chain(&tls->conf, tls->cacert_ptr, NULL);
 
 	return 0;
 }
@@ -225,8 +225,8 @@ const mbedtls_x509_crt_profile suiteb_mbedtls_x509_crt_profile =
 static void tls_set_suiteb_config(tls_context_t *tls)
 {
 	const mbedtls_x509_crt_profile *crt_profile = &suiteb_mbedtls_x509_crt_profile;
-	mbedtls_ssl_conf_cert_profile(&tls->conf, crt_profile);
-	mbedtls_ssl_conf_sig_algs(&tls->conf, tls_sig_algs_for_suiteb);
+	esp_mbedtls_ssl_conf_cert_profile(&tls->conf, crt_profile);
+	esp_mbedtls_ssl_conf_sig_algs(&tls->conf, tls_sig_algs_for_suiteb);
 }
 #endif
 
@@ -284,8 +284,8 @@ const mbedtls_x509_crt_profile eap_mbedtls_x509_crt_profile =
 static void tls_enable_sha1_config(tls_context_t *tls)
 {
 	const mbedtls_x509_crt_profile *crt_profile = &eap_mbedtls_x509_crt_profile;
-	mbedtls_ssl_conf_cert_profile(&tls->conf, crt_profile);
-	mbedtls_ssl_conf_sig_algs(&tls->conf, tls_sig_algs_for_eap);
+	esp_mbedtls_ssl_conf_cert_profile(&tls->conf, crt_profile);
+	esp_mbedtls_ssl_conf_sig_algs(&tls->conf, tls_sig_algs_for_eap);
 }
 
 static const int eap_ciphersuite_preference[] =
@@ -457,26 +457,26 @@ static void tls_set_ciphersuite(const struct tls_connection_params *cfg, tls_con
 #ifdef CONFIG_SUITEB192
 	if (cfg->flags & TLS_CONN_SUITEB) {
 		/* cipher suites will be set based on certificate */
-		mbedtls_pk_type_t pk_alg = mbedtls_pk_get_type(&tls->clientkey);
+		mbedtls_pk_type_t pk_alg = esp_mbedtls_pk_get_type(&tls->clientkey);
 		if (pk_alg == MBEDTLS_PK_RSA || pk_alg == MBEDTLS_PK_RSASSA_PSS) {
-			mbedtls_ssl_conf_ciphersuites(&tls->conf,
+			esp_mbedtls_ssl_conf_ciphersuites(&tls->conf,
 						      suiteb_rsa_ciphersuite_preference);
 		} else if (pk_alg == MBEDTLS_PK_ECDSA ||
 			   pk_alg == MBEDTLS_PK_ECKEY ||
 			   pk_alg == MBEDTLS_PK_ECKEY_DH) {
-			mbedtls_ssl_conf_ciphersuites(&tls->conf,
+			esp_mbedtls_ssl_conf_ciphersuites(&tls->conf,
 						      suiteb_ecc_ciphersuite_preference);
 		} else {
-			mbedtls_ssl_conf_ciphersuites(&tls->conf,
+			esp_mbedtls_ssl_conf_ciphersuites(&tls->conf,
 						      suiteb_ciphersuite_preference);
 		}
 	} else
 #endif
 	if (tls->ciphersuite[0]) {
-		mbedtls_ssl_conf_ciphersuites(&tls->conf, tls->ciphersuite);
-	} else if (mbedtls_pk_get_bitlen(&tls->clientkey) > 2048 ||
-		(tls->cacert_ptr && mbedtls_pk_get_bitlen(&tls->cacert_ptr->pk) > 2048)) {
-		mbedtls_ssl_conf_ciphersuites(&tls->conf, eap_ciphersuite_preference);
+		esp_mbedtls_ssl_conf_ciphersuites(&tls->conf, tls->ciphersuite);
+	} else if (esp_mbedtls_pk_get_bitlen(&tls->clientkey) > 2048 ||
+		(tls->cacert_ptr && esp_mbedtls_pk_get_bitlen(&tls->cacert_ptr->pk) > 2048)) {
+		esp_mbedtls_ssl_conf_ciphersuites(&tls->conf, eap_ciphersuite_preference);
 	}
 }
 
@@ -491,12 +491,12 @@ static int set_client_config(const struct tls_connection_params *cfg, tls_contex
 	if (cfg->flags & TLS_CONN_SUITEB)
 		preset = MBEDTLS_SSL_PRESET_SUITEB;
 #endif
-	ret = mbedtls_ssl_config_defaults(&tls->conf,
+	ret = esp_mbedtls_ssl_config_defaults(&tls->conf,
 					MBEDTLS_SSL_IS_CLIENT,
 					MBEDTLS_SSL_TRANSPORT_STREAM,
 					preset);
 	if (ret != 0) {
-		wpa_printf(MSG_ERROR, "mbedtls_ssl_config_defaults returned -0x%x", -ret);
+		wpa_printf(MSG_ERROR, "esp_mbedtls_ssl_config_defaults returned -0x%x", -ret);
 		return ret;
 	}
 
@@ -515,7 +515,7 @@ static int set_client_config(const struct tls_connection_params *cfg, tls_contex
 			return ret;
 		}
 	} else {
-		mbedtls_ssl_conf_authmode(&tls->conf, MBEDTLS_SSL_VERIFY_NONE);
+		esp_mbedtls_ssl_conf_authmode(&tls->conf, MBEDTLS_SSL_VERIFY_NONE);
 	}
 
 	if (cfg->client_cert_blob != NULL && cfg->private_key_blob != NULL) {
@@ -572,10 +572,10 @@ static int tls_create_mbedtls_handle(struct tls_connection *conn,
 	assert(params != NULL);
 	assert(tls != NULL);
 
-	mbedtls_ssl_init(&tls->ssl);
-	mbedtls_ctr_drbg_init(&tls->ctr_drbg);
-	mbedtls_ssl_config_init(&tls->conf);
-	mbedtls_entropy_init(&tls->entropy);
+	esp_mbedtls_ssl_init(&tls->ssl);
+	esp_mbedtls_ctr_drbg_init(&tls->ctr_drbg);
+	esp_mbedtls_ssl_config_init(&tls->conf);
+	esp_mbedtls_entropy_init(&tls->entropy);
 
 	ret = set_client_config(params, tls);
 	if (ret != 0) {
@@ -583,21 +583,21 @@ static int tls_create_mbedtls_handle(struct tls_connection *conn,
 		goto exit;
 	}
 
-	ret = mbedtls_ctr_drbg_seed(&tls->ctr_drbg, mbedtls_entropy_func,
+	ret = esp_mbedtls_ctr_drbg_seed(&tls->ctr_drbg, esp_mbedtls_entropy_func,
 				    &tls->entropy, NULL, 0);
 	if (ret != 0) {
-		wpa_printf(MSG_ERROR, "mbedtls_ctr_drbg_seed returned -0x%x", -ret);
+		wpa_printf(MSG_ERROR, "esp_mbedtls_ctr_drbg_seed returned -0x%x", -ret);
 		goto exit;
 	}
 
-	mbedtls_ssl_conf_rng(&tls->conf, mbedtls_ctr_drbg_random, &tls->ctr_drbg);
+	esp_mbedtls_ssl_conf_rng(&tls->conf, esp_mbedtls_ctr_drbg_random, &tls->ctr_drbg);
 
-	ret = mbedtls_ssl_setup(&tls->ssl, &tls->conf);
+	ret = esp_mbedtls_ssl_setup(&tls->ssl, &tls->conf);
 	if (ret != 0) {
-		wpa_printf(MSG_ERROR, "mbedtls_ssl_setup returned -0x%x", -ret);
+		wpa_printf(MSG_ERROR, "esp_mbedtls_ssl_setup returned -0x%x", -ret);
 		goto exit;
 	}
-	mbedtls_ssl_set_export_keys_cb(&tls->ssl, tls_key_derivation, conn);
+	esp_mbedtls_ssl_set_export_keys_cb(&tls->ssl, tls_key_derivation, conn);
 #if defined(MBEDTLS_SSL_CBC_RECORD_SPLITTING)
 	/* Disable BEAST attack countermeasures for Windows 2008 interoperability */
 	mbedtls_ssl_conf_cbc_record_splitting(&tls->conf, MBEDTLS_SSL_CBC_RECORD_SPLITTING_DISABLED);
@@ -705,7 +705,7 @@ struct wpabuf * tls_connection_handshake(void *tls_ctx,
 				conn->mac = tls->ssl.handshake->ciphersuite_info->mac;
 			}
 		}
-		ret = mbedtls_ssl_handshake_step(&tls->ssl);
+		ret = esp_mbedtls_ssl_handshake_step(&tls->ssl);
 
 		if (ret < 0)
 			break;
@@ -746,7 +746,7 @@ struct wpabuf * tls_connection_encrypt(void *tls_ctx,
 
 	/* Reset dangling pointer */
 	conn->tls_io_data.out_data = NULL;
-	ret = mbedtls_ssl_write(&conn->tls->ssl,
+	ret = esp_mbedtls_ssl_write(&conn->tls->ssl,
 			(unsigned char*) wpabuf_head(in_data),  wpabuf_len(in_data));
 
 	if (ret < wpabuf_len(in_data)) {
@@ -780,7 +780,7 @@ struct wpabuf *tls_connection_decrypt(void *tls_ctx,
 	if (!conn->tls_io_data.in_data) {
 		goto cleanup;
 	}
-	ret = mbedtls_ssl_read(&conn->tls->ssl, buf, MAX_PHASE2_BUFFER);
+	ret = esp_mbedtls_ssl_read(&conn->tls->ssl, buf, MAX_PHASE2_BUFFER);
 	if (ret < 0) {
 		wpa_printf(MSG_ERROR, "%s:%d, not able to read data",
 				__func__, __LINE__);
@@ -833,7 +833,7 @@ int tls_get_version(void *tls_ctx, struct tls_connection *conn,
 		return -1;
 	}
 
-	name = mbedtls_ssl_get_version(&conn->tls->ssl);
+	name = esp_mbedtls_ssl_get_version(&conn->tls->ssl);
 	if (name == NULL) {
 		return -1;
 	}
@@ -851,7 +851,7 @@ int tls_get_cipher(void *tls_ctx, struct tls_connection *conn,
 		return -1;
 	}
 
-	name = mbedtls_ssl_get_ciphersuite(&conn->tls->ssl);
+	name = esp_mbedtls_ssl_get_ciphersuite(&conn->tls->ssl);
 	if (name == NULL) {
 		return -1;
 	}
@@ -907,7 +907,7 @@ int tls_connection_set_params(void *tls_ctx, struct tls_connection *conn,
 		wpa_printf(MSG_ERROR, "failed to create ssl handle");
 		goto err;
 	}
-	mbedtls_ssl_set_bio(&tls->ssl, conn, tls_mbedtls_write, tls_mbedtls_read, NULL);
+	esp_mbedtls_ssl_set_bio(&tls->ssl, conn, tls_mbedtls_write, tls_mbedtls_read, NULL);
 	conn->tls = (tls_context_t *)tls;
 
 	return ret;
@@ -959,7 +959,7 @@ static int tls_connection_prf(void *tls_ctx, struct tls_connection *conn,
 	wpa_hexdump_key(MSG_MSGDUMP, "random", seed, 2 * TLS_RANDOM_LEN);
 	wpa_hexdump_key(MSG_MSGDUMP, "master", ssl->MBEDTLS_PRIVATE(session)->MBEDTLS_PRIVATE(master), TLS_MASTER_SECRET_LEN);
 
-	ret = mbedtls_ssl_tls_prf(conn->tls_prf_type, conn->master_secret, TLS_MASTER_SECRET_LEN,
+	ret = esp_mbedtls_ssl_tls_prf(conn->tls_prf_type, conn->master_secret, TLS_MASTER_SECRET_LEN,
 				label, seed, 2 * TLS_RANDOM_LEN, out, out_len);
 
 	if (ret < 0) {
@@ -1002,7 +1002,7 @@ int tls_connection_shutdown(void *tls_ctx, struct tls_connection *conn)
 	/* outdata may have dangling pointer */
 	conn->tls_io_data.out_data = NULL;
 
-	return mbedtls_ssl_session_reset(&conn->tls->ssl);
+	return esp_mbedtls_ssl_session_reset(&conn->tls->ssl);
 }
 
 int tls_connection_get_random(void *tls_ctx, struct tls_connection *conn,

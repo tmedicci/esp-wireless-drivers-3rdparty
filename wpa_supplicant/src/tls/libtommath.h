@@ -2942,7 +2942,7 @@ mp_mul_2(mp_int * a, mp_int * b)
 
 #ifdef BN_MP_MONTGOMERY_CALC_NORMALIZATION_C
 /*
- * shifts with subtractions when the result is greater than b.
+ * esp_shifts with subtractions when the result is greater than b.
  *
  * The method is slightly modified to shift B unconditionally up to just under
  * the leading bit of b.  This saves a lot of multiple precision shifting.

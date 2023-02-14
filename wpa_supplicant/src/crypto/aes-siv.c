@@ -61,7 +61,7 @@ static void pad_block(u8 *pad, const u8 *addr, size_t len)
 }
 
 
-static int aes_s2v(const u8 *key, size_t key_len,
+static int aes_s2v(const u8 *key, size_t esp_key_len,
 		   size_t num_elem, const u8 *addr[], size_t *len, u8 *mac)
 {
 	u8 tmp[AES_BLOCK_SIZE], tmp2[AES_BLOCK_SIZE];
@@ -76,17 +76,17 @@ static int aes_s2v(const u8 *key, size_t key_len,
 		tmp[AES_BLOCK_SIZE - 1] = 1;
 		data[0] = tmp;
 		data_len[0] = sizeof(tmp);
-		return omac1_aes_vector(key, key_len, 1, data, data_len, mac);
+		return omac1_aes_vector(key, esp_key_len, 1, data, data_len, mac);
 	}
 
 	data[0] = zero;
 	data_len[0] = sizeof(zero);
-	ret = omac1_aes_vector(key, key_len, 1, data, data_len, tmp);
+	ret = omac1_aes_vector(key, esp_key_len, 1, data, data_len, tmp);
 	if (ret)
 		return ret;
 
 	for (i = 0; i < num_elem - 1; i++) {
-		ret = omac1_aes_vector(key, key_len, 1, &addr[i], &len[i],
+		ret = omac1_aes_vector(key, esp_key_len, 1, &addr[i], &len[i],
 				       tmp2);
 		if (ret)
 			return ret;
@@ -101,7 +101,7 @@ static int aes_s2v(const u8 *key, size_t key_len,
 
 		xorend(buf, len[i], tmp, AES_BLOCK_SIZE);
 		data[0] = buf;
-		ret = omac1_aes_vector(key, key_len, 1, data, &len[i], mac);
+		ret = omac1_aes_vector(key, esp_key_len, 1, data, &len[i], mac);
 		bin_clear_free(buf, len[i]);
 		return ret;
 	}
@@ -112,11 +112,11 @@ static int aes_s2v(const u8 *key, size_t key_len,
 
 	data[0] = tmp;
 	data_len[0] = sizeof(tmp);
-	return omac1_aes_vector(key, key_len, 1, data, data_len, mac);
+	return omac1_aes_vector(key, esp_key_len, 1, data, data_len, mac);
 }
 
 
-int aes_siv_encrypt(const u8 *key, size_t key_len,
+int aes_siv_encrypt(const u8 *key, size_t esp_key_len,
 		    const u8 *pw, size_t pwlen,
 		    size_t num_elem, const u8 *addr[], const size_t *len,
 		    u8 *out)
@@ -129,12 +129,12 @@ int aes_siv_encrypt(const u8 *key, size_t key_len,
 	u8 *iv, *crypt_pw;
 
 	if (num_elem > ARRAY_SIZE(_addr) - 1 ||
-	    (key_len != 32 && key_len != 48 && key_len != 64))
+	    (esp_key_len != 32 && esp_key_len != 48 && esp_key_len != 64))
 		return -1;
 
-	key_len /= 2;
+	esp_key_len /= 2;
 	k1 = key;
-	k2 = key + key_len;
+	k2 = key + esp_key_len;
 
 	for (i = 0; i < num_elem; i++) {
 		_addr[i] = addr[i];
@@ -143,7 +143,7 @@ int aes_siv_encrypt(const u8 *key, size_t key_len,
 	_addr[num_elem] = pw;
 	_len[num_elem] = pwlen;
 
-	if (aes_s2v(k1, key_len, num_elem + 1, _addr, _len, v))
+	if (aes_s2v(k1, esp_key_len, num_elem + 1, _addr, _len, v))
 		return -1;
 
 	iv = out;
@@ -155,11 +155,11 @@ int aes_siv_encrypt(const u8 *key, size_t key_len,
 	/* zero out 63rd and 31st bits of ctr (from right) */
 	v[8] &= 0x7f;
 	v[12] &= 0x7f;
-	return aes_ctr_encrypt(k2, key_len, v, crypt_pw, pwlen);
+	return aes_ctr_encrypt(k2, esp_key_len, v, crypt_pw, pwlen);
 }
 
 
-int aes_siv_decrypt(const u8 *key, size_t key_len,
+int aes_siv_decrypt(const u8 *key, size_t esp_key_len,
 		    const u8 *iv_crypt, size_t iv_c_len,
 		    size_t num_elem, const u8 *addr[], const size_t *len,
 		    u8 *out)
@@ -174,12 +174,12 @@ int aes_siv_decrypt(const u8 *key, size_t key_len,
 	u8 check[AES_BLOCK_SIZE];
 
 	if (iv_c_len < AES_BLOCK_SIZE || num_elem > ARRAY_SIZE(_addr) - 1 ||
-	    (key_len != 32 && key_len != 48 && key_len != 64))
+	    (esp_key_len != 32 && esp_key_len != 48 && esp_key_len != 64))
 		return -1;
 	crypt_len = iv_c_len - AES_BLOCK_SIZE;
-	key_len /= 2;
+	esp_key_len /= 2;
 	k1 = key;
-	k2 = key + key_len;
+	k2 = key + esp_key_len;
 
 	for (i = 0; i < num_elem; i++) {
 		_addr[i] = addr[i];
@@ -194,11 +194,11 @@ int aes_siv_decrypt(const u8 *key, size_t key_len,
 	iv[8] &= 0x7f;
 	iv[12] &= 0x7f;
 
-	ret = aes_ctr_encrypt(k2, key_len, iv, out, crypt_len);
+	ret = aes_ctr_encrypt(k2, esp_key_len, iv, out, crypt_len);
 	if (ret)
 		return ret;
 
-	ret = aes_s2v(k1, key_len, num_elem + 1, _addr, _len, check);
+	ret = aes_s2v(k1, esp_key_len, num_elem + 1, _addr, _len, check);
 	if (ret)
 		return ret;
 	if (os_memcmp(check, iv_crypt, AES_BLOCK_SIZE) == 0)

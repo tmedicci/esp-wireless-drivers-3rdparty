@@ -84,9 +84,9 @@ struct wpa_sm {
     void (* sendto) (void *buffer, uint16_t len);
     void (*config_assoc_ie) (u8 proto, u8 *assoc_buf, u32 assoc_wpa_ie_len);
     void (*install_ppkey) (enum wpa_alg alg, u8 *addr, int key_idx, int set_tx,
-               u8 *seq, unsigned int seq_len, u8 *key, unsigned int key_len, enum key_flag key_flag);
+               u8 *seq, unsigned int seq_len, u8 *key, unsigned int esp_key_len, enum key_flag key_flag);
     int (*get_ppkey) (uint8_t *ifx, int *alg, uint8_t *addr, int *key_idx,
-               uint8_t *key, size_t key_len, enum key_flag key_flag);
+               uint8_t *key, size_t esp_key_len, enum key_flag key_flag);
     void (*wpa_deauthenticate)(u8 reason_code);
     void (*wpa_neg_complete)(void);
     struct wpa_gtk_data gd; //used for calllback save param
@@ -145,7 +145,7 @@ struct wpa_sm {
  *	TKIP: 6 octets, CCMP: 6 octets, IGTK: 6 octets
  * @key: key buffer; TKIP: 16-byte temporal key, 8-byte Tx Mic key,
  *	8-byte Rx Mic Key
- * @key_len: length of the key buffer in octets (WEP: 5 or 13,
+ * @esp_key_len: length of the key buffer in octets (WEP: 5 or 13,
  *	TKIP: 32, CCMP: 16, IGTK: 16)
  *
  * Returns: 0 on success, -1 on failure
@@ -156,7 +156,7 @@ struct wpa_sm {
  * individual. If only 4 keys are supported, the default key with key
  * index 0 is used as the individual key. STA must be configured to use
  * it as the default Tx key (set_tx is set) and accept Rx for all the
- * key indexes. In most cases, WPA uses only key indexes 1 and 2 for
+ * key esp_indexes. In most cases, WPA uses only key esp_indexes 1 and 2 for
  * broadcast keys, so key index 0 is available for this kind of
  * configuration.
  *
@@ -191,9 +191,9 @@ static inline int wpa_sm_mark_authenticated(struct wpa_sm *sm,
 typedef void (* WPA_SET_ASSOC_IE)(u8 proto, u8 *assoc_buf, u32 assoc_wpa_ie_len);
 
 typedef void (*WPA_INSTALL_KEY) (enum wpa_alg alg, u8 *addr, int key_idx, int set_tx,
-               u8 *seq, size_t seq_len, u8 *key, size_t key_len, enum key_flag key_flag);
+               u8 *seq, size_t seq_len, u8 *key, size_t esp_key_len, enum key_flag key_flag);
 
-typedef int (*WPA_GET_KEY) (u8 *ifx, int *alg, u8 *addt, int *keyidx, u8 *key, size_t key_len, enum key_flag key_flag);
+typedef int (*WPA_GET_KEY) (u8 *ifx, int *alg, u8 *addt, int *keyidx, u8 *key, size_t esp_key_len, enum key_flag key_flag);
 
 typedef void (*WPA_DEAUTH_FUNC)(u8 reason_code);
 

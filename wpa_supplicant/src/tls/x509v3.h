@@ -136,7 +136,7 @@ int x509_parse_algorithm_identifier(const u8 *buf, size_t len,
 				    const u8 **next);
 int x509_parse_name(const u8 *buf, size_t len, struct x509_name *name,
 		    const u8 **next);
-int x509_parse_time(const u8 *buf, size_t len, u8 asn1_tag, os_time_t *val);
+int esp_x509_parse_time(const u8 *buf, size_t len, u8 asn1_tag, os_time_t *val);
 struct x509_certificate * x509_certificate_parse(const u8 *buf, size_t len);
 void x509_free_name(struct x509_name *name);
 void x509_name_string(struct x509_name *name, char *buf, size_t len);

@@ -31,7 +31,7 @@ void esp_mbedtls_free_buf(unsigned char *buf)
 {
     struct esp_mbedtls_ssl_buf *temp = __containerof(buf, struct esp_mbedtls_ssl_buf, buf[0]);
     ESP_LOGV(TAG, "free buffer @ %p", temp);
-    mbedtls_free(temp);
+    esp_mbedtls_free(temp);
 }
 
 static void esp_mbedtls_init_ssl_buf(struct esp_mbedtls_ssl_buf *buf, unsigned int len)
@@ -144,7 +144,7 @@ static int esp_mbedtls_alloc_tx_buf(mbedtls_ssl_context *ssl, int len)
         ssl->MBEDTLS_PRIVATE(out_buf) = NULL;
     }
 
-    esp_buf = mbedtls_calloc(1, SSL_BUF_HEAD_OFFSET_SIZE + len);
+    esp_buf = esp_mbedtls_calloc(1, SSL_BUF_HEAD_OFFSET_SIZE + len);
     if (!esp_buf) {
         ESP_LOGE(TAG, "alloc(%d bytes) failed", SSL_BUF_HEAD_OFFSET_SIZE + len);
         return MBEDTLS_ERR_SSL_ALLOC_FAILED;
@@ -205,7 +205,7 @@ int esp_mbedtls_reset_add_rx_buffer(mbedtls_ssl_context *ssl)
         ssl->MBEDTLS_PRIVATE(in_buf) = NULL;
     }
 
-    esp_buf = mbedtls_calloc(1, SSL_BUF_HEAD_OFFSET_SIZE + MBEDTLS_SSL_IN_BUFFER_LEN);
+    esp_buf = esp_mbedtls_calloc(1, SSL_BUF_HEAD_OFFSET_SIZE + MBEDTLS_SSL_IN_BUFFER_LEN);
     if (!esp_buf) {
         ESP_LOGE(TAG, "alloc(%d bytes) failed", SSL_BUF_HEAD_OFFSET_SIZE + MBEDTLS_SSL_IN_BUFFER_LEN);
         return MBEDTLS_ERR_SSL_ALLOC_FAILED;
@@ -256,7 +256,7 @@ int esp_mbedtls_add_tx_buffer(mbedtls_ssl_context *ssl, size_t buffer_len)
 
     buffer_len = tx_buffer_len(ssl, buffer_len);
 
-    esp_buf = mbedtls_calloc(1, SSL_BUF_HEAD_OFFSET_SIZE + buffer_len);
+    esp_buf = esp_mbedtls_calloc(1, SSL_BUF_HEAD_OFFSET_SIZE + buffer_len);
     if (!esp_buf) {
         ESP_LOGE(TAG, "alloc(%zu bytes) failed", SSL_BUF_HEAD_OFFSET_SIZE + buffer_len);
         ret = MBEDTLS_ERR_SSL_ALLOC_FAILED;
@@ -301,7 +301,7 @@ int esp_mbedtls_free_tx_buffer(mbedtls_ssl_context *ssl)
     esp_mbedtls_free_buf(ssl->MBEDTLS_PRIVATE(out_buf));
     init_tx_buffer(ssl, NULL);
 
-    esp_buf = mbedtls_calloc(1, SSL_BUF_HEAD_OFFSET_SIZE + TX_IDLE_BUFFER_SIZE);
+    esp_buf = esp_mbedtls_calloc(1, SSL_BUF_HEAD_OFFSET_SIZE + TX_IDLE_BUFFER_SIZE);
     if (!esp_buf) {
         ESP_LOGE(TAG, "alloc(%d bytes) failed", SSL_BUF_HEAD_OFFSET_SIZE + TX_IDLE_BUFFER_SIZE);
         return MBEDTLS_ERR_SSL_ALLOC_FAILED;
@@ -342,13 +342,13 @@ int esp_mbedtls_add_rx_buffer(mbedtls_ssl_context *ssl)
     ssl->MBEDTLS_PRIVATE(in_hdr) = msg_head;
     ssl->MBEDTLS_PRIVATE(in_len) = msg_head + 3;
 
-    if ((ret = mbedtls_ssl_fetch_input(ssl, mbedtls_ssl_in_hdr_len(ssl))) != 0) {
+    if ((ret = esp_mbedtls_ssl_fetch_input(ssl, mbedtls_ssl_in_hdr_len(ssl))) != 0) {
         if (ret == MBEDTLS_ERR_SSL_TIMEOUT) {
-            ESP_LOGD(TAG, "mbedtls_ssl_fetch_input reads data times out");
+            ESP_LOGD(TAG, "esp_mbedtls_ssl_fetch_input reads data times out");
         } else if (ret == MBEDTLS_ERR_SSL_WANT_READ) {
-            ESP_LOGD(TAG, "mbedtls_ssl_fetch_input wants to read more data");
+            ESP_LOGD(TAG, "esp_mbedtls_ssl_fetch_input wants to read more data");
         } else {
-            ESP_LOGE(TAG, "mbedtls_ssl_fetch_input error=%d", -ret);
+            ESP_LOGE(TAG, "esp_mbedtls_ssl_fetch_input error=%d", -ret);
         }
 
         goto exit;
@@ -369,7 +369,7 @@ int esp_mbedtls_add_rx_buffer(mbedtls_ssl_context *ssl)
         init_rx_buffer(ssl, NULL);
     }
 
-    esp_buf = mbedtls_calloc(1, SSL_BUF_HEAD_OFFSET_SIZE + buffer_len);
+    esp_buf = esp_mbedtls_calloc(1, SSL_BUF_HEAD_OFFSET_SIZE + buffer_len);
     if (!esp_buf) {
         ESP_LOGE(TAG, "alloc(%d bytes) failed", SSL_BUF_HEAD_OFFSET_SIZE + buffer_len);
         ret = MBEDTLS_ERR_SSL_ALLOC_FAILED;
@@ -419,7 +419,7 @@ int esp_mbedtls_free_rx_buffer(mbedtls_ssl_context *ssl)
     if (!ssl->MBEDTLS_PRIVATE(in_msgtype)
 #if defined(MBEDTLS_SSL_SRV_C)
         /**
-         * The ssl server read ClientHello manually without mbedtls_ssl_read_record(), so in_msgtype is not set and is zero.
+         * The ssl server read ClientHello manually without esp_mbedtls_ssl_read_record(), so in_msgtype is not set and is zero.
          * ClientHello has been processed and rx buffer should be freed.
          * After processing ClientHello, the ssl state has been changed to MBEDTLS_SSL_SERVER_HELLO.
          */
@@ -435,7 +435,7 @@ int esp_mbedtls_free_rx_buffer(mbedtls_ssl_context *ssl)
     esp_mbedtls_free_buf(ssl->MBEDTLS_PRIVATE(in_buf));
     init_rx_buffer(ssl, NULL);
 
-    esp_buf = mbedtls_calloc(1, SSL_BUF_HEAD_OFFSET_SIZE + 16);
+    esp_buf = esp_mbedtls_calloc(1, SSL_BUF_HEAD_OFFSET_SIZE + 16);
     if (!esp_buf) {
         ESP_LOGE(TAG, "alloc(%d bytes) failed", SSL_BUF_HEAD_OFFSET_SIZE + 16);
         ret = MBEDTLS_ERR_SSL_ALLOC_FAILED;
@@ -473,8 +473,8 @@ size_t esp_mbedtls_get_crt_size(mbedtls_x509_crt *cert, size_t *num)
 void esp_mbedtls_free_dhm(mbedtls_ssl_context *ssl)
 {
 #ifdef CONFIG_MBEDTLS_DHM_C
-    mbedtls_mpi_free((mbedtls_mpi *)&ssl->MBEDTLS_PRIVATE(conf)->MBEDTLS_PRIVATE(dhm_P));
-    mbedtls_mpi_free((mbedtls_mpi *)&ssl->MBEDTLS_PRIVATE(conf)->MBEDTLS_PRIVATE(dhm_G));
+    esp_mbedtls_mpi_free((mbedtls_mpi *)&ssl->MBEDTLS_PRIVATE(conf)->MBEDTLS_PRIVATE(dhm_P));
+    esp_mbedtls_mpi_free((mbedtls_mpi *)&ssl->MBEDTLS_PRIVATE(conf)->MBEDTLS_PRIVATE(dhm_G));
 #endif /* CONFIG_MBEDTLS_DHM_C */
 }
 
@@ -487,7 +487,7 @@ void esp_mbedtls_free_keycert(mbedtls_ssl_context *ssl)
         next = keycert->next;
 
         if (keycert) {
-            mbedtls_free(keycert);
+            esp_mbedtls_free(keycert);
         }
 
         keycert = next;
@@ -502,7 +502,7 @@ void esp_mbedtls_free_keycert_key(mbedtls_ssl_context *ssl)
 
     while (keycert) {
         if (keycert->key) {
-            mbedtls_pk_free(keycert->key);
+            esp_mbedtls_pk_free(keycert->key);
             keycert->key = NULL;
         }
         keycert = keycert->next;
@@ -515,7 +515,7 @@ void esp_mbedtls_free_keycert_cert(mbedtls_ssl_context *ssl)
 
     while (keycert) {
         if (keycert->cert) {
-            mbedtls_x509_crt_free(keycert->cert);
+            esp_mbedtls_x509_crt_free(keycert->cert);
             keycert->cert = NULL;
         }
         keycert = keycert->next;
@@ -529,7 +529,7 @@ void esp_mbedtls_free_cacert(mbedtls_ssl_context *ssl)
     if (ssl->MBEDTLS_PRIVATE(conf)->MBEDTLS_PRIVATE(ca_chain)) {
         mbedtls_ssl_config *conf = (mbedtls_ssl_config *)ssl->MBEDTLS_PRIVATE(conf);
 
-        mbedtls_x509_crt_free(conf->MBEDTLS_PRIVATE(ca_chain));
+        esp_mbedtls_x509_crt_free(conf->MBEDTLS_PRIVATE(ca_chain));
         conf->MBEDTLS_PRIVATE(ca_chain) = NULL;
     }
 }

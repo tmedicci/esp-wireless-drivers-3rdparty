@@ -44,8 +44,8 @@ int sha512_vector(size_t num_elem, const u8 *addr[], const size_t *len,
 
 #define CONST64(n) n ## ULL
 
-/* the K array */
-static const u64 K[80] = {
+/* the esp_K array */
+static const u64 esp_K[80] = {
 	CONST64(0x428a2f98d728ae22), CONST64(0x7137449123ef65cd),
 	CONST64(0xb5c0fbcfec4d3b2f), CONST64(0xe9b5dba58189dbbc),
 	CONST64(0x3956c25bf348b538), CONST64(0x59f111f1b605d019),
@@ -134,7 +134,7 @@ static int sha512_compress(struct sha512_state *md, unsigned char *buf)
 
 	/* Compress */
 	for (i = 0; i < 80; i++) {
-		t0 = S[7] + Sigma1(S[4]) + Ch(S[4], S[5], S[6]) + K[i] + W[i];
+		t0 = S[7] + Sigma1(S[4]) + Ch(S[4], S[5], S[6]) + esp_K[i] + W[i];
 		t1 = Sigma0(S[0]) + Maj(S[0], S[1], S[2]);
 		S[7] = S[6];
 		S[6] = S[5];

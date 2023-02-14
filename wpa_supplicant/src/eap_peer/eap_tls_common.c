@@ -1019,15 +1019,14 @@ get_defaults:
 int eap_peer_tls_phase2_nak(struct eap_method_type *types, size_t num_types,
 			    struct eap_hdr *hdr, struct wpabuf **resp)
 {
-#ifdef DEBUG_PRINT
 	u8 *pos = (u8 *) (hdr + 1);
-#endif
 	size_t i;
 
 	/* TODO: add support for expanded Nak */
 	wpa_printf(MSG_DEBUG, "TLS: Phase Request: Nak type=%d\n", *pos);
 	wpa_hexdump(MSG_DEBUG, "TLS: Allowed Phase2 EAP types",
 		    (u8 *) types, num_types * sizeof(struct eap_method_type));
+
 	*resp = eap_msg_alloc(EAP_VENDOR_IETF, EAP_TYPE_NAK, num_types,
 			      EAP_CODE_RESPONSE, hdr->identifier);
 	if (*resp == NULL)

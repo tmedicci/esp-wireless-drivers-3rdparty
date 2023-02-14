@@ -228,7 +228,7 @@ int esp_mont_hw_op(mbedtls_mpi *Z, const mbedtls_mpi *X, const mbedtls_mpi *Y, c
 
     start_op(RSA_MULT_START_REG);
     Z->MBEDTLS_PRIVATE(s) = 1; // The sign of Z will be = M->s (but M->s is always 1)
-    MBEDTLS_MPI_CHK( mbedtls_mpi_grow(Z, hw_words) );
+    MBEDTLS_MPI_CHK( esp_mbedtls_mpi_grow(Z, hw_words) );
 
     wait_op_complete();
 
@@ -237,8 +237,8 @@ int esp_mont_hw_op(mbedtls_mpi *Z, const mbedtls_mpi *X, const mbedtls_mpi *Y, c
 
 
     /* from HAC 14.36 - 3. If Z >= M then Z = Z - M */
-    if (mbedtls_mpi_cmp_mpi(Z, M) >= 0) {
-        MBEDTLS_MPI_CHK(mbedtls_mpi_sub_mpi(Z, Z, M));
+    if (esp_mbedtls_mpi_cmp_mpi(Z, M) >= 0) {
+        MBEDTLS_MPI_CHK(esp_mbedtls_mpi_sub_mpi(Z, Z, M));
     }
 cleanup:
     return ret;

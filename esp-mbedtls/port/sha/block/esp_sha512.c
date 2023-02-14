@@ -33,7 +33,7 @@
 #include "mbedtls/platform.h"
 #else
 #include <stdio.h>
-#define mbedtls_printf printf
+#define esp_mbedtls_printf printf
 #endif /* MBEDTLS_PLATFORM_C */
 #endif /* MBEDTLS_SELF_TEST */
 
@@ -87,14 +87,14 @@ void esp_sha512_set_t( mbedtls_sha512_context *ctx, uint16_t t_val)
     ctx->t_val = t_val;
 }
 
-void mbedtls_sha512_init( mbedtls_sha512_context *ctx )
+void esp_mbedtls_sha512_init( mbedtls_sha512_context *ctx )
 {
     assert(ctx != NULL);
 
     memset( ctx, 0, sizeof( mbedtls_sha512_context ) );
 }
 
-void mbedtls_sha512_free( mbedtls_sha512_context *ctx )
+void esp_mbedtls_sha512_free( mbedtls_sha512_context *ctx )
 {
     if ( ctx == NULL ) {
         return;
@@ -103,7 +103,7 @@ void mbedtls_sha512_free( mbedtls_sha512_context *ctx )
     mbedtls_zeroize( ctx, sizeof( mbedtls_sha512_context ) );
 }
 
-void mbedtls_sha512_clone( mbedtls_sha512_context *dst,
+void esp_mbedtls_sha512_clone( mbedtls_sha512_context *dst,
                            const mbedtls_sha512_context *src )
 {
     memcpy(dst, src, sizeof(mbedtls_sha512_context));
@@ -112,7 +112,7 @@ void mbedtls_sha512_clone( mbedtls_sha512_context *dst,
 /*
  * SHA-512 context setup
  */
-int mbedtls_sha512_starts( mbedtls_sha512_context *ctx, int is384 )
+int esp_mbedtls_sha512_starts( mbedtls_sha512_context *ctx, int is384 )
 {
     mbedtls_zeroize( ctx, sizeof( mbedtls_sha512_context ) );
 
@@ -136,7 +136,7 @@ static int esp_internal_sha512_block_process(mbedtls_sha512_context *ctx,
     }
 }
 
-int mbedtls_internal_sha512_process( mbedtls_sha512_context *ctx, const unsigned char data[128] )
+int esp_mbedtls_internal_sha512_process( mbedtls_sha512_context *ctx, const unsigned char data[128] )
 {
     esp_sha_acquire_hardware();
     esp_sha_block(ctx->mode, data, ctx->first_block);
@@ -147,7 +147,7 @@ int mbedtls_internal_sha512_process( mbedtls_sha512_context *ctx, const unsigned
 /*
  * SHA-512 process buffer
  */
-int mbedtls_sha512_update( mbedtls_sha512_context *ctx, const unsigned char *input,
+int esp_mbedtls_sha512_update( mbedtls_sha512_context *ctx, const unsigned char *input,
                                size_t ilen )
 {
     int ret;
@@ -233,7 +233,7 @@ static const unsigned char sha512_padding[128] = {
 /*
  * SHA-512 final digest
  */
-int mbedtls_sha512_finish( mbedtls_sha512_context *ctx, unsigned char *output )
+int esp_mbedtls_sha512_finish( mbedtls_sha512_context *ctx, unsigned char *output )
 {
     int ret;
     size_t last, padn;
@@ -250,11 +250,11 @@ int mbedtls_sha512_finish( mbedtls_sha512_context *ctx, unsigned char *output )
     last = (size_t)( ctx->total[0] & 0x7F );
     padn = ( last < 112 ) ? ( 112 - last ) : ( 240 - last );
 
-    if ( ( ret = mbedtls_sha512_update( ctx, sha512_padding, padn ) ) != 0 ) {
+    if ( ( ret = esp_mbedtls_sha512_update( ctx, sha512_padding, padn ) ) != 0 ) {
         return ret;
     }
 
-    if ( ( ret = mbedtls_sha512_update( ctx, msglen, 16 ) ) != 0 ) {
+    if ( ( ret = esp_mbedtls_sha512_update( ctx, msglen, 16 ) ) != 0 ) {
         return ret;
     }
 

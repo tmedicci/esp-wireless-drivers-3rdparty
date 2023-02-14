@@ -4,6 +4,24 @@
 #include <mbedtls/bignum.h>
 #include <stdbool.h>
 
+/** Return the smaller of two values.
+ *
+ * \param x         An integer-valued expression without side effects.
+ * \param y         An integer-valued expression without side effects.
+ *
+ * \return The smaller of \p x and \p y.
+ */
+#define MIN( x, y ) ( ( x ) < ( y ) ? ( x ) : ( y ) )
+
+/** Return the larger of two values.
+ *
+ * \param x         An integer-valued expression without side effects.
+ * \param y         An integer-valued expression without side effects.
+ *
+ * \return The larger of \p x and \p y.
+ */
+#define MAX( x, y ) ( ( x ) > ( y ) ? ( x ) : ( y ) )
+
 /* Use montgomery exponentiation (HAC 14.94) for calculating X ^ Y mod M,
    this may be faster for some targets. The hardware acceleration support for modular
    exponentiation on the ESP32 is slow for public key operations, so use montgomery

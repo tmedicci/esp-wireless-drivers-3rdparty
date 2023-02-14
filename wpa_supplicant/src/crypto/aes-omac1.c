@@ -9,7 +9,7 @@
 
 #include "includes.h"
 
-#include "common.h"
+#include "utils/common.h"
 #include "aes.h"
 #include "aes_wrap.h"
 
@@ -29,7 +29,7 @@ static void gf_mulx(u8 *pad)
 /**
  * omac1_aes_vector - One-Key CBC MAC (OMAC1) hash with AES
  * @key: Key for the hash operation
- * @key_len: Key length in octets
+ * @esp_key_len: Key length in octets
  * @num_elem: Number of elements in the data vector
  * @addr: Pointers to the data areas
  * @len: Lengths of the data blocks
@@ -40,7 +40,7 @@ static void gf_mulx(u8 *pad)
  * OMAC1 was standardized with the name CMAC by NIST in a Special Publication
  * (SP) 800-38B.
  */
-int omac1_aes_vector(const u8 *key, size_t key_len, size_t num_elem,
+int omac1_aes_vector(const u8 *key, size_t esp_key_len, size_t num_elem,
 		     const u8 *addr[], const size_t *len, u8 *mac)
 {
 	void *ctx;
@@ -51,7 +51,7 @@ int omac1_aes_vector(const u8 *key, size_t key_len, size_t num_elem,
 	if (TEST_FAIL())
 		return -1;
 
-	ctx = aes_encrypt_init(key, key_len);
+	ctx = aes_encrypt_init(key, esp_key_len);
 	if (ctx == NULL)
 		return -1;
 	os_memset(cbc, 0, AES_BLOCK_SIZE);

@@ -4,9 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifdef ESP_PLATFORM
 #include "mbedtls/bignum.h"
-#endif
 
 #include "utils/includes.h"
 #include "utils/common.h"
@@ -31,7 +29,7 @@ static void crypto_dump_verify_info(u32 flags)
 {
 	char dump_buffer[1024];
 
-	mbedtls_x509_crt_verify_info(dump_buffer, 1024, "  ! ", flags );
+	esp_mbedtls_x509_crt_verify_info(dump_buffer, 1024, "  ! ", flags );
 	wpa_printf(MSG_ERROR, "%s", dump_buffer);
 }
 #else
@@ -59,28 +57,28 @@ int crypto_verify_cert(const u8 *cert_start, int certlen, const u8 *ca_cert_star
 		wpa_printf(MSG_ERROR, "%s: memory allocation failed", __func__);
 		return -1;
 	}
-	mbedtls_x509_crt_init(cert);
-	mbedtls_x509_crt_init(ca_cert);
-	ret = mbedtls_x509_crt_parse(cert, cert_start, certlen);
+	esp_mbedtls_x509_crt_init(cert);
+	esp_mbedtls_x509_crt_init(ca_cert);
+	ret = esp_mbedtls_x509_crt_parse(cert, cert_start, certlen);
 	if (ret < 0) {
 		wpa_printf(MSG_ERROR, "peer cert parsing failed");
 		goto cleanup;
 	}
-	ret = mbedtls_x509_crt_parse(ca_cert, ca_cert_start, ca_certlen);
+	ret = esp_mbedtls_x509_crt_parse(ca_cert, ca_cert_start, ca_certlen);
 	if (ret < 0) {
 		wpa_printf(MSG_ERROR, "CA cert parsing failed");
 		goto cleanup;
 	}
 
-	ret = mbedtls_x509_crt_verify(cert, ca_cert, NULL, NULL, &flags, NULL, NULL );
+	ret = esp_mbedtls_x509_crt_verify(cert, ca_cert, NULL, NULL, &flags, NULL, NULL );
 
 	/* Certification is failed, try to get some more info */
 	if (ret != 0)
 		crypto_dump_verify_info(flags);
 
 cleanup:
-	mbedtls_x509_crt_free(cert);
-	mbedtls_x509_crt_free(ca_cert);
+	esp_mbedtls_x509_crt_free(cert);
+	esp_mbedtls_x509_crt_free(ca_cert);
 
 	os_free(cert);
 	os_free(ca_cert);
@@ -96,8 +94,8 @@ struct crypto_public_key *  crypto_public_key_import(const u8 *key, size_t len)
 	if (!pkey)
 		return NULL;
 
-	mbedtls_pk_init(pkey);
-	ret = mbedtls_pk_parse_public_key(pkey, key, len);
+	esp_mbedtls_pk_init(pkey);
+	ret = esp_mbedtls_pk_parse_public_key(pkey, key, len);
 
 	if (ret < 0) {
 		wpa_printf(MSG_ERROR, "failed to parse public key");
@@ -117,9 +115,9 @@ struct crypto_private_key *  crypto_private_key_import(const u8 *key,
 	if (!pkey)
 		return NULL;
 
-	mbedtls_pk_init(pkey);
+	esp_mbedtls_pk_init(pkey);
 
-	ret = mbedtls_pk_parse_key(pkey, key, len, (const unsigned char *)passwd,
+	ret = esp_mbedtls_pk_parse_key(pkey, key, len, (const unsigned char *)passwd,
 			passwd ? os_strlen(passwd) : 0, crypto_rng_wrapper, NULL);
 
 	if (ret < 0) {
@@ -148,21 +146,21 @@ struct crypto_public_key *crypto_public_key_from_cert(const u8 *buf,
 		wpa_printf(MSG_ERROR, "failed to allocate memory");
 		goto fail;
 	}
-	mbedtls_x509_crt_init(cert);
+	esp_mbedtls_x509_crt_init(cert);
 
-	ret = mbedtls_x509_crt_parse(cert, buf, len);
+	ret = esp_mbedtls_x509_crt_parse(cert, buf, len);
 	if (ret < 0) {
 		wpa_printf(MSG_ERROR, "cert parsing failed");
 		goto fail;
 	}
 
-	mbedtls_pk_init(kctx);
+	esp_mbedtls_pk_init(kctx);
 
-	if(mbedtls_pk_setup(kctx, mbedtls_pk_info_from_type(mbedtls_pk_get_type(&cert->pk))) != 0) {
+	if(esp_mbedtls_pk_setup(kctx, esp_mbedtls_pk_info_from_type(esp_mbedtls_pk_get_type(&cert->pk))) != 0) {
 		wpa_printf(MSG_ERROR, "key setup failed");
 		goto fail;
 	}
-	ret = mbedtls_rsa_copy(mbedtls_pk_rsa(*kctx), mbedtls_pk_rsa(cert->pk));
+	ret = esp_mbedtls_rsa_copy(mbedtls_pk_rsa(*kctx), mbedtls_pk_rsa(cert->pk));
 
 	if (ret < 0) {
 		wpa_printf(MSG_ERROR, "key copy failed");
@@ -170,7 +168,7 @@ struct crypto_public_key *crypto_public_key_from_cert(const u8 *buf,
 	}
 
 cleanup:
-	mbedtls_x509_crt_free(cert);
+	esp_mbedtls_x509_crt_free(cert);
 	os_free(cert);
 	return (struct crypto_public_key *)kctx;
 fail:
@@ -198,30 +196,30 @@ int crypto_public_key_encrypt_pkcs1_v15(struct crypto_public_key *key,
 		return -1;
 	}
 
-	mbedtls_entropy_init( entropy );
-	mbedtls_ctr_drbg_init( ctr_drbg );
+	esp_mbedtls_entropy_init( entropy );
+	esp_mbedtls_ctr_drbg_init( ctr_drbg );
 
-	ret = mbedtls_ctr_drbg_seed( ctr_drbg, mbedtls_entropy_func,
+	ret = esp_mbedtls_ctr_drbg_seed( ctr_drbg, esp_mbedtls_entropy_func,
 			entropy, (const unsigned char *) pers,
 			strlen( pers ) );
 	if( ret != 0 ) {
-		wpa_printf(MSG_ERROR, " failed  ! mbedtls_ctr_drbg_seed returned %d",
+		wpa_printf(MSG_ERROR, " failed  ! esp_mbedtls_ctr_drbg_seed returned %d",
 				ret );
 		goto cleanup;
 	}
 
-	ret = mbedtls_rsa_pkcs1_encrypt(mbedtls_pk_rsa(*pkey), mbedtls_ctr_drbg_random,
+	ret = esp_mbedtls_rsa_pkcs1_encrypt(mbedtls_pk_rsa(*pkey), esp_mbedtls_ctr_drbg_random,
 					ctr_drbg, inlen, in, out);
 
 	if(ret != 0) {
-		wpa_printf(MSG_ERROR, " failed  !  mbedtls_rsa_pkcs1_encrypt returned -0x%04x", -ret);
+		wpa_printf(MSG_ERROR, " failed  !  esp_mbedtls_rsa_pkcs1_encrypt returned -0x%04x", -ret);
 		goto cleanup;
 	}
 	*outlen = mbedtls_pk_rsa(*pkey)->MBEDTLS_PRIVATE(len);
 
 cleanup:
-	mbedtls_ctr_drbg_free( ctr_drbg );
-	mbedtls_entropy_free( entropy );
+	esp_mbedtls_ctr_drbg_free( ctr_drbg );
+	esp_mbedtls_entropy_free( entropy );
 	os_free(entropy);
 	os_free(ctr_drbg);
 
@@ -247,9 +245,9 @@ int  crypto_private_key_decrypt_pkcs1_v15(struct crypto_private_key *key,
 			os_free(ctr_drbg);
 		return -1;
 	}
-	mbedtls_ctr_drbg_init( ctr_drbg );
-	mbedtls_entropy_init( entropy );
-	ret = mbedtls_ctr_drbg_seed(ctr_drbg, mbedtls_entropy_func,
+	esp_mbedtls_ctr_drbg_init( ctr_drbg );
+	esp_mbedtls_entropy_init( entropy );
+	ret = esp_mbedtls_ctr_drbg_seed(ctr_drbg, esp_mbedtls_entropy_func,
 			entropy, (const unsigned char *) pers,
 			strlen(pers));
 
@@ -257,14 +255,14 @@ int  crypto_private_key_decrypt_pkcs1_v15(struct crypto_private_key *key,
 		goto cleanup;
 
 	i =  mbedtls_pk_rsa(*pkey)->MBEDTLS_PRIVATE(len);
-	ret = mbedtls_rsa_rsaes_pkcs1_v15_decrypt(mbedtls_pk_rsa(*pkey), mbedtls_ctr_drbg_random,
+	ret = esp_mbedtls_rsa_rsaes_pkcs1_v15_decrypt(mbedtls_pk_rsa(*pkey), esp_mbedtls_ctr_drbg_random,
 			ctr_drbg, &i, in, out, *outlen);
 
 	*outlen = i;
 
 cleanup:
-	mbedtls_ctr_drbg_free( ctr_drbg );
-	mbedtls_entropy_free( entropy );
+	esp_mbedtls_ctr_drbg_free( ctr_drbg );
+	esp_mbedtls_entropy_free( entropy );
 	os_free(entropy);
 	os_free(ctr_drbg);
 
@@ -289,22 +287,22 @@ int crypto_private_key_sign_pkcs1(struct crypto_private_key *key,
 			os_free(ctr_drbg);
 		return -1;
 	}
-	mbedtls_ctr_drbg_init( ctr_drbg );
-	mbedtls_entropy_init( entropy );
-	ret = mbedtls_ctr_drbg_seed(ctr_drbg, mbedtls_entropy_func,
+	esp_mbedtls_ctr_drbg_init( ctr_drbg );
+	esp_mbedtls_entropy_init( entropy );
+	ret = esp_mbedtls_ctr_drbg_seed(ctr_drbg, esp_mbedtls_entropy_func,
 			entropy, (const unsigned char *) pers,
 			strlen(pers));
 
-	if((ret = mbedtls_rsa_pkcs1_sign(mbedtls_pk_rsa(*pkey), mbedtls_ctr_drbg_random, ctr_drbg,
+	if((ret = esp_mbedtls_rsa_pkcs1_sign(mbedtls_pk_rsa(*pkey), esp_mbedtls_ctr_drbg_random, ctr_drbg,
 					(mbedtls_pk_rsa(*pkey))->MBEDTLS_PRIVATE(hash_id),
 					inlen, in, out)) != 0 ) {
-		wpa_printf(MSG_ERROR, " failed  ! mbedtls_rsa_pkcs1_sign returned %d", ret );
+		wpa_printf(MSG_ERROR, " failed  ! esp_mbedtls_rsa_pkcs1_sign returned %d", ret );
 		goto cleanup;
 	}
 	*outlen = mbedtls_pk_rsa(*pkey)->MBEDTLS_PRIVATE(len);
 cleanup:
-	mbedtls_ctr_drbg_free( ctr_drbg );
-	mbedtls_entropy_free( entropy );
+	esp_mbedtls_ctr_drbg_free( ctr_drbg );
+	esp_mbedtls_entropy_free( entropy );
 	os_free(entropy);
 	os_free(ctr_drbg);
 	return ret;
@@ -317,7 +315,7 @@ void  crypto_public_key_free(struct crypto_public_key *key)
 	if (!pkey)
 		return;
 
-	mbedtls_pk_free(pkey);
+	esp_mbedtls_pk_free(pkey);
 	os_free(pkey);
 }
 
@@ -328,7 +326,7 @@ void  crypto_private_key_free(struct crypto_private_key *key)
 	if (!pkey)
 		return;
 
-	mbedtls_pk_free(pkey);
+	esp_mbedtls_pk_free(pkey);
 	os_free(pkey);
 }
 
@@ -344,7 +342,7 @@ int  crypto_public_key_decrypt_pkcs1(struct crypto_public_key *key,
 		return -1;
 	}
 
-	if (mbedtls_rsa_public(mbedtls_pk_rsa(*pkey), crypt, plain) < 0)
+	if (esp_mbedtls_rsa_public(mbedtls_pk_rsa(*pkey), crypt, plain) < 0)
 		return -1;
 
 	/*

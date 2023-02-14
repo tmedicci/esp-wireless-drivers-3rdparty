@@ -66,7 +66,7 @@ to
 long len)
 
 The 'len' parameter was declared an int which works fine on 32 bit machines.
-However, on 16 bit machines an int is too small for the shifts being done
+However, on 16 bit machines an int is too small for the esp_shifts being done
 against
 it.  This caused the hash function to generate incorrect values if len was
 greater than 8191 (8K - 1) due to the 'len << 3' on line 3 of SHA1Update().

@@ -184,7 +184,7 @@ static mbedtls_mpi_uint modular_inverse(const mbedtls_mpi *M)
  *  R = 2^N (where N=num_bits)
  *  RR = R^2 = 2^(2*N) (where N=num_bits=num_words*32)
  *
- * This calculation is computationally expensive (mbedtls_mpi_mod_mpi)
+ * This calculation is computationally expensive (esp_mbedtls_mpi_mod_mpi)
  * so caller should cache the result where possible.
  *
  * DO NOT call this function while holding esp_mpi_enable_hardware_hw_op().
@@ -195,12 +195,12 @@ static int calculate_rinv(mbedtls_mpi *Rinv, const mbedtls_mpi *M, int num_words
     int ret;
     size_t num_bits = num_words * 32;
     mbedtls_mpi RR;
-    mbedtls_mpi_init(&RR);
-    MBEDTLS_MPI_CHK(mbedtls_mpi_set_bit(&RR, num_bits * 2, 1));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_mod_mpi(Rinv, &RR, M));
+    esp_mbedtls_mpi_init(&RR);
+    MBEDTLS_MPI_CHK(esp_mbedtls_mpi_set_bit(&RR, num_bits * 2, 1));
+    MBEDTLS_MPI_CHK(esp_mbedtls_mpi_mod_mpi(Rinv, &RR, M));
 
 cleanup:
-    mbedtls_mpi_free(&RR);
+    esp_mbedtls_mpi_free(&RR);
 
     return ret;
 }
@@ -218,9 +218,9 @@ int esp_mpi_mul_mpi_mod(mbedtls_mpi *Z, const mbedtls_mpi *X, const mbedtls_mpi 
 {
     int ret = 0;
 
-    size_t x_bits = mbedtls_mpi_bitlen(X);
-    size_t y_bits = mbedtls_mpi_bitlen(Y);
-    size_t m_bits = mbedtls_mpi_bitlen(M);
+    size_t x_bits = esp_mbedtls_mpi_bitlen(X);
+    size_t y_bits = esp_mbedtls_mpi_bitlen(Y);
+    size_t m_bits = esp_mbedtls_mpi_bitlen(M);
     size_t z_bits = MIN(m_bits, x_bits + y_bits);
     size_t x_words = bits_to_words(x_bits);
     size_t y_words = bits_to_words(y_bits);
@@ -231,7 +231,7 @@ int esp_mpi_mul_mpi_mod(mbedtls_mpi *Z, const mbedtls_mpi *X, const mbedtls_mpi 
     mbedtls_mpi_uint Mprime;
 
     /* Calculate and load the first stage montgomery multiplication */
-    mbedtls_mpi_init(&Rinv);
+    esp_mbedtls_mpi_init(&Rinv);
     MBEDTLS_MPI_CHK(calculate_rinv(&Rinv, M, hw_words));
     Mprime = modular_inverse(M);
 
@@ -239,13 +239,13 @@ int esp_mpi_mul_mpi_mod(mbedtls_mpi *Z, const mbedtls_mpi *X, const mbedtls_mpi 
     /* Load and start a (X * Y) mod M calculation */
     esp_mpi_mul_mpi_mod_hw_op(X, Y, M, &Rinv, Mprime, hw_words);
 
-    MBEDTLS_MPI_CHK(mbedtls_mpi_grow(Z, z_words));
+    MBEDTLS_MPI_CHK(esp_mbedtls_mpi_grow(Z, z_words));
 
     esp_mpi_read_result_hw_op(Z, z_words);
     Z->MBEDTLS_PRIVATE(s) = X->MBEDTLS_PRIVATE(s) * Y->MBEDTLS_PRIVATE(s);
 
 cleanup:
-    mbedtls_mpi_free(&Rinv);
+    esp_mbedtls_mpi_free(&Rinv);
     esp_mpi_disable_hardware_hw_op();
 
     return ret;
@@ -285,10 +285,10 @@ static int mpi_montgomery_exp_calc( mbedtls_mpi *Z, const mbedtls_mpi *X, const 
     int ret = 0;
     mbedtls_mpi X_, one;
 
-    mbedtls_mpi_init(&X_);
-    mbedtls_mpi_init(&one);
-    if ( ( ( ret = mbedtls_mpi_grow(&one, hw_words) ) != 0 ) ||
-            ( ( ret = mbedtls_mpi_set_bit(&one, 0, 1) )  != 0 ) ) {
+    esp_mbedtls_mpi_init(&X_);
+    esp_mbedtls_mpi_init(&one);
+    if ( ( ( ret = esp_mbedtls_mpi_grow(&one, hw_words) ) != 0 ) ||
+            ( ( ret = esp_mbedtls_mpi_set_bit(&one, 0, 1) )  != 0 ) ) {
         goto cleanup2;
     }
 
@@ -315,7 +315,7 @@ static int mpi_montgomery_exp_calc( mbedtls_mpi *Z, const mbedtls_mpi *X, const 
             }
 
             // 2.2 if y[i] = 1 then z = mont(A, x_)
-            if (mbedtls_mpi_get_bit(Y, i)) {
+            if (esp_mbedtls_mpi_get_bit(Y, i)) {
                 MBEDTLS_MPI_CHK( esp_mont_hw_op(Z, Z, &X_, M, Mprime, hw_words, true) );
             }
         }
@@ -328,8 +328,8 @@ cleanup:
     esp_mpi_disable_hardware_hw_op();
 
 cleanup2:
-    mbedtls_mpi_free(&X_);
-    mbedtls_mpi_free(&one);
+    esp_mbedtls_mpi_free(&X_);
+    esp_mbedtls_mpi_free(&one);
     return ret;
 }
 
@@ -364,22 +364,22 @@ static int esp_mpi_exp_mod( mbedtls_mpi *Z, const mbedtls_mpi *X, const mbedtls_
         return MBEDTLS_ERR_MPI_NOT_ACCEPTABLE;
     }
 
-    if (mbedtls_mpi_cmp_int(M, 0) <= 0 || (M->MBEDTLS_PRIVATE(p[0]) & 1) == 0) {
+    if (esp_mbedtls_mpi_cmp_int(M, 0) <= 0 || (M->MBEDTLS_PRIVATE(p[0]) & 1) == 0) {
         return MBEDTLS_ERR_MPI_BAD_INPUT_DATA;
     }
 
-    if (mbedtls_mpi_cmp_int(Y, 0) < 0) {
+    if (esp_mbedtls_mpi_cmp_int(Y, 0) < 0) {
         return MBEDTLS_ERR_MPI_BAD_INPUT_DATA;
     }
 
-    if (mbedtls_mpi_cmp_int(Y, 0) == 0) {
-        return mbedtls_mpi_lset(Z, 1);
+    if (esp_mbedtls_mpi_cmp_int(Y, 0) == 0) {
+        return esp_mbedtls_mpi_lset(Z, 1);
     }
 
     /* Determine RR pointer, either _RR for cached value
        or local RR_new */
     if (_Rinv == NULL) {
-        mbedtls_mpi_init(&Rinv_new);
+        esp_mbedtls_mpi_init(&Rinv_new);
         Rinv = &Rinv_new;
     } else {
         Rinv = _Rinv;
@@ -406,7 +406,7 @@ static int esp_mpi_exp_mod( mbedtls_mpi *Z, const mbedtls_mpi *X, const mbedtls_
 #endif
 
     esp_mpi_exp_mpi_mod_hw_op(X, Y, M, Rinv, Mprime, num_words);
-    ret = mbedtls_mpi_grow(Z, m_words);
+    ret = esp_mbedtls_mpi_grow(Z, m_words);
     if (ret != 0) {
         esp_mpi_disable_hardware_hw_op();
         goto cleanup;
@@ -427,14 +427,14 @@ static int esp_mpi_exp_mod( mbedtls_mpi *Z, const mbedtls_mpi *X, const mbedtls_
     // Compensate for negative X
     if (X->MBEDTLS_PRIVATE(s) == -1 && (Y->MBEDTLS_PRIVATE(p[0]) & 1) != 0) {
         Z->MBEDTLS_PRIVATE(s) = -1;
-        MBEDTLS_MPI_CHK(mbedtls_mpi_add_mpi(Z, M, Z));
+        MBEDTLS_MPI_CHK(esp_mbedtls_mpi_add_mpi(Z, M, Z));
     } else {
         Z->MBEDTLS_PRIVATE(s) = 1;
     }
 
 cleanup:
     if (_Rinv == NULL) {
-        mbedtls_mpi_free(&Rinv_new);
+        esp_mbedtls_mpi_free(&Rinv_new);
     }
     return ret;
 }
@@ -444,7 +444,7 @@ cleanup:
 /*
  * Sliding-window exponentiation: X = A^E mod N  (HAC 14.85)
  */
-int mbedtls_mpi_exp_mod( mbedtls_mpi *X, const mbedtls_mpi *A,
+int esp_mbedtls_mpi_exp_mod( mbedtls_mpi *X, const mbedtls_mpi *A,
                          const mbedtls_mpi *E, const mbedtls_mpi *N,
                          mbedtls_mpi *_RR )
 {
@@ -471,11 +471,11 @@ static int mpi_mult_mpi_failover_mod_mult( mbedtls_mpi *Z, const mbedtls_mpi *X,
 static int mpi_mult_mpi_overlong(mbedtls_mpi *Z, const mbedtls_mpi *X, const mbedtls_mpi *Y, size_t y_words, size_t z_words);
 
 /* Z = X * Y */
-int mbedtls_mpi_mul_mpi( mbedtls_mpi *Z, const mbedtls_mpi *X, const mbedtls_mpi *Y )
+int esp_mbedtls_mpi_mul_mpi( mbedtls_mpi *Z, const mbedtls_mpi *X, const mbedtls_mpi *Y )
 {
     int ret = 0;
-    size_t x_bits = mbedtls_mpi_bitlen(X);
-    size_t y_bits = mbedtls_mpi_bitlen(Y);
+    size_t x_bits = esp_mbedtls_mpi_bitlen(X);
+    size_t y_bits = esp_mbedtls_mpi_bitlen(Y);
     size_t x_words = bits_to_words(x_bits);
     size_t y_words = bits_to_words(y_bits);
     size_t z_words = bits_to_words(x_bits + y_bits);
@@ -489,22 +489,22 @@ int mbedtls_mpi_mul_mpi( mbedtls_mpi *Z, const mbedtls_mpi *X, const mbedtls_mpi
        argument is zero or one.
     */
     if (x_bits == 0 || y_bits == 0) {
-        mbedtls_mpi_lset(Z, 0);
+        esp_mbedtls_mpi_lset(Z, 0);
         return 0;
     }
     if (x_bits == 1) {
-        ret = mbedtls_mpi_copy(Z, Y);
+        ret = esp_mbedtls_mpi_copy(Z, Y);
         Z->MBEDTLS_PRIVATE(s) *= X->MBEDTLS_PRIVATE(s);
         return ret;
     }
     if (y_bits == 1) {
-        ret = mbedtls_mpi_copy(Z, X);
+        ret = esp_mbedtls_mpi_copy(Z, X);
         Z->MBEDTLS_PRIVATE(s) *= Y->MBEDTLS_PRIVATE(s);
         return ret;
     }
 
     /* Grow Z to result size early, avoid interim allocations */
-    MBEDTLS_MPI_CHK( mbedtls_mpi_grow(Z, z_words) );
+    MBEDTLS_MPI_CHK( esp_mbedtls_mpi_grow(Z, z_words) );
 
     /* If either factor is over 2048 bits, we can't use the standard hardware multiplier
        (it assumes result is double longest factor, and result is max 4096 bits.)
@@ -544,7 +544,7 @@ cleanup:
     return ret;
 }
 
-int mbedtls_mpi_mul_int( mbedtls_mpi *X, const mbedtls_mpi *A, mbedtls_mpi_uint b )
+int esp_mbedtls_mpi_mul_int( mbedtls_mpi *X, const mbedtls_mpi *A, mbedtls_mpi_uint b )
 {
     mbedtls_mpi _B;
     mbedtls_mpi_uint p[1];
@@ -554,7 +554,7 @@ int mbedtls_mpi_mul_int( mbedtls_mpi *X, const mbedtls_mpi *A, mbedtls_mpi_uint 
     _B.MBEDTLS_PRIVATE(p) = p;
     p[0] = b;
 
-    return( mbedtls_mpi_mul_mpi( X, A, &_B ) );
+    return( esp_mbedtls_mpi_mul_mpi( X, A, &_B ) );
 }
 
 /* Deal with the case when X & Y are too long for the hardware unit, by splitting one operand
@@ -592,22 +592,22 @@ static int mpi_mult_mpi_overlong(mbedtls_mpi *Z, const mbedtls_mpi *X, const mbe
         .MBEDTLS_PRIVATE(n) = y_words - words_slice,
         .MBEDTLS_PRIVATE(s) = Y->MBEDTLS_PRIVATE(s)
     };
-    mbedtls_mpi_init(&Ztemp);
+    esp_mbedtls_mpi_init(&Ztemp);
 
     /* Get result Ztemp = Yp * X (need temporary variable Ztemp) */
-    MBEDTLS_MPI_CHK( mbedtls_mpi_mul_mpi(&Ztemp, X, &Yp) );
+    MBEDTLS_MPI_CHK( esp_mbedtls_mpi_mul_mpi(&Ztemp, X, &Yp) );
 
     /* Z = Ypp * Y */
-    MBEDTLS_MPI_CHK( mbedtls_mpi_mul_mpi(Z, X, &Ypp) );
+    MBEDTLS_MPI_CHK( esp_mbedtls_mpi_mul_mpi(Z, X, &Ypp) );
 
     /* Z = Z << b */
-    MBEDTLS_MPI_CHK( mbedtls_mpi_shift_l(Z, words_slice * 32) );
+    MBEDTLS_MPI_CHK( esp_mbedtls_mpi_shift_l(Z, words_slice * 32) );
 
     /* Z += Ztemp */
-    MBEDTLS_MPI_CHK( mbedtls_mpi_add_mpi(Z, Z, &Ztemp) );
+    MBEDTLS_MPI_CHK( esp_mbedtls_mpi_add_mpi(Z, Z, &Ztemp) );
 
 cleanup:
-    mbedtls_mpi_free(&Ztemp);
+    esp_mbedtls_mpi_free(&Ztemp);
 
     return ret;
 }
@@ -638,7 +638,7 @@ static int mpi_mult_mpi_failover_mod_mult( mbedtls_mpi *Z, const mbedtls_mpi *X,
     esp_mpi_enable_hardware_hw_op();
 
     esp_mpi_mult_mpi_failover_mod_mult_hw_op(X, Y, hw_words );
-    MBEDTLS_MPI_CHK( mbedtls_mpi_grow(Z, hw_words) );
+    MBEDTLS_MPI_CHK( esp_mbedtls_mpi_grow(Z, hw_words) );
     esp_mpi_read_result_hw_op(Z, hw_words);
 
     Z->MBEDTLS_PRIVATE(s) = X->MBEDTLS_PRIVATE(s) * Y->MBEDTLS_PRIVATE(s);

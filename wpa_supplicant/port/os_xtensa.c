@@ -26,7 +26,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/time.h>
-#include "esp_random.h"
+#include "esp_system.h"
 #include "utils/common.h"
 #include "mbedtls/platform_util.h"
 
@@ -63,6 +63,6 @@ void os_sleep(os_time_t sec, os_time_t usec)
 #ifdef CONFIG_CRYPTO_MBEDTLS
 void forced_memzero(void *ptr, size_t len)
 {
-    mbedtls_platform_zeroize(ptr, len);
+    esp_mbedtls_platform_zeroize(ptr, len);
 }
 #endif

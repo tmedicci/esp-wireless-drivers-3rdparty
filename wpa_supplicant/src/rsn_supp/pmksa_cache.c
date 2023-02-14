@@ -7,8 +7,8 @@
  */
 
 #include "includes.h"
-#include "common.h"
-#include "eloop.h"
+#include "utils/common.h"
+#include "utils/eloop.h"
 #include "rsn_supp/wpa.h"
 #include "rsn_supp/wpa_i.h"
 #include "common/eapol_common.h"

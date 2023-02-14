@@ -422,7 +422,7 @@ struct wpa_ft_ies {
 
 int wpa_ft_parse_ies(const u8 *ies, size_t ies_len, struct wpa_ft_ies *parse);
 
-int wpa_eapol_key_mic(const u8 *key, size_t key_len, int akmp, int ver,
+int wpa_eapol_key_mic(const u8 *key, size_t esp_key_len, int akmp, int ver,
 		      const u8 *buf, size_t len, u8 *mic);
 int wpa_pmk_to_ptk(const u8 *pmk, size_t pmk_len, const char *label,
 		   const u8 *addr1, const u8 *addr2,

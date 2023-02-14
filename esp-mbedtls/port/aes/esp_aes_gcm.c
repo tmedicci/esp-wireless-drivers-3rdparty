@@ -134,7 +134,7 @@ static void xor_data(uint8_t *d, const uint8_t *s)
  * is the high-order bit of HH corresponds to P^0 and the low-order bit of HL
  * corresponds to P^127.
  */
-static int gcm_gen_table( esp_gcm_context *ctx )
+static int esp_gcm_gen_table( esp_gcm_context *ctx )
 {
     int i, j;
     uint64_t hi, lo;
@@ -183,10 +183,10 @@ static int gcm_gen_table( esp_gcm_context *ctx )
 }
 /*
  * Shoup's method for multiplication use this table with
- *      last4[x] = x times P^128
- * where x and last4[x] are seen as elements of GF(2^128) as in [MGV]
+ *      esp_last4[x] = x times P^128
+ * where x and esp_last4[x] are seen as elements of GF(2^128) as in [MGV]
  */
-static const uint64_t last4[16] = {
+static const uint64_t esp_last4[16] = {
     0x0000, 0x1c20, 0x3840, 0x2460,
     0x7080, 0x6ca0, 0x48c0, 0x54e0,
     0xe100, 0xfd20, 0xd940, 0xc560,
@@ -197,7 +197,7 @@ static const uint64_t last4[16] = {
  * Sets output to x times H using the precomputed tables.
  * x and output are seen as elements of GF(2^128) as in [MGV].
  */
-static void gcm_mult( esp_gcm_context *ctx, const unsigned char x[16],
+static void esp_gcm_mult( esp_gcm_context *ctx, const unsigned char x[16],
                       unsigned char output[16] )
 {
     int i = 0;
@@ -217,7 +217,7 @@ static void gcm_mult( esp_gcm_context *ctx, const unsigned char x[16],
             rem = (unsigned char) zl & 0xf;
             zl = ( zh << 60 ) | ( zl >> 4 );
             zh = ( zh >> 4 );
-            zh ^= (uint64_t) last4[rem] << 48;
+            zh ^= (uint64_t) esp_last4[rem] << 48;
             zh ^= ctx->HH[lo];
             zl ^= ctx->HL[lo];
 
@@ -226,7 +226,7 @@ static void gcm_mult( esp_gcm_context *ctx, const unsigned char x[16],
         rem = (unsigned char) zl & 0xf;
         zl = ( zh << 60 ) | ( zl >> 4 );
         zh = ( zh >> 4 );
-        zh ^= (uint64_t) last4[rem] << 48;
+        zh ^= (uint64_t) esp_last4[rem] << 48;
         zh ^= ctx->HH[hi];
         zl ^= ctx->HL[hi];
     }
@@ -282,7 +282,7 @@ static void esp_gcm_ghash(esp_gcm_context *ctx, const unsigned char *x, size_t x
     while (x_len >= AES_BLOCK_BYTES) {
 
         xor_data(z, x);
-        gcm_mult(ctx, z, z);
+        esp_gcm_mult(ctx, z, z);
 
         x += AES_BLOCK_BYTES;
         x_len -= AES_BLOCK_BYTES;
@@ -294,7 +294,7 @@ static void esp_gcm_ghash(esp_gcm_context *ctx, const unsigned char *x, size_t x
     if (x_len) {
         memcpy(tmp, x, x_len);
         xor_data(z, tmp);
-        gcm_mult(ctx, z, z);
+        esp_gcm_mult(ctx, z, z);
     }
 }
 
@@ -362,7 +362,7 @@ int esp_aes_gcm_starts( esp_gcm_context *ctx,
 
         esp_aes_release_hardware();
 
-        gcm_gen_table(ctx);
+        esp_gcm_gen_table(ctx);
     }
 
     ctx->gcm_state = ESP_AES_GCM_STATE_START;
@@ -661,7 +661,7 @@ int esp_aes_gcm_crypt_and_tag( esp_gcm_context *ctx,
     aes_hal_gcm_init( (aad_len + AES_BLOCK_BYTES - 1) / AES_BLOCK_BYTES, remainder_bit);
     aes_hal_gcm_calc_hash(ctx->H);
 
-    gcm_gen_table(ctx);
+    esp_gcm_gen_table(ctx);
     esp_gcm_derive_J0(ctx);
 
     aes_hal_gcm_set_j0(ctx->J0);

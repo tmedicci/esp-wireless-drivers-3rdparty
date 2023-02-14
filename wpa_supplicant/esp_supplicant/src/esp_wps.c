@@ -786,7 +786,7 @@ int wps_finish(void)
             }
 
             os_memcpy(config->sta.ssid, sm->ssid[0], sm->ssid_len[0]);
-            os_memcpy(config->sta.password, sm->key[0], sm->key_len[0]);
+            os_memcpy(config->sta.password, sm->key[0], sm->esp_key_len[0]);
             os_memcpy(config->sta.bssid, sm->bssid, ETH_ALEN);
             config->sta.bssid_set = 0;
             esp_wifi_set_config(0, config);
@@ -1289,7 +1289,7 @@ void wifi_station_wps_success_internal(void)
         evt.ap_cred_cnt = sm->ap_cred_cnt;
         for (i = 0; i < MAX_WPS_AP_CRED; i++) {
             os_memcpy(evt.ap_cred[i].ssid, sm->ssid[i], sm->ssid_len[i]);
-            os_memcpy(evt.ap_cred[i].passphrase, sm->key[i], sm->key_len[i]);
+            os_memcpy(evt.ap_cred[i].passphrase, sm->key[i], sm->esp_key_len[i]);
         }
         esp_event_post(WIFI_EVENT, WIFI_EVENT_STA_WPS_ER_SUCCESS, &evt,
                                 sizeof(evt), OS_BLOCK);
@@ -1336,13 +1336,13 @@ static int save_credentials_cb(void *ctx, const struct wps_credential *cred)
 
     os_memcpy(gWpsSm->ssid[gWpsSm->ap_cred_cnt], cred->ssid, cred->ssid_len);
     gWpsSm->ssid_len[gWpsSm->ap_cred_cnt] = cred->ssid_len;
-    os_memcpy(gWpsSm->key[gWpsSm->ap_cred_cnt], cred->key, cred->key_len);
-    gWpsSm->key_len[gWpsSm->ap_cred_cnt] = cred->key_len;
+    os_memcpy(gWpsSm->key[gWpsSm->ap_cred_cnt], cred->key, cred->esp_key_len);
+    gWpsSm->esp_key_len[gWpsSm->ap_cred_cnt] = cred->esp_key_len;
 
     gWpsSm->ap_cred_cnt++;
 
     wpa_hexdump_ascii(MSG_DEBUG, "ssid ", cred->ssid, cred->ssid_len);
-    wpa_hexdump_ascii(MSG_DEBUG, "key ", cred->key, cred->key_len);
+    wpa_hexdump_ascii(MSG_DEBUG, "key ", cred->key, cred->esp_key_len);
 
     return ESP_OK;
 }

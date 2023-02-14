@@ -9,7 +9,7 @@
 
 #include "includes.h"
 
-#include "common.h"
+#include "utils/common.h"
 #include "aes.h"
 #include "aes_wrap.h"
 
@@ -172,11 +172,11 @@ static void aes_gctr(void *aes, const u8 *icb, const u8 *x, size_t xlen, u8 *y)
 }
 
 
-static void * aes_gcm_init_hash_subkey(const u8 *key, size_t key_len, u8 *H)
+static void * aes_gcm_init_hash_subkey(const u8 *key, size_t esp_key_len, u8 *H)
 {
 	void *aes;
 
-	aes = aes_encrypt_init(key, key_len);
+	aes = aes_encrypt_init(key, esp_key_len);
 	if (aes == NULL)
 		return NULL;
 
@@ -251,7 +251,7 @@ static void aes_gcm_ghash(const u8 *H, const u8 *aad, size_t aad_len,
 /**
  * aes_gcm_ae - GCM-AE_K(IV, P, A)
  */
-int aes_gcm_ae(const u8 *key, size_t key_len, const u8 *iv, size_t iv_len,
+int aes_gcm_ae(const u8 *key, size_t esp_key_len, const u8 *iv, size_t iv_len,
 	       const u8 *plain, size_t plain_len,
 	       const u8 *aad, size_t aad_len, u8 *crypt, u8 *tag)
 {
@@ -260,7 +260,7 @@ int aes_gcm_ae(const u8 *key, size_t key_len, const u8 *iv, size_t iv_len,
 	u8 S[16];
 	void *aes;
 
-	aes = aes_gcm_init_hash_subkey(key, key_len, H);
+	aes = aes_gcm_init_hash_subkey(key, esp_key_len, H);
 	if (aes == NULL)
 		return -1;
 
@@ -285,7 +285,7 @@ int aes_gcm_ae(const u8 *key, size_t key_len, const u8 *iv, size_t iv_len,
 /**
  * aes_gcm_ad - GCM-AD_K(IV, C, A, T)
  */
-int aes_gcm_ad(const u8 *key, size_t key_len, const u8 *iv, size_t iv_len,
+int aes_gcm_ad(const u8 *key, size_t esp_key_len, const u8 *iv, size_t iv_len,
 	       const u8 *crypt, size_t crypt_len,
 	       const u8 *aad, size_t aad_len, const u8 *tag, u8 *plain)
 {
@@ -294,7 +294,7 @@ int aes_gcm_ad(const u8 *key, size_t key_len, const u8 *iv, size_t iv_len,
 	u8 S[16], T[16];
 	void *aes;
 
-	aes = aes_gcm_init_hash_subkey(key, key_len, H);
+	aes = aes_gcm_init_hash_subkey(key, esp_key_len, H);
 	if (aes == NULL)
 		return -1;
 
@@ -319,9 +319,9 @@ int aes_gcm_ad(const u8 *key, size_t key_len, const u8 *iv, size_t iv_len,
 }
 
 
-int aes_gmac(const u8 *key, size_t key_len, const u8 *iv, size_t iv_len,
+int aes_gmac(const u8 *key, size_t esp_key_len, const u8 *iv, size_t iv_len,
 	     const u8 *aad, size_t aad_len, u8 *tag)
 {
-	return aes_gcm_ae(key, key_len, iv, iv_len, NULL, 0, aad, aad_len, NULL,
+	return aes_gcm_ae(key, esp_key_len, iv, iv_len, NULL, 0, aad, aad_len, NULL,
 			  tag);
 }

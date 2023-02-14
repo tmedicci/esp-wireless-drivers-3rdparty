@@ -42,7 +42,7 @@ struct crypto_cipher {
 
 struct crypto_cipher * crypto_cipher_init(enum crypto_cipher_alg alg,
 					  const u8 *iv, const u8 *key,
-					  size_t key_len)
+					  size_t esp_key_len)
 {
 	struct crypto_cipher *ctx;
 
@@ -54,20 +54,20 @@ struct crypto_cipher * crypto_cipher_init(enum crypto_cipher_alg alg,
 
 	switch (alg) {
 	case CRYPTO_CIPHER_ALG_RC4:
-		if (key_len > sizeof(ctx->u.rc4.key)) {
+		if (esp_key_len > sizeof(ctx->u.rc4.key)) {
 			os_free(ctx);
 			return NULL;
 		}
-		ctx->u.rc4.keylen = key_len;
-		os_memcpy(ctx->u.rc4.key, key, key_len);
+		ctx->u.rc4.keylen = esp_key_len;
+		os_memcpy(ctx->u.rc4.key, key, esp_key_len);
 		break;
 	case CRYPTO_CIPHER_ALG_AES:
-		ctx->u.aes.ctx_enc = aes_encrypt_init(key, key_len);
+		ctx->u.aes.ctx_enc = aes_encrypt_init(key, esp_key_len);
 		if (ctx->u.aes.ctx_enc == NULL) {
 			os_free(ctx);
 			return NULL;
 		}
-		ctx->u.aes.ctx_dec = aes_decrypt_init(key, key_len);
+		ctx->u.aes.ctx_dec = aes_decrypt_init(key, esp_key_len);
 		if (ctx->u.aes.ctx_dec == NULL) {
 			aes_encrypt_deinit(ctx->u.aes.ctx_enc);
 			os_free(ctx);
@@ -76,7 +76,7 @@ struct crypto_cipher * crypto_cipher_init(enum crypto_cipher_alg alg,
 		os_memcpy(ctx->u.aes.cbc, iv, AES_BLOCK_SIZE);
 		break;
 	case CRYPTO_CIPHER_ALG_3DES:
-		if (key_len != 24) {
+		if (esp_key_len != 24) {
 			os_free(ctx);
 			return NULL;
 		}
@@ -84,7 +84,7 @@ struct crypto_cipher * crypto_cipher_init(enum crypto_cipher_alg alg,
 		os_memcpy(ctx->u.des3.cbc, iv, 8);
 		break;
 	case CRYPTO_CIPHER_ALG_DES:
-		if (key_len != 8) {
+		if (esp_key_len != 8) {
 			os_free(ctx);
 			return NULL;
 		}

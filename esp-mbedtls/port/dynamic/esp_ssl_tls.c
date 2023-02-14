@@ -42,40 +42,40 @@ static int rx_done(mbedtls_ssl_context *ssl)
     return 0;
 }
 
-static void ssl_update_checksum_start( mbedtls_ssl_context *ssl,
+static void esp_ssl_update_checksum_start( mbedtls_ssl_context *ssl,
                                        const unsigned char *buf, size_t len )
 {
 #if defined(MBEDTLS_SHA256_C)
-    mbedtls_sha256_update( &ssl->handshake->fin_sha256, buf, len );
+    esp_mbedtls_sha256_update( &ssl->handshake->fin_sha256, buf, len );
 #endif
 #if defined(MBEDTLS_SHA512_C)
-    mbedtls_sha512_update( &ssl->handshake->fin_sha512, buf, len );
+    esp_mbedtls_sha512_update( &ssl->handshake->fin_sha512, buf, len );
 #endif
 }
 
-static void ssl_handshake_params_init( mbedtls_ssl_handshake_params *handshake )
+static void esp_ssl_handshake_params_init( mbedtls_ssl_handshake_params *handshake )
 {
     memset( handshake, 0, sizeof( mbedtls_ssl_handshake_params ) );
 
 #if defined(MBEDTLS_SHA256_C)
-    mbedtls_sha256_init(   &handshake->fin_sha256    );
-    mbedtls_sha256_starts( &handshake->fin_sha256, 0 );
+    esp_mbedtls_sha256_init(   &handshake->fin_sha256    );
+    esp_mbedtls_sha256_starts( &handshake->fin_sha256, 0 );
 #endif
 #if defined(MBEDTLS_SHA512_C)
-    mbedtls_sha512_init(   &handshake->fin_sha512    );
-    mbedtls_sha512_starts( &handshake->fin_sha512, 1 );
+    esp_mbedtls_sha512_init(   &handshake->fin_sha512    );
+    esp_mbedtls_sha512_starts( &handshake->fin_sha512, 1 );
 #endif
 
-    handshake->update_checksum = ssl_update_checksum_start;
+    handshake->update_checksum = esp_ssl_update_checksum_start;
 
 #if defined(MBEDTLS_DHM_C)
-    mbedtls_dhm_init( &handshake->dhm_ctx );
+    esp_mbedtls_dhm_init( &handshake->dhm_ctx );
 #endif
 #if defined(MBEDTLS_ECDH_C)
-    mbedtls_ecdh_init( &handshake->ecdh_ctx );
+    esp_mbedtls_ecdh_init( &handshake->ecdh_ctx );
 #endif
 #if defined(MBEDTLS_KEY_EXCHANGE_ECJPAKE_ENABLED)
-    mbedtls_ecjpake_init( &handshake->ecjpake_ctx );
+    esp_mbedtls_ecjpake_init( &handshake->ecjpake_ctx );
 #if defined(MBEDTLS_SSL_CLI_C)
     handshake->ecjpake_cache = NULL;
     handshake->ecjpake_cache_len = 0;
@@ -83,7 +83,7 @@ static void ssl_handshake_params_init( mbedtls_ssl_handshake_params *handshake )
 #endif
 
 #if defined(MBEDTLS_SSL_ECP_RESTARTABLE)
-    mbedtls_x509_crt_restart_init( &handshake->ecrs_ctx );
+    esp_mbedtls_x509_crt_restart_init( &handshake->ecrs_ctx );
 #endif
 
 #if defined(MBEDTLS_SSL_SERVER_NAME_INDICATION)
@@ -92,19 +92,19 @@ static void ssl_handshake_params_init( mbedtls_ssl_handshake_params *handshake )
 
 #if defined(MBEDTLS_X509_CRT_PARSE_C) && \
     !defined(MBEDTLS_SSL_KEEP_PEER_CERTIFICATE)
-    mbedtls_pk_init( &handshake->peer_pubkey );
+    esp_mbedtls_pk_init( &handshake->peer_pubkey );
 #endif
 }
 
-static int ssl_handshake_init( mbedtls_ssl_context *ssl )
+static int esp_ssl_handshake_init( mbedtls_ssl_context *ssl )
 {
     /* Clear old handshake information if present */
     if( ssl->transform_negotiate )
-        mbedtls_ssl_transform_free( ssl->transform_negotiate );
+        esp_mbedtls_ssl_transform_free( ssl->transform_negotiate );
     if( ssl->session_negotiate )
-        mbedtls_ssl_session_free( ssl->session_negotiate );
+        esp_mbedtls_ssl_session_free( ssl->session_negotiate );
     if( ssl->handshake )
-        mbedtls_ssl_handshake_free( ssl );
+        esp_mbedtls_ssl_handshake_free( ssl );
 
     /*
      * Either the pointers are now NULL or cleared properly and can be freed.
@@ -112,22 +112,22 @@ static int ssl_handshake_init( mbedtls_ssl_context *ssl )
      */
     if( ssl->transform_negotiate == NULL )
     {
-        ssl->transform_negotiate = mbedtls_calloc( 1, sizeof(mbedtls_ssl_transform) );
+        ssl->transform_negotiate = esp_mbedtls_calloc( 1, sizeof(mbedtls_ssl_transform) );
     }
 
     if( ssl->session_negotiate == NULL )
     {
-        ssl->session_negotiate = mbedtls_calloc( 1, sizeof(mbedtls_ssl_session) );
+        ssl->session_negotiate = esp_mbedtls_calloc( 1, sizeof(mbedtls_ssl_session) );
     }
 
     if( ssl->handshake == NULL )
     {
-        ssl->handshake = mbedtls_calloc( 1, sizeof(mbedtls_ssl_handshake_params) );
+        ssl->handshake = esp_mbedtls_calloc( 1, sizeof(mbedtls_ssl_handshake_params) );
     }
 #if defined(MBEDTLS_SSL_VARIABLE_BUFFER_LENGTH)
     /* If the buffers are too small - reallocate */
 
-    handle_buffer_resizing( ssl, 0, MBEDTLS_SSL_IN_BUFFER_LEN,
+    esp_handle_buffer_resizing( ssl, 0, MBEDTLS_SSL_IN_BUFFER_LEN,
                                     MBEDTLS_SSL_OUT_BUFFER_LEN );
 #endif
 
@@ -138,9 +138,9 @@ static int ssl_handshake_init( mbedtls_ssl_context *ssl )
     {
         ESP_LOGD(TAG, "alloc() of ssl sub-contexts failed");
 
-        mbedtls_free( ssl->handshake );
-        mbedtls_free( ssl->transform_negotiate );
-        mbedtls_free( ssl->session_negotiate );
+        esp_mbedtls_free( ssl->handshake );
+        esp_mbedtls_free( ssl->transform_negotiate );
+        esp_mbedtls_free( ssl->session_negotiate );
 
         ssl->handshake = NULL;
         ssl->transform_negotiate = NULL;
@@ -150,13 +150,13 @@ static int ssl_handshake_init( mbedtls_ssl_context *ssl )
     }
 
     /* Initialize structures */
-    mbedtls_ssl_session_init( ssl->session_negotiate );
-    mbedtls_ssl_transform_init( ssl->transform_negotiate );
-    ssl_handshake_params_init( ssl->handshake );
+    esp_mbedtls_ssl_session_init( ssl->session_negotiate );
+    esp_mbedtls_ssl_transform_init( ssl->transform_negotiate );
+    esp_ssl_handshake_params_init( ssl->handshake );
 
 /*
  * curve_list is translated to IANA TLS group identifiers here because
- * mbedtls_ssl_conf_curves returns void and so can't return
+ * esp_mbedtls_ssl_conf_curves returns void and so can't return
  * any error codes.
  */
 #if defined(MBEDTLS_ECP_C)
@@ -171,17 +171,17 @@ static int ssl_handshake_init( mbedtls_ssl_context *ssl )
                           ( length < MBEDTLS_ECP_DP_MAX ); length++ ) {}
 
         /* Leave room for zero termination */
-        uint16_t *group_list = mbedtls_calloc( length + 1, sizeof(uint16_t) );
+        uint16_t *group_list = esp_mbedtls_calloc( length + 1, sizeof(uint16_t) );
         if ( group_list == NULL )
             return( MBEDTLS_ERR_SSL_ALLOC_FAILED );
 
         for( size_t i = 0; i < length; i++ )
         {
             const mbedtls_ecp_curve_info *info =
-                        mbedtls_ecp_curve_info_from_grp_id( curve_list[i] );
+                        esp_mbedtls_ecp_curve_info_from_grp_id( curve_list[i] );
             if ( info == NULL )
             {
-                mbedtls_free( group_list );
+                esp_mbedtls_free( group_list );
                 return( MBEDTLS_ERR_SSL_BAD_CONFIG );
             }
             group_list[i] = info->tls_id;
@@ -221,7 +221,7 @@ static int ssl_handshake_init( mbedtls_ssl_context *ssl )
 
         for( md = sig_hashes; *md != MBEDTLS_MD_NONE; md++ )
         {
-            if( mbedtls_ssl_hash_from_md_alg( *md ) == MBEDTLS_SSL_HASH_NONE )
+            if( esp_mbedtls_ssl_hash_from_md_alg( *md ) == MBEDTLS_SSL_HASH_NONE )
                 continue;
 #if defined(MBEDTLS_ECDSA_C)
             sig_algs_len += sizeof( uint16_t );
@@ -237,7 +237,7 @@ static int ssl_handshake_init( mbedtls_ssl_context *ssl )
         if( sig_algs_len < MBEDTLS_SSL_MIN_SIG_ALG_LIST_LEN )
             return( MBEDTLS_ERR_SSL_BAD_CONFIG );
 
-        ssl->handshake->sig_algs = mbedtls_calloc( 1, sig_algs_len +
+        ssl->handshake->sig_algs = esp_mbedtls_calloc( 1, sig_algs_len +
                                                       sizeof( uint16_t ));
         if( ssl->handshake->sig_algs == NULL )
             return( MBEDTLS_ERR_SSL_ALLOC_FAILED );
@@ -245,7 +245,7 @@ static int ssl_handshake_init( mbedtls_ssl_context *ssl )
         p = (uint16_t *)ssl->handshake->sig_algs;
         for( md = sig_hashes; *md != MBEDTLS_MD_NONE; md++ )
         {
-            unsigned char hash = mbedtls_ssl_hash_from_md_alg( *md );
+            unsigned char hash = esp_mbedtls_ssl_hash_from_md_alg( *md );
             if( hash == MBEDTLS_SSL_HASH_NONE )
                 continue;
 #if defined(MBEDTLS_ECDSA_C)
@@ -274,13 +274,13 @@ static int ssl_handshake_init( mbedtls_ssl_context *ssl )
 int __wrap_mbedtls_ssl_setup(mbedtls_ssl_context *ssl, const mbedtls_ssl_config *conf)
 {
     ssl->conf = conf;
-    CHECK_OK(ssl_handshake_init(ssl));
+    CHECK_OK(esp_ssl_handshake_init(ssl));
 
-    mbedtls_free(ssl->MBEDTLS_PRIVATE(out_buf));
+    esp_mbedtls_free(ssl->MBEDTLS_PRIVATE(out_buf));
     ssl->MBEDTLS_PRIVATE(out_buf) = NULL;
     CHECK_OK(esp_mbedtls_setup_tx_buffer(ssl));
 
-    mbedtls_free(ssl->MBEDTLS_PRIVATE(in_buf));
+    esp_mbedtls_free(ssl->MBEDTLS_PRIVATE(in_buf));
     ssl->MBEDTLS_PRIVATE(in_buf) = NULL;
     esp_mbedtls_setup_rx_buffer(ssl);
 

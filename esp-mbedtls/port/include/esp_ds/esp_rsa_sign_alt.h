@@ -52,7 +52,7 @@ void esp_ds_release_ds_lock(void);
 
 /**
  *
- * @brief       Alternate implementation for mbedtls_rsa_rsassa_pkcs1_v15_sign, Internally makes use
+ * @brief       Alternate implementation for esp_mbedtls_rsa_rsassa_pkcs1_v15_sign, Internally makes use
  *              of DS module to perform hardware accelerated RSA sign operation
  */
 int esp_ds_rsa_sign( void *ctx,

@@ -9,6 +9,7 @@
 
 #include "esp_err.h"
 #include "esp_wifi.h"
+#include "utils/common.h"
 
 #if CONFIG_NEWLIB_NANO_FORMAT
 #define TASK_STACK_SIZE_ADD 0
@@ -226,11 +227,11 @@ void esp_wifi_deauthenticate_internal(u8 reason_code);
 uint16_t esp_wifi_get_spp_attrubute_internal(uint8_t ifx);
 bool esp_wifi_sta_is_running_internal(void);
 bool esp_wifi_auth_done_internal(void);
-int esp_wifi_set_ap_key_internal(int alg, const u8 *addr, int idx, u8 *key, size_t key_len);
+int esp_wifi_set_ap_key_internal(int alg, const u8 *addr, int idx, u8 *key, size_t esp_key_len);
 int esp_wifi_set_sta_key_internal(int alg, u8 *addr, int key_idx, int set_tx,
-                                  u8 *seq, size_t seq_len, u8 *key, size_t key_len, enum key_flag key_flag);
+                                  u8 *seq, size_t seq_len, u8 *key, size_t esp_key_len, enum key_flag key_flag);
 int  esp_wifi_get_sta_key_internal(uint8_t *ifx, int *alg, u8 *addr, int *key_idx,
-                                   u8 *key, size_t key_len, enum key_flag key_flag);
+                                   u8 *key, size_t esp_key_len, enum key_flag key_flag);
 bool esp_wifi_wpa_ptk_init_done_internal(uint8_t *mac);
 uint8_t esp_wifi_sta_set_reset_param_internal(uint8_t reset_flag);
 uint8_t esp_wifi_get_sta_gtk_index_internal(void);

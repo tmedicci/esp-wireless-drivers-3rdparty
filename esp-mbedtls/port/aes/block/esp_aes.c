@@ -80,7 +80,7 @@ static int esp_aes_block(esp_aes_context *ctx, const void *input, void *output)
     uint32_t *output_words = (uint32_t *)output;
 
     /* If no key is written to hardware yet, either the user hasn't called
-       mbedtls_aes_setkey_enc/mbedtls_aes_setkey_dec - meaning we also don't
+       esp_mbedtls_aes_setkey_enc/esp_mbedtls_aes_setkey_dec - meaning we also don't
        know which mode to use - or a fault skipped the
        key write to hardware. Treat this as a fatal error and zero the output block.
     */
@@ -106,7 +106,7 @@ static int esp_aes_block(esp_aes_context *ctx, const void *input, void *output)
         // calling zeroing functions to narrow the
         // window for a double-fault of the abort step, here
         memset(output, 0, 16);
-        mbedtls_platform_zeroize(output, 16);
+        esp_mbedtls_platform_zeroize(output, 16);
         abort();
     }
 

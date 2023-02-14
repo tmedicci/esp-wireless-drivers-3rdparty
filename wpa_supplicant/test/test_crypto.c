@@ -322,7 +322,7 @@ TEST_CASE("Test crypto lib bignum apis", "[wpa_crypto]")
  * (assumes len is an exact multiple of sizeof mbedtls_mpi_uint)
  * Allocate a new memory as well so that it can be freed.
  */
-static inline void ecp_mpi_load( mbedtls_mpi *X, const mbedtls_mpi_uint *p, size_t len )
+static inline void esp_ecp_mpi_load( mbedtls_mpi *X, const mbedtls_mpi_uint *p, size_t len )
 {
     X->MBEDTLS_PRIVATE(s) = 1;
     X->MBEDTLS_PRIVATE(n) = len / sizeof( mbedtls_mpi_uint );
@@ -334,13 +334,13 @@ static inline void ecp_mpi_load( mbedtls_mpi *X, const mbedtls_mpi_uint *p, size
 TEST_CASE("Test crypto lib ECC apis", "[wpa_crypto]")
 {
 
-    static const mbedtls_mpi_uint secp256r1_gx[] = {
+    static const mbedtls_mpi_uint esp_secp256r1_gx[] = {
         BYTES_TO_T_UINT_8( 0x96, 0xC2, 0x98, 0xD8, 0x45, 0x39, 0xA1, 0xF4 ),
         BYTES_TO_T_UINT_8( 0xA0, 0x33, 0xEB, 0x2D, 0x81, 0x7D, 0x03, 0x77 ),
         BYTES_TO_T_UINT_8( 0xF2, 0x40, 0xA4, 0x63, 0xE5, 0xE6, 0xBC, 0xF8 ),
         BYTES_TO_T_UINT_8( 0x47, 0x42, 0x2C, 0xE1, 0xF2, 0xD1, 0x17, 0x6B ),
     };
-    static const mbedtls_mpi_uint secp256r1_gy[] = {
+    static const mbedtls_mpi_uint esp_secp256r1_gy[] = {
         BYTES_TO_T_UINT_8( 0xF5, 0x51, 0xBF, 0x37, 0x68, 0x40, 0xB6, 0xCB ),
         BYTES_TO_T_UINT_8( 0xCE, 0x5E, 0x31, 0x6B, 0x57, 0x33, 0xCE, 0x2B ),
         BYTES_TO_T_UINT_8( 0x16, 0x9E, 0x0F, 0x7C, 0x4A, 0xEB, 0xE7, 0x8E ),
@@ -392,13 +392,13 @@ TEST_CASE("Test crypto lib ECC apis", "[wpa_crypto]")
         TEST_ASSERT_NOT_NULL(q);
         TEST_ASSERT_NOT_NULL(r);
 
-        mbedtls_mpi_init( &num );
-        mbedtls_mpi_lset( &num, 3 );
+        esp_mbedtls_mpi_init( &num );
+        esp_mbedtls_mpi_lset( &num, 3 );
 
-        ecp_mpi_load(& ((mbedtls_ecp_point *)p)->MBEDTLS_PRIVATE(X), secp256r1_gx, sizeof(secp256r1_gx));
-        ecp_mpi_load(& ((mbedtls_ecp_point *)p)->MBEDTLS_PRIVATE(Y), secp256r1_gy, sizeof(secp256r1_gy));
+        esp_ecp_mpi_load(& ((mbedtls_ecp_point *)p)->MBEDTLS_PRIVATE(X), esp_secp256r1_gx, sizeof(esp_secp256r1_gx));
+        esp_ecp_mpi_load(& ((mbedtls_ecp_point *)p)->MBEDTLS_PRIVATE(Y), esp_secp256r1_gy, sizeof(esp_secp256r1_gy));
 
-        mbedtls_mpi_lset((&((mbedtls_ecp_point *)p)->MBEDTLS_PRIVATE(Z)), 1);
+        esp_mbedtls_mpi_lset((&((mbedtls_ecp_point *)p)->MBEDTLS_PRIVATE(Z)), 1);
 
         TEST_ASSERT(crypto_ec_point_mul(e, p, (crypto_bignum *) &num, q) == 0); //q = 3p
 
@@ -407,7 +407,7 @@ TEST_CASE("Test crypto lib ECC apis", "[wpa_crypto]")
 
         TEST_ASSERT(crypto_ec_point_cmp(e, q, r) == 0);
 
-        mbedtls_mpi_free( &num );
+        esp_mbedtls_mpi_free( &num );
         crypto_ec_point_deinit(p, 1);
         crypto_ec_point_deinit(q, 1);
         crypto_ec_point_deinit(r, 1);
@@ -431,13 +431,13 @@ TEST_CASE("Test crypto lib ECC apis", "[wpa_crypto]")
         TEST_ASSERT_NOT_NULL(q);
         TEST_ASSERT_NOT_NULL(r);
 
-        mbedtls_mpi_init( &num );
-        mbedtls_mpi_lset( &num, 100 );
+        esp_mbedtls_mpi_init( &num );
+        esp_mbedtls_mpi_lset( &num, 100 );
 
-        ecp_mpi_load(& ((mbedtls_ecp_point *)p)->MBEDTLS_PRIVATE(X), secp256r1_gx, sizeof(secp256r1_gx));
-        ecp_mpi_load(& ((mbedtls_ecp_point *)p)->MBEDTLS_PRIVATE(Y), secp256r1_gy, sizeof(secp256r1_gy));
+        esp_ecp_mpi_load(& ((mbedtls_ecp_point *)p)->MBEDTLS_PRIVATE(X), esp_secp256r1_gx, sizeof(esp_secp256r1_gx));
+        esp_ecp_mpi_load(& ((mbedtls_ecp_point *)p)->MBEDTLS_PRIVATE(Y), esp_secp256r1_gy, sizeof(esp_secp256r1_gy));
 
-        mbedtls_mpi_lset((&((mbedtls_ecp_point *)p)->MBEDTLS_PRIVATE(Z)), 1);
+        esp_mbedtls_mpi_lset((&((mbedtls_ecp_point *)p)->MBEDTLS_PRIVATE(Z)), 1);
 
         TEST_ASSERT(crypto_ec_point_mul(e, p, (crypto_bignum *) &num, q) == 0);
         TEST_ASSERT(crypto_ec_point_mul(e, p, (crypto_bignum *) &num, r) == 0);
@@ -447,7 +447,7 @@ TEST_CASE("Test crypto lib ECC apis", "[wpa_crypto]")
 
         TEST_ASSERT(crypto_ec_point_is_at_infinity(e, r));
 
-        mbedtls_mpi_free( &num );
+        esp_mbedtls_mpi_free( &num );
         crypto_ec_point_deinit(p, 1);
         crypto_ec_point_deinit(q, 1);
         crypto_ec_point_deinit(r, 1);
@@ -467,13 +467,13 @@ TEST_CASE("Test crypto lib ECC apis", "[wpa_crypto]")
         TEST_ASSERT_NOT_NULL(p);
         TEST_ASSERT_NOT_NULL(q);
 
-        mbedtls_mpi_init( &num );
-        mbedtls_mpi_lset( &num, 50 );
+        esp_mbedtls_mpi_init( &num );
+        esp_mbedtls_mpi_lset( &num, 50 );
 
-        ecp_mpi_load(& ((mbedtls_ecp_point *)p)->MBEDTLS_PRIVATE(X), secp256r1_gx, sizeof(secp256r1_gx));
-        ecp_mpi_load(& ((mbedtls_ecp_point *)p)->MBEDTLS_PRIVATE(Y), secp256r1_gy, sizeof(secp256r1_gy));
+        esp_ecp_mpi_load(& ((mbedtls_ecp_point *)p)->MBEDTLS_PRIVATE(X), esp_secp256r1_gx, sizeof(esp_secp256r1_gx));
+        esp_ecp_mpi_load(& ((mbedtls_ecp_point *)p)->MBEDTLS_PRIVATE(Y), esp_secp256r1_gy, sizeof(esp_secp256r1_gy));
 
-        mbedtls_mpi_lset((&((mbedtls_ecp_point *)p)->MBEDTLS_PRIVATE(Z)), 1);
+        esp_mbedtls_mpi_lset((&((mbedtls_ecp_point *)p)->MBEDTLS_PRIVATE(Z)), 1);
 
         /* Generator should always be on the curve*/
         TEST_ASSERT(crypto_ec_point_is_on_curve(e, p));
@@ -483,7 +483,7 @@ TEST_CASE("Test crypto lib ECC apis", "[wpa_crypto]")
         TEST_ASSERT(crypto_ec_point_is_on_curve(e, q));
 
 
-        mbedtls_mpi_free( &num );
+        esp_mbedtls_mpi_free( &num );
         crypto_ec_point_deinit(p, 1);
         crypto_ec_point_deinit(q, 1);
         crypto_ec_deinit(e);
@@ -505,19 +505,19 @@ TEST_CASE("Test crypto lib ECC apis", "[wpa_crypto]")
         TEST_ASSERT_NOT_NULL(q);
         TEST_ASSERT_NOT_NULL(r);
 
-        mbedtls_mpi_init( &num );
-        mbedtls_mpi_lset( &num, 50 );
+        esp_mbedtls_mpi_init( &num );
+        esp_mbedtls_mpi_lset( &num, 50 );
 
-        ecp_mpi_load(& ((mbedtls_ecp_point *)p)->MBEDTLS_PRIVATE(X), secp256r1_gx, sizeof(secp256r1_gx));
-        ecp_mpi_load(& ((mbedtls_ecp_point *)p)->MBEDTLS_PRIVATE(Y), secp256r1_gy, sizeof(secp256r1_gy));
+        esp_ecp_mpi_load(& ((mbedtls_ecp_point *)p)->MBEDTLS_PRIVATE(X), esp_secp256r1_gx, sizeof(esp_secp256r1_gx));
+        esp_ecp_mpi_load(& ((mbedtls_ecp_point *)p)->MBEDTLS_PRIVATE(Y), esp_secp256r1_gy, sizeof(esp_secp256r1_gy));
 
-        mbedtls_mpi_lset((&((mbedtls_ecp_point *)p)->MBEDTLS_PRIVATE(Z)), 1);
+        esp_mbedtls_mpi_lset((&((mbedtls_ecp_point *)p)->MBEDTLS_PRIVATE(Z)), 1);
 
-        mbedtls_mpi_copy(&((mbedtls_ecp_point *)q)->MBEDTLS_PRIVATE(X), &((mbedtls_ecp_point *)p)->MBEDTLS_PRIVATE(X));
-        mbedtls_mpi_copy(&((mbedtls_ecp_point *)r)->MBEDTLS_PRIVATE(X), &((mbedtls_ecp_point *)p)->MBEDTLS_PRIVATE(X));
+        esp_mbedtls_mpi_copy(&((mbedtls_ecp_point *)q)->MBEDTLS_PRIVATE(X), &((mbedtls_ecp_point *)p)->MBEDTLS_PRIVATE(X));
+        esp_mbedtls_mpi_copy(&((mbedtls_ecp_point *)r)->MBEDTLS_PRIVATE(X), &((mbedtls_ecp_point *)p)->MBEDTLS_PRIVATE(X));
 
-        mbedtls_mpi_lset((&((mbedtls_ecp_point *)q)->MBEDTLS_PRIVATE(Z)), 1);
-        mbedtls_mpi_lset((&((mbedtls_ecp_point *)r)->MBEDTLS_PRIVATE(Z)), 1);
+        esp_mbedtls_mpi_lset((&((mbedtls_ecp_point *)q)->MBEDTLS_PRIVATE(Z)), 1);
+        esp_mbedtls_mpi_lset((&((mbedtls_ecp_point *)r)->MBEDTLS_PRIVATE(Z)), 1);
 
         TEST_ASSERT(crypto_ec_point_solve_y_coord(e, q, (crypto_bignum *) & ((mbedtls_ecp_point *)q)->MBEDTLS_PRIVATE(X), 0) == 0);
         TEST_ASSERT(crypto_ec_point_is_on_curve(e, q));
@@ -531,7 +531,7 @@ TEST_CASE("Test crypto lib ECC apis", "[wpa_crypto]")
         TEST_ASSERT(crypto_ec_point_add(e, q, r, r) == 0);
         TEST_ASSERT(crypto_ec_point_is_at_infinity(e, r));
 
-        mbedtls_mpi_free( &num );
+        esp_mbedtls_mpi_free( &num );
         crypto_ec_point_deinit(p, 1);
         crypto_ec_point_deinit(q, 1);
         crypto_ec_point_deinit(r, 1);

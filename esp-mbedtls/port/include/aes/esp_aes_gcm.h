@@ -99,14 +99,14 @@ int esp_aes_gcm_starts( esp_gcm_context *ctx,
  *                  (authenticated but not encrypted data) in a GCM
  *                  encryption or decryption operation.
  *
- *                  Call this function after mbedtls_gcm_starts() to pass
+ *                  Call this function after esp_mbedtls_gcm_starts() to pass
  *                  the associated data. If the associated data is empty,
  *                  you do not need to call this function. You may not
- *                  call this function after calling mbedtls_cipher_update().
+ *                  call this function after calling esp_mbedtls_cipher_update().
  *
  * \param ctx       The GCM context. This must have been started with
- *                  mbedtls_gcm_starts() and must not have yet received
- *                  any input with mbedtls_gcm_update().
+ *                  esp_mbedtls_gcm_starts() and must not have yet received
+ *                  any input with esp_mbedtls_gcm_update().
  * \param aad       The buffer holding the additional data, or \c NULL
  *                  if \p aad_len is \c 0.
  * \param aad_len   The length of the additional data. If \c 0,
@@ -126,7 +126,7 @@ int esp_aes_gcm_update_ad( esp_gcm_context *ctx,
  *                  to pass successive parts of the input: the plaintext to
  *                  encrypt, or the ciphertext (not including the tag) to
  *                  decrypt. After the last part of the input, call
- *                  mbedtls_gcm_finish().
+ *                  esp_mbedtls_gcm_finish().
  *
  *                  This function may produce output in one of the following
  *                  ways:
@@ -191,10 +191,10 @@ int esp_aes_gcm_update( esp_gcm_context *ctx,
  *                  buffer of at least \p output_size bytes.
  * \param output_size  The size of the \p output buffer in bytes.
  *                  This must be large enough for the output that
- *                  mbedtls_gcm_update() has not produced. In particular:
- *                  - If mbedtls_gcm_update() produces immediate output,
+ *                  esp_mbedtls_gcm_update() has not produced. In particular:
+ *                  - If esp_mbedtls_gcm_update() produces immediate output,
  *                    or if the total input size is a multiple of \c 16,
- *                    then mbedtls_gcm_finish() never produces any output,
+ *                    then esp_mbedtls_gcm_finish() never produces any output,
  *                    so \p output_size can be \c 0.
  *                  - \p output_size never needs to be more than \c 15.
  * \param output_length On success, \p *output_length contains the actual
@@ -231,7 +231,7 @@ void esp_aes_gcm_free( esp_gcm_context *ctx);
  * \param mode      The operation to perform: #MBEDTLS_GCM_ENCRYPT or
  *                  #MBEDTLS_GCM_DECRYPT.
  * \param length    The length of the input data. This must be a multiple of
- *                  16 except in the last call before mbedtls_gcm_finish().
+ *                  16 except in the last call before esp_mbedtls_gcm_finish().
  * \param iv        The initialization vector.
  * \param iv_len    The length of the IV.
  * \param aad       The buffer holding the additional data.
@@ -266,7 +266,7 @@ int esp_aes_gcm_crypt_and_tag( esp_gcm_context *ctx,
  *
  * \param ctx       The GCM context.
  * \param length    The length of the input data. This must be a multiple
- *                  of 16 except in the last call before mbedtls_gcm_finish().
+ *                  of 16 except in the last call before esp_mbedtls_gcm_finish().
  * \param iv        The initialization vector.
  * \param iv_len    The length of the IV.
  * \param aad       The buffer holding the additional data.

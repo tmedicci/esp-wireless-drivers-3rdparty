@@ -805,14 +805,14 @@ static u8 * eap_mschapv2_getKey(struct eap_sm *sm, void *priv, size_t *len)
 {
 	struct eap_mschapv2_data *data = priv;
 	u8 *key;
-	int key_len;
+	int esp_key_len;
 
 	if (!data->master_key_valid || !data->success)
 		return NULL;
 
-	key_len = 2 * MSCHAPV2_KEY_LEN;
+	esp_key_len = 2 * MSCHAPV2_KEY_LEN;
 
-	key = os_malloc(key_len);
+	key = os_malloc(esp_key_len);
 	if (key == NULL)
 		return NULL;
 
@@ -823,9 +823,9 @@ static u8 * eap_mschapv2_getKey(struct eap_sm *sm, void *priv, size_t *len)
 				MSCHAPV2_KEY_LEN, 0, 0);
 
 	wpa_hexdump_key(MSG_DEBUG, "EAP-MSCHAPV2: Derived key",
-			key, key_len);
+			key, esp_key_len);
 
-	*len = key_len;
+	*len = esp_key_len;
 	return key;
 }
 

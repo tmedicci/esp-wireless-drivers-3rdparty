@@ -15,7 +15,7 @@
 /**
  * sha1_t_prf - EAP-FAST Pseudo-Random Function (T-PRF)
  * @key: Key for PRF
- * @key_len: Length of the key in bytes
+ * @esp_key_len: Length of the key in bytes
  * @label: A unique label for each purpose of the PRF
  * @seed: Seed value to bind into the key
  * @seed_len: Length of the seed
@@ -26,7 +26,7 @@
  * This function is used to derive new, cryptographically separate keys from a
  * given key for EAP-FAST. T-PRF is defined in RFC 4851, Section 5.5.
  */
-int sha1_t_prf(const u8 *key, size_t key_len, const char *label,
+int sha1_t_prf(const u8 *key, size_t esp_key_len, const char *label,
 	       const u8 *seed, size_t seed_len, u8 *buf, size_t buf_len)
 {
 	unsigned char counter = 0;
@@ -54,7 +54,7 @@ int sha1_t_prf(const u8 *key, size_t key_len, const char *label,
 	while (pos < buf_len) {
 		counter++;
 		plen = buf_len - pos;
-		if (hmac_sha1_vector(key, key_len, 5, addr, len, hash))
+		if (hmac_sha1_vector(key, esp_key_len, 5, addr, len, hash))
 			return -1;
 		if (plen >= SHA1_MAC_LEN) {
 			os_memcpy(&buf[pos], hash, SHA1_MAC_LEN);

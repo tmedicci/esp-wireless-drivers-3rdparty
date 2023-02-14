@@ -167,7 +167,7 @@ static int wps_process_cred_network_key_idx(struct wps_credential *cred,
 
 
 static int wps_process_cred_network_key(struct wps_credential *cred,
-					const u8 *key, size_t key_len)
+					const u8 *key, size_t esp_key_len)
 {
 	if (key == NULL) {
 		wpa_printf(MSG_DEBUG, "WPS: Credential did not include "
@@ -182,10 +182,10 @@ static int wps_process_cred_network_key(struct wps_credential *cred,
 		return -1;
 	}
 
-	wpa_hexdump_key(MSG_DEBUG, "WPS: Network Key", key, key_len);
-	if (key_len <= sizeof(cred->key)) {
-		os_memcpy(cred->key, key, key_len);
-		cred->key_len = key_len;
+	wpa_hexdump_key(MSG_DEBUG, "WPS: Network Key", key, esp_key_len);
+	if (esp_key_len <= sizeof(cred->key)) {
+		os_memcpy(cred->key, key, esp_key_len);
+		cred->esp_key_len = esp_key_len;
 	}
 
 	return 0;
@@ -211,13 +211,13 @@ static int wps_process_cred_mac_addr(struct wps_credential *cred,
 static int wps_workaround_cred_key(struct wps_credential *cred)
 {
 	if (cred->auth_type & (WPS_AUTH_WPAPSK | WPS_AUTH_WPA2PSK) &&
-	    cred->key_len > 8 && cred->key_len < 64 &&
-	    cred->key[cred->key_len - 1] == 0) {
+	    cred->esp_key_len > 8 && cred->esp_key_len < 64 &&
+	    cred->key[cred->esp_key_len - 1] == 0) {
 #ifdef CONFIG_WPS_STRICT
 		wpa_printf(MSG_INFO, "WPS: WPA/WPA2-Personal passphrase uses "
 			   "forbidden NULL termination");
 		wpa_hexdump_ascii_key(MSG_INFO, "WPS: Network Key",
-				      cred->key, cred->key_len);
+				      cred->key, cred->esp_key_len);
 		return -1;
 #else /* CONFIG_WPS_STRICT */
 		/*
@@ -227,16 +227,16 @@ static int wps_workaround_cred_key(struct wps_credential *cred)
 		 */
 		wpa_printf(MSG_DEBUG, "WPS: Workaround - remove NULL "
 			   "termination from ASCII passphrase");
-		cred->key_len--;
+		cred->esp_key_len--;
 #endif /* CONFIG_WPS_STRICT */
 	}
 
 
 	if (cred->auth_type & (WPS_AUTH_WPAPSK | WPS_AUTH_WPA2PSK) &&
-	    (cred->key_len < 8 || has_ctrl_char(cred->key, cred->key_len))) {
+	    (cred->esp_key_len < 8 || has_ctrl_char(cred->key, cred->esp_key_len))) {
 		wpa_printf(MSG_INFO, "WPS: Reject credential with invalid WPA/WPA2-Personal passphrase");
 		wpa_hexdump_ascii_key(MSG_INFO, "WPS: Network Key",
-				      cred->key, cred->key_len);
+				      cred->key, cred->esp_key_len);
 		return -1;
 	}
 

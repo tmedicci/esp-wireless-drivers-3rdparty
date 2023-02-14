@@ -15,7 +15,7 @@
 #include "eap_peer/eap_peap_common.h"
 
 int
-peap_prfplus(int version, const u8 *key, size_t key_len,
+peap_prfplus(int version, const u8 *key, size_t esp_key_len,
 	     const char *label, const u8 *seed, size_t seed_len,
 	     u8 *buf, size_t buf_len)
 {
@@ -36,11 +36,11 @@ peap_prfplus(int version, const u8 *key, size_t key_len,
 
 	if (version == 0) {
 		/*
-		 * PRF+(K, S, LEN) = T1 | T2 | ... | Tn
-		 * T1 = HMAC-SHA1(K, S | 0x01 | 0x00 | 0x00)
-		 * T2 = HMAC-SHA1(K, T1 | S | 0x02 | 0x00 | 0x00)
+		 * PRF+(esp_K, S, LEN) = T1 | T2 | ... | Tn
+		 * T1 = HMAC-SHA1(esp_K, S | 0x01 | 0x00 | 0x00)
+		 * T2 = HMAC-SHA1(esp_K, T1 | S | 0x02 | 0x00 | 0x00)
 		 * ...
-		 * Tn = HMAC-SHA1(K, Tn-1 | S | n | 0x00 | 0x00)
+		 * Tn = HMAC-SHA1(esp_K, Tn-1 | S | n | 0x00 | 0x00)
 		 */
 
 		extra[0] = 0;
@@ -52,11 +52,11 @@ peap_prfplus(int version, const u8 *key, size_t key_len,
 		len[4] = 2;
 	} else {
 		/*
-		 * PRF (K,S,LEN) = T1 | T2 | T3 | T4 | ... where:
-		 * T1 = HMAC-SHA1(K, S | LEN | 0x01)
-		 * T2 = HMAC-SHA1 (K, T1 | S | LEN | 0x02)
-		 * T3 = HMAC-SHA1 (K, T2 | S | LEN | 0x03)
-		 * T4 = HMAC-SHA1 (K, T3 | S | LEN | 0x04)
+		 * PRF (esp_K,S,LEN) = T1 | T2 | T3 | T4 | ... where:
+		 * T1 = HMAC-SHA1(esp_K, S | LEN | 0x01)
+		 * T2 = HMAC-SHA1 (esp_K, T1 | S | LEN | 0x02)
+		 * T3 = HMAC-SHA1 (esp_K, T2 | S | LEN | 0x03)
+		 * T4 = HMAC-SHA1 (esp_K, T3 | S | LEN | 0x04)
 		 *   ...
 		 */
 
@@ -72,7 +72,7 @@ peap_prfplus(int version, const u8 *key, size_t key_len,
 	while (pos < buf_len) {
 		counter++;
 		plen = buf_len - pos;
-		if (hmac_sha1_vector(key, key_len, 5, addr, len, hash) < 0)
+		if (hmac_sha1_vector(key, esp_key_len, 5, addr, len, hash) < 0)
 			return -1;
 		if (plen >= SHA1_MAC_LEN) {
 			os_memcpy(&buf[pos], hash, SHA1_MAC_LEN);

@@ -9,7 +9,7 @@
 
 #include "includes.h"
 
-#include "common.h"
+#include "utils/common.h"
 #include "aes.h"
 #include "aes_wrap.h"
 
@@ -44,7 +44,7 @@ int aes_wrap(const u8 *kek, size_t kek_len, int n, const u8 *plain, u8 *cipher)
 	/* 2) Calculate intermediate values.
 	 * For j = 0 to 5
 	 *     For i=1 to n
-	 *         B = AES(K, A | R[i])
+	 *         B = AES(esp_K, A | R[i])
 	 *         A = MSB(64, B) ^ t where t = (n*j)+i
 	 *         R[i] = LSB(64, B)
 	 */

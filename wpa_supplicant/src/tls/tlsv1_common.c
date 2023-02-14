@@ -323,7 +323,7 @@ int tls_prf(u16 ver, const u8 *secret, size_t secret_len, const char *label,
 {
 #ifdef CONFIG_TLSV12
 	if (ver >= TLS_VERSION_1_2) {
-		tls_prf_sha256(secret, secret_len, label, seed, seed_len,
+		esp_tls_prf_sha256(secret, secret_len, label, seed, seed_len,
 			       out, outlen);
 		return 0;
 	}

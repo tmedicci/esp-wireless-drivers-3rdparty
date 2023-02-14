@@ -101,7 +101,7 @@ size_t esp_ds_get_keylen(void *ctx)
     return ((s_ds_data->rsa_length + 1) * FACTOR_KEYLEN_IN_BYTES);
 }
 
-static int rsa_rsassa_pkcs1_v15_encode( mbedtls_md_type_t md_alg,
+static int esp_rsa_rsassa_pkcs1_v15_encode( mbedtls_md_type_t md_alg,
                                         unsigned int hashlen,
                                         const unsigned char *hash,
                                         size_t dst_len,
@@ -114,7 +114,7 @@ static int rsa_rsassa_pkcs1_v15_encode( mbedtls_md_type_t md_alg,
 
     /* Are we signing hashed or raw data? */
     if ( md_alg != MBEDTLS_MD_NONE ) {
-        const mbedtls_md_info_t *md_info = mbedtls_md_info_from_type( md_alg );
+        const mbedtls_md_info_t *md_info = esp_mbedtls_md_info_from_type( md_alg );
         if ( md_info == NULL ) {
             return ( MBEDTLS_ERR_RSA_BAD_INPUT_DATA );
         }
@@ -123,7 +123,7 @@ static int rsa_rsassa_pkcs1_v15_encode( mbedtls_md_type_t md_alg,
             return ( MBEDTLS_ERR_RSA_BAD_INPUT_DATA );
         }
 
-        hashlen = mbedtls_md_get_size( md_info );
+        hashlen = esp_mbedtls_md_get_size( md_info );
 
         /* Double-check that 8 + hashlen + oid_size can be used as a
          * 1-byte ASN.1 length encoding and that there's no overflow. */
@@ -207,7 +207,7 @@ static int rsa_rsassa_pkcs1_v15_encode( mbedtls_md_type_t md_alg,
     /* Just a sanity-check, should be automatic
      * after the initial bounds check. */
     if ( p != dst + dst_len ) {
-        mbedtls_platform_zeroize( dst, dst_len );
+        esp_mbedtls_platform_zeroize( dst, dst_len );
         return ( MBEDTLS_ERR_RSA_BAD_INPUT_DATA );
     }
 
@@ -229,7 +229,7 @@ int esp_ds_rsa_sign( void *ctx,
         return -1;
     }
 
-    if ((ret = (rsa_rsassa_pkcs1_v15_encode( md_alg, hashlen, hash, ((s_ds_data->rsa_length + 1) * FACTOR_KEYLEN_IN_BYTES), sig ))) != 0) {
+    if ((ret = (esp_rsa_rsassa_pkcs1_v15_encode( md_alg, hashlen, hash, ((s_ds_data->rsa_length + 1) * FACTOR_KEYLEN_IN_BYTES), sig ))) != 0) {
         ESP_LOGE(TAG, "Error in pkcs1_v15 encoding, returned %d", ret);
         heap_caps_free(signature);
         return -1;

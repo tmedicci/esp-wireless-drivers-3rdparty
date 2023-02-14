@@ -42,15 +42,15 @@
 const wifi_osi_funcs_t *wifi_funcs;
 
 void  wpa_install_key(enum wpa_alg alg, u8 *addr, int key_idx, int set_tx,
-                      u8 *seq, size_t seq_len, u8 *key, size_t key_len, enum key_flag key_flag)
+                      u8 *seq, size_t seq_len, u8 *key, size_t esp_key_len, enum key_flag key_flag)
 {
-    esp_wifi_set_sta_key_internal(alg, addr, key_idx, set_tx, seq, seq_len, key, key_len, key_flag);
+    esp_wifi_set_sta_key_internal(alg, addr, key_idx, set_tx, seq, seq_len, key, esp_key_len, key_flag);
 }
 
 int  wpa_get_key(uint8_t *ifx, int *alg, u8 *addr, int *key_idx,
-                 u8 *key, size_t key_len, enum key_flag key_flag)
+                 u8 *key, size_t esp_key_len, enum key_flag key_flag)
 {
-    return esp_wifi_get_sta_key_internal(ifx, alg, addr, key_idx, key, key_len, key_flag);
+    return esp_wifi_get_sta_key_internal(ifx, alg, addr, key_idx, key, esp_key_len, key_flag);
 }
 
 /**
@@ -359,7 +359,7 @@ int esp_supplicant_init(void)
 
     esp_wifi_register_wpa_cb_internal(wpa_cb);
 
-#if CONFIG_WPA_WAPI_PSK
+#ifdef CONFIG_WPA_WAPI_PSK
     ret =  esp_wifi_internal_wapi_init();
 #endif
 

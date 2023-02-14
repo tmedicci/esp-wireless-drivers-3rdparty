@@ -27,7 +27,7 @@
 #include "mbedtls/platform.h"
 #else
 #include <stdio.h>
-#define mbedtls_printf printf
+#define esp_mbedtls_printf printf
 #endif /* MBEDTLS_PLATFORM_C */
 #endif /* MBEDTLS_SELF_TEST */
 
@@ -65,14 +65,14 @@ do {                                                    \
 } while( 0 )
 #endif
 
-void mbedtls_sha256_init( mbedtls_sha256_context *ctx )
+void esp_mbedtls_sha256_init( mbedtls_sha256_context *ctx )
 {
     assert(ctx != NULL);
 
     memset( ctx, 0, sizeof( mbedtls_sha256_context ) );
 }
 
-void mbedtls_sha256_free( mbedtls_sha256_context *ctx )
+void esp_mbedtls_sha256_free( mbedtls_sha256_context *ctx )
 {
     if ( ctx == NULL ) {
         return;
@@ -81,7 +81,7 @@ void mbedtls_sha256_free( mbedtls_sha256_context *ctx )
     mbedtls_zeroize( ctx, sizeof( mbedtls_sha256_context ) );
 }
 
-void mbedtls_sha256_clone( mbedtls_sha256_context *dst,
+void esp_mbedtls_sha256_clone( mbedtls_sha256_context *dst,
                            const mbedtls_sha256_context *src )
 {
     *dst = *src;
@@ -90,7 +90,7 @@ void mbedtls_sha256_clone( mbedtls_sha256_context *dst,
 /*
  * SHA-256 context setup
  */
-int mbedtls_sha256_starts( mbedtls_sha256_context *ctx, int is224 )
+int esp_mbedtls_sha256_starts( mbedtls_sha256_context *ctx, int is224 )
 {
     memset( ctx, 0, sizeof( mbedtls_sha256_context ) );
 
@@ -112,7 +112,7 @@ static void esp_internal_sha256_block_process(mbedtls_sha256_context *ctx, const
     }
 }
 
-int mbedtls_internal_sha256_process( mbedtls_sha256_context *ctx, const unsigned char data[64] )
+int esp_mbedtls_internal_sha256_process( mbedtls_sha256_context *ctx, const unsigned char data[64] )
 {
     esp_sha_acquire_hardware();
     esp_sha_block(ctx->mode, data, ctx->first_block);
@@ -123,7 +123,7 @@ int mbedtls_internal_sha256_process( mbedtls_sha256_context *ctx, const unsigned
 /*
  * SHA-256 process buffer
  */
-int mbedtls_sha256_update( mbedtls_sha256_context *ctx, const unsigned char *input,
+int esp_mbedtls_sha256_update( mbedtls_sha256_context *ctx, const unsigned char *input,
                                size_t ilen )
 {
     size_t fill;
@@ -198,7 +198,7 @@ static const unsigned char sha256_padding[64] = {
 /*
  * SHA-256 final digest
  */
-int mbedtls_sha256_finish( mbedtls_sha256_context *ctx, unsigned char *output )
+int esp_mbedtls_sha256_finish( mbedtls_sha256_context *ctx, unsigned char *output )
 {
     int ret;
     uint32_t last, padn;
@@ -215,11 +215,11 @@ int mbedtls_sha256_finish( mbedtls_sha256_context *ctx, unsigned char *output )
     last = ctx->total[0] & 0x3F;
     padn = ( last < 56 ) ? ( 56 - last ) : ( 120 - last );
 
-    if ( ( ret = mbedtls_sha256_update( ctx, sha256_padding, padn ) ) != 0 ) {
+    if ( ( ret = esp_mbedtls_sha256_update( ctx, sha256_padding, padn ) ) != 0 ) {
         return ret;
     }
 
-    if ( ( ret = mbedtls_sha256_update( ctx, msglen, 8 ) ) != 0 ) {
+    if ( ( ret = esp_mbedtls_sha256_update( ctx, msglen, 8 ) ) != 0 ) {
         return ret;
     }
 

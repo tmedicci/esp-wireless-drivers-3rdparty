@@ -184,7 +184,7 @@ static void register_mgmt_frames(struct wpa_supplicant *wpa_s)
 	wpa_s->subtype = 0;
 
 #ifdef CONFIG_WPA_11KV_SUPPORT
-	/* current supported features in supplicant: rrm and btm */
+	/* current supported esp_features in supplicant: rrm and btm */
 	if (esp_wifi_is_rm_enabled_internal(WIFI_IF_STA))
 		wpa_s->subtype = 1 << WLAN_ACTION_RADIO_MEASUREMENT;
 	if (esp_wifi_is_btm_enabled_internal(WIFI_IF_STA))

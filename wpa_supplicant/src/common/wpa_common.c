@@ -849,7 +849,7 @@ int wpa_pmk_r1_to_ptk(const u8 *pmk_r1, const u8 *snonce, const u8 *anonce,
 /**
  * wpa_eapol_key_mic - Calculate EAPOL-Key MIC
  * @key: EAPOL-Key Key Confirmation Key (KCK)
- * @key_len: KCK length in octets
+ * @esp_key_len: KCK length in octets
  * @akmp: WPA_KEY_MGMT_* used in key derivation
  * @ver: Key descriptor version (WPA_KEY_INFO_TYPE_*)
  * @buf: Pointer to the beginning of the EAPOL header (version field)
@@ -866,16 +866,16 @@ int wpa_pmk_r1_to_ptk(const u8 *pmk_r1, const u8 *snonce, const u8 *anonce,
  * happened during final editing of the standard and the correct behavior is
  * defined in the last draft (IEEE 802.11i/D10).
  */
-int wpa_eapol_key_mic(const u8 *key, size_t key_len, int akmp, int ver,
+int wpa_eapol_key_mic(const u8 *key, size_t esp_key_len, int akmp, int ver,
 		      const u8 *buf, size_t len, u8 *mic)
 {
 	u8 hash[SHA384_MAC_LEN];
 
 	switch (ver) {
 	case WPA_KEY_INFO_TYPE_HMAC_MD5_RC4:
-		return hmac_md5(key, key_len, buf, len, mic);
+		return hmac_md5(key, esp_key_len, buf, len, mic);
 	case WPA_KEY_INFO_TYPE_HMAC_SHA1_AES:
-		if (hmac_sha1(key, key_len, buf, len, hash))
+		if (hmac_sha1(key, esp_key_len, buf, len, hash))
 			return -1;
 		os_memcpy(mic, hash, MD5_MAC_LEN);
 		break;
@@ -890,14 +890,14 @@ int wpa_eapol_key_mic(const u8 *key, size_t key_len, int akmp, int ver,
 #endif /* CONFIG_WPA3_SAE */
 #ifdef CONFIG_SUITEB
 		case WPA_KEY_MGMT_IEEE8021X_SUITE_B:
-			if (hmac_sha256(key, key_len, buf, len, hash))
+			if (hmac_sha256(key, esp_key_len, buf, len, hash))
 				return -1;
 			os_memcpy(mic, hash, MD5_MAC_LEN);
 			break;
 #endif /* CONFIG_SUITEB */
 #ifdef CONFIG_SUITEB192
 		case WPA_KEY_MGMT_IEEE8021X_SUITE_B_192:
-			if (hmac_sha384(key, key_len, buf, len, hash))
+			if (hmac_sha384(key, esp_key_len, buf, len, hash))
 				return -1;
 			os_memcpy(mic, hash, 24);
 			break;
@@ -906,16 +906,16 @@ int wpa_eapol_key_mic(const u8 *key, size_t key_len, int akmp, int ver,
 		case WPA_KEY_MGMT_OWE:
 			wpa_printf(MSG_DEBUG,
 			"WPA: EAPOL-Key MIC using HMAC-SHA%u (AKM-defined - OWE)",
-			(unsigned int) key_len * 8 * 2);
-			if (key_len == 128 / 8) {
-				if (hmac_sha256(key, key_len, buf, len, hash))
+			(unsigned int) esp_key_len * 8 * 2);
+			if (esp_key_len == 128 / 8) {
+				if (hmac_sha256(key, esp_key_len, buf, len, hash))
 					return -1;
 			} else {
 				wpa_printf(MSG_INFO,"OWE: Unsupported KCK length: %u",
-				(unsigned int) key_len);
+				(unsigned int) esp_key_len);
 				return -1;
                         }
-                        os_memcpy(mic, hash, key_len);
+                        os_memcpy(mic, hash, esp_key_len);
                         break;
 
 #endif /* CONFIG_OWE_STA */
@@ -1033,7 +1033,6 @@ int rsn_pmkid_suite_b_192(const u8 *kck, size_t kck_len, const u8 *aa,
 }
 #endif /* CONFIG_SUITEB192 */
 
-#ifdef DEBUG_PRINT
 /**
  * wpa_cipher_txt - Convert cipher suite to a text string
  * @cipher: Cipher suite (WPA_CIPHER_* enum)
@@ -1066,7 +1065,6 @@ const char * wpa_cipher_txt(int cipher)
 		return "UNKNOWN";
 	}
 }
-#endif
 
 /**
  * wpa_pmk_to_ptk - Calculate PTK from PMK, addresses, and nonces
@@ -1391,7 +1389,7 @@ u32 wpa_cipher_to_suite(int proto, int cipher)
 			RSN_CIPHER_SUITE_NONE : WPA_CIPHER_SUITE_NONE);
 	if (cipher & WPA_CIPHER_AES_128_CMAC)
 		return RSN_CIPHER_SUITE_AES_128_CMAC;
-#if CONFIG_GMAC
+#ifdef CONFIG_GMAC
 	if (cipher & WPA_CIPHER_BIP_GMAC_128)
 		return RSN_CIPHER_SUITE_BIP_GMAC_128;
 	if (cipher & WPA_CIPHER_BIP_GMAC_256)

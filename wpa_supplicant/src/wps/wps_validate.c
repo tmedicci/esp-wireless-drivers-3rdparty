@@ -984,7 +984,7 @@ static int wps_validate_network_idx(const u8 *idx, int mandatory)
 }
 
 
-static int wps_validate_network_key(const u8 *key, size_t key_len,
+static int wps_validate_network_key(const u8 *key, size_t esp_key_len,
 				    const u8 *encr_type, int mandatory)
 {
 	if (key == NULL) {
@@ -996,10 +996,10 @@ static int wps_validate_network_key(const u8 *key, size_t key_len,
 		return 0;
 	}
 	if (((encr_type == NULL || WPA_GET_BE16(encr_type) != WPS_ENCR_WEP) &&
-	     key_len > 8 && key_len < 64 && key[key_len - 1] == 0) ||
-	    key_len > 64) {
+	     esp_key_len > 8 && esp_key_len < 64 && key[esp_key_len - 1] == 0) ||
+	    esp_key_len > 64) {
 		wpa_hexdump_ascii_key(MSG_INFO, "WPS-STRICT: Invalid Network "
-				      "Key attribute value", key, key_len);
+				      "Key attribute value", key, esp_key_len);
 		return -1;
 	}
 	return 0;

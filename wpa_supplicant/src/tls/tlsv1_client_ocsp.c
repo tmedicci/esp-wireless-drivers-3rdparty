@@ -253,7 +253,7 @@ static int tls_process_ocsp_single_response(struct tlsv1_client *conn,
 	/* thisUpdate  GeneralizedTime */
 	if (asn1_get_next(pos, end - pos, &hdr) < 0 ||
 	    !asn1_is_generalizedtime(&hdr) ||
-	    x509_parse_time(hdr.payload, hdr.length, hdr.tag, &update) < 0) {
+	    esp_x509_parse_time(hdr.payload, hdr.length, hdr.tag, &update) < 0) {
 		wpa_printf(MSG_DEBUG, "OCSP: Failed to parse thisUpdate");
 		return -1;
 	}
@@ -274,7 +274,7 @@ static int tls_process_ocsp_single_response(struct tlsv1_client *conn,
 
 			if (asn1_get_next(hdr.payload, hdr.length, &hdr) < 0 ||
 			    !asn1_is_generalizedtime(&hdr) ||
-			    x509_parse_time(hdr.payload, hdr.length, hdr.tag,
+			    esp_x509_parse_time(hdr.payload, hdr.length, hdr.tag,
 					    &update) < 0) {
 				wpa_printf(MSG_DEBUG,
 					   "OCSP: Failed to parse nextUpdate");
@@ -537,7 +537,7 @@ tls_process_basic_ocsp_response(struct tlsv1_client *conn,
 	/* producedAt  GeneralizedTime */
 	if (asn1_get_next(pos, end - pos, &hdr) < 0 ||
 	    !asn1_is_generalizedtime(&hdr) ||
-	    x509_parse_time(hdr.payload, hdr.length, hdr.tag,
+	    esp_x509_parse_time(hdr.payload, hdr.length, hdr.tag,
 			    &produced_at) < 0) {
 		wpa_printf(MSG_DEBUG, "OCSP: Failed to parse producedAt");
 		goto fail;

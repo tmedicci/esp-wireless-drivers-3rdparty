@@ -30,7 +30,6 @@
 #include "crypto/aes_wrap.h"
 #include "crypto/ccmp.h"
 #include "crypto/sha256.h"
-#include "esp_rom_sys.h"
 #include "common/bss.h"
 #include "esp_common_i.h"
 #include "esp_owe_i.h"
@@ -59,7 +58,7 @@ u8 assoc_ie_buf[ASSOC_IE_LEN+2];
 
 void set_assoc_ie(u8 * assoc_buf);
 
-static int wpa_sm_get_key(uint8_t *ifx, int *alg, u8 *addr, int *key_idx, u8 *key, size_t key_len, enum key_flag key_flag);
+static int wpa_sm_get_key(uint8_t *ifx, int *alg, u8 *addr, int *key_idx, u8 *key, size_t esp_key_len, enum key_flag key_flag);
 
 void wpa_set_passphrase(char * passphrase, u8 *ssid, size_t ssid_len);
 
@@ -1591,7 +1590,7 @@ static int wpa_supplicant_process_1_of_2_wpa(struct wpa_sm *sm,
         }
         if (aes_unwrap(sm->ptk.kek, sm->ptk.kek_len, maxkeylen / 8, key_data, gd->gtk)) {
             #ifdef DEBUG_PRINT
-            wpa_printf(MSG_DEBUG, "WPA: AES unwrap "
+            wpa_printf(MSG_DEBUG, "WPA: AES esp_unwrap "
                 "failed - could not decrypt GTK");
             #endif
             return -1;
@@ -1837,7 +1836,7 @@ static int wpa_supplicant_decrypt_key_data(struct wpa_sm *sm,
         if (aes_unwrap(sm->ptk.kek, sm->ptk.kek_len, *key_data_len / 8,
                        key_data, buf)) {
             #ifdef DEBUG_PRINT
-            wpa_printf(MSG_DEBUG, "WPA: AES unwrap failed - "
+            wpa_printf(MSG_DEBUG, "WPA: AES esp_unwrap failed - "
                        "could not decrypt EAPOL-Key key data");
             #endif
             return -1;
@@ -2626,13 +2625,13 @@ set_assoc_ie(u8 * assoc_buf)
 int wpa_sm_set_key(struct install_key *key_sm, enum wpa_alg alg,
         u8 *addr, int key_idx, int set_tx,
         u8 *seq, size_t seq_len,
-        u8 *key, size_t key_len,
+        u8 *key, size_t esp_key_len,
         enum key_flag key_flag)
 {
     struct wpa_sm *sm = &gWpaSm;
 
     /*gtk or ptk both need check countermeasures*/
-    if (alg == WIFI_WPA_ALG_TKIP && key_idx == 0 && key_len == 32) {
+    if (alg == WIFI_WPA_ALG_TKIP && key_idx == 0 && esp_key_len == 32) {
         /* Clear the MIC error counter when setting a new PTK. */
         sm->mic_errors_seen = 0;
     }
@@ -2642,17 +2641,17 @@ int wpa_sm_set_key(struct install_key *key_sm, enum wpa_alg alg,
     memcpy(key_sm->addr, addr, ETH_ALEN);
     key_sm->key_idx = key_idx;
     key_sm->set_tx = set_tx;
-    memcpy(key_sm->key, key, key_len);
+    memcpy(key_sm->key, key, esp_key_len);
 
-    sm->install_ppkey(alg, addr, key_idx, set_tx, seq, seq_len, key, key_len, key_flag);
+    sm->install_ppkey(alg, addr, key_idx, set_tx, seq, seq_len, key, esp_key_len, key_flag);
     return 0;
 }
 
 static int
-wpa_sm_get_key(uint8_t *ifx, int *alg, u8 *addr, int *key_idx, u8 *key, size_t key_len, enum key_flag key_flag)
+wpa_sm_get_key(uint8_t *ifx, int *alg, u8 *addr, int *key_idx, u8 *key, size_t esp_key_len, enum key_flag key_flag)
 {
     struct wpa_sm *sm = &gWpaSm;
-    return sm->get_ppkey(ifx, alg, addr, key_idx, key, key_len, key_flag);
+    return sm->get_ppkey(ifx, alg, addr, key_idx, key, esp_key_len, key_flag);
 }
 
 void wpa_supplicant_clr_countermeasures(u16 *pisunicast)
@@ -2701,7 +2700,7 @@ int wpa_michael_mic_failure(u16 isunicast)
          * Need to wait for completion of request frame. We do not get
          * any callback for the message completion, so just wait a
          * short while and hope for the best. */
-         esp_rom_delay_us(10000);
+         up_udelay(10000);
 
         /*deauthenticate AP*/
 

@@ -139,7 +139,7 @@ static inline int wpa_auth_get_msk(struct wpa_authenticator *wpa_auth,
 static inline int wpa_auth_set_key(struct wpa_authenticator *wpa_auth,
                    int vlan_id,
                    enum wpa_alg alg, const u8 *addr, int idx,
-                   u8 *key, size_t key_len)
+                   u8 *key, size_t esp_key_len)
 {
     int ret;
 
@@ -166,8 +166,8 @@ static inline int wpa_auth_set_key(struct wpa_authenticator *wpa_auth,
             return -1;
 	}
     } else {
-	wpa_printf( MSG_DEBUG, "%s : key idx  %d alg %d vlan_id %d key_len %d key \n", __func__, idx, alg, vlan_id, key_len);
-	return esp_wifi_set_ap_key_internal(alg, addr, idx, key, key_len);
+	wpa_printf( MSG_DEBUG, "%s : key idx  %d alg %d vlan_id %d esp_key_len %d key \n", __func__, idx, alg, vlan_id, esp_key_len);
+	return esp_wifi_set_ap_key_internal(alg, addr, idx, key, esp_key_len);
     }
     return 0;
 }

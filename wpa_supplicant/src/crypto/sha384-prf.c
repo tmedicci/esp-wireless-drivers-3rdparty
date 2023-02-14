@@ -16,7 +16,7 @@
 /**
  * sha384_prf - SHA384-based Key derivation function (IEEE 802.11ac, 11.6.1.7.2)
  * @key: Key for KDF
- * @key_len: Length of the key in bytes
+ * @esp_key_len: Length of the key in bytes
  * @label: A unique label for each purpose of the PRF
  * @data: Extra data to bind into the key
  * @data_len: Length of the data
@@ -27,10 +27,10 @@
  * This function is used to derive new, cryptographically separate keys from a
  * given key.
  */
-int sha384_prf(const u8 *key, size_t key_len, const char *label,
+int sha384_prf(const u8 *key, size_t esp_key_len, const char *label,
 	       const u8 *data, size_t data_len, u8 *buf, size_t buf_len)
 {
-	return sha384_prf_bits(key, key_len, label, data, data_len, buf,
+	return sha384_prf_bits(key, esp_key_len, label, data, data_len, buf,
 			       buf_len * 8);
 }
 
@@ -38,7 +38,7 @@ int sha384_prf(const u8 *key, size_t key_len, const char *label,
 /**
  * sha384_prf_bits - IEEE Std 802.11ac-2013, 11.6.1.7.2 Key derivation function
  * @key: Key for KDF
- * @key_len: Length of the key in bytes
+ * @esp_key_len: Length of the key in bytes
  * @label: A unique label for each purpose of the PRF
  * @data: Extra data to bind into the key
  * @data_len: Length of the data
@@ -51,7 +51,7 @@ int sha384_prf(const u8 *key, size_t key_len, const char *label,
  * significant 1-7 bits of the last octet in the output are not part of the
  * requested output.
  */
-int sha384_prf_bits(const u8 *key, size_t key_len, const char *label,
+int sha384_prf_bits(const u8 *key, size_t esp_key_len, const char *label,
 		    const u8 *data, size_t data_len, u8 *buf,
 		    size_t buf_len_bits)
 {
@@ -78,12 +78,12 @@ int sha384_prf_bits(const u8 *key, size_t key_len, const char *label,
 		plen = buf_len - pos;
 		WPA_PUT_LE16(counter_le, counter);
 		if (plen >= SHA384_MAC_LEN) {
-			if (hmac_sha384_vector(key, key_len, 4, addr, len,
+			if (hmac_sha384_vector(key, esp_key_len, 4, addr, len,
 					       &buf[pos]) < 0)
 				return -1;
 			pos += SHA384_MAC_LEN;
 		} else {
-			if (hmac_sha384_vector(key, key_len, 4, addr, len,
+			if (hmac_sha384_vector(key, esp_key_len, 4, addr, len,
 					       hash) < 0)
 				return -1;
 			os_memcpy(&buf[pos], hash, plen);

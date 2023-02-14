@@ -1,5 +1,5 @@
 /*
- * AES key unwrap (RFC3394)
+ * AES key esp_unwrap (RFC3394)
  *
  * Copyright (c) 2003-2007, Jouni Malinen <j@w1.fi>
  *
@@ -9,7 +9,7 @@
 
 #include "includes.h"
 
-#include "common.h"
+#include "utils/common.h"
 #include "aes.h"
 #include "aes_wrap.h"
 
@@ -43,7 +43,7 @@ int aes_unwrap(const u8 *kek, size_t kek_len, int n, const u8 *cipher,
 	/* 2) Compute intermediate values.
 	 * For j = 5 to 0
 	 *     For i = n to 1
-	 *         B = AES-1(K, (A ^ t) | R[i]) where t = n*j+i
+	 *         B = AES-1(esp_K, (A ^ t) | R[i]) where t = n*j+i
 	 *         A = MSB(64, B)
 	 *         R[i] = LSB(64, B)
 	 */

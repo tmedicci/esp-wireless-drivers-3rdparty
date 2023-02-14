@@ -60,7 +60,7 @@ void esp_mpi_release_hardware(void);
  *
  * @note All of X, Y & Z should be less than 4096 bit long or an error is returned.
  *
- * @param Z Result bignum, should be pre-initialised with mbedtls_mpi_init().
+ * @param Z Result bignum, should be pre-initialised with esp_mbedtls_mpi_init().
  * @param X First multiplication argument.
  * @param Y Second multiplication argument.
  * @param M Modulus value for result.

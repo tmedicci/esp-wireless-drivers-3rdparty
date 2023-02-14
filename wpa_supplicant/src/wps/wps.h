@@ -38,7 +38,7 @@ struct wps_parse_attr;
  * @encr_type: Encryption Type (WPS_ENCR_NONE, .. flags)
  * @key_idx: Key index
  * @key: Key
- * @key_len: Key length in octets
+ * @esp_key_len: Key length in octets
  * @mac_addr: MAC address of the Credential receiver
  * @cred_attr: Unparsed Credential attribute data (used only in cred_cb());
  *	this may be %NULL, if not used
@@ -51,7 +51,7 @@ struct wps_credential {
 	u16 encr_type;
 	u8 key_idx;
 	u8 key[64];
-	size_t key_len;
+	size_t esp_key_len;
 	u8 mac_addr[ETH_ALEN];
 	const u8 *cred_attr;
 	size_t cred_attr_len;

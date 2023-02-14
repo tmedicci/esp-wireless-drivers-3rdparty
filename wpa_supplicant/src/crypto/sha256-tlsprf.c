@@ -13,7 +13,7 @@
 
 
 /**
- * tls_prf_sha256 - Pseudo-Random Function for TLS v1.2 (P_SHA256, RFC 5246)
+ * esp_tls_prf_sha256 - Pseudo-Random Function for TLS v1.2 (P_SHA256, RFC 5246)
  * @secret: Key for PRF
  * @secret_len: Length of the key in bytes
  * @label: A unique label for each purpose of the PRF
@@ -26,7 +26,7 @@
  * This function is used to derive new, cryptographically separate keys from a
  * given key in TLS. This PRF is defined in RFC 2246, Chapter 5.
  */
-int tls_prf_sha256(const u8 *secret, size_t secret_len, const char *label,
+int esp_tls_prf_sha256(const u8 *secret, size_t secret_len, const char *label,
 		   const u8 *seed, size_t seed_len, u8 *out, size_t outlen)
 {
 	size_t clen;

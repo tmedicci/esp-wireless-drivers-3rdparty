@@ -51,7 +51,7 @@ void wpa_sta_clear_curr_pmksa(void);
 int wpa_sm_set_key(struct install_key *sm, enum wpa_alg alg,
         u8 *addr, int key_idx, int set_tx,
         u8 *seq, size_t seq_len,
-        u8 *key, size_t key_len,
+        u8 *key, size_t esp_key_len,
         enum key_flag key_flag);
 
 int wpa_sm_set_ap_rsnxe(const u8 *ie, size_t len);
