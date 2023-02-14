@@ -1,0 +1,1841 @@
+diff --git a/include/esp32s3/rom/ets_sys.h b/include/esp32s3/rom/ets_sys.h
+index edf9627c68f11db9ef8ded928da6adc3f139df2c..3f736595bf99e3e5efe910f578a483312c2aa0e1 100644
+--- a/include/esp32s3/rom/ets_sys.h
++++ b/include/esp32s3/rom/ets_sys.h
+@@ -638,8 +638,7 @@ void intr_matrix_set(int cpu_no, uint32_t model_num, uint32_t intr_num);
+ #define ETS_MEM_BAR() asm volatile ( "" : : : "memory" )
+ 
+ typedef enum {
+-    OK = 0,
+-    FAIL,
++    FAIL = 1,
+     PENDING,
+     BUSY,
+     CANCEL,
+diff --git a/include/esp_attr.h b/include/esp_attr.h
+index d49f76141c631dd5d485c9c5f0d48c5777349143..a7897a7871a9547611c9d37c7a2e887572117f06 100644
+--- a/include/esp_attr.h
++++ b/include/esp_attr.h
+@@ -100,7 +100,7 @@ extern "C" {
+ #define COREDUMP_RTC_FAST_ATTR
+ #endif
+ 
+-#if CONFIG_SPIRAM_ALLOW_BSS_SEG_EXTERNAL_MEMORY
++#ifdef CONFIG_SPIRAM_ALLOW_BSS_SEG_EXTERNAL_MEMORY
+ // Forces bss variable into external memory. "
+ #define EXT_RAM_BSS_ATTR _SECTION_ATTR_IMPL(".ext_ram.bss", __COUNTER__)
+ #else
+@@ -110,7 +110,7 @@ extern "C" {
+ /**
+  * Deprecated Macro for putting .bss on PSRAM
+  */
+-#if CONFIG_SPIRAM_ALLOW_BSS_SEG_EXTERNAL_MEMORY
++#ifdef CONFIG_SPIRAM_ALLOW_BSS_SEG_EXTERNAL_MEMORY
+ // Forces bss variable into external memory. "
+ #define EXT_RAM_ATTR _SECTION_ATTR_IMPL(".ext_ram.bss", __COUNTER__) _Pragma ("GCC warning \"'EXT_RAM_ATTR' macro is deprecated, please use `EXT_RAM_BSS_ATTR`\"")
+ #else
+@@ -120,7 +120,7 @@ extern "C" {
+ // Forces data into noinit section to avoid initialization after restart.
+ #define __NOINIT_ATTR _SECTION_ATTR_IMPL(".noinit", __COUNTER__)
+ 
+-#if CONFIG_SPIRAM_ALLOW_NOINIT_SEG_EXTERNAL_MEMORY
++#ifdef CONFIG_SPIRAM_ALLOW_NOINIT_SEG_EXTERNAL_MEMORY
+ // Forces data into external memory noinit section to avoid initialization after restart.
+ #define EXT_RAM_NOINIT_ATTR _SECTION_ATTR_IMPL(".ext_ram_noinit", __COUNTER__)
+ #else
+diff --git a/include/esp_check.h b/include/esp_check.h
+deleted file mode 100644
+index cb724100595123ac4e19f983abfcb197e73578a7..0000000000000000000000000000000000000000
+--- a/include/esp_check.h
++++ /dev/null
+@@ -1,309 +0,0 @@
+-/*
+- * SPDX-FileCopyrightText: 2021-2022 Espressif Systems (Shanghai) CO LTD
+- *
+- * SPDX-License-Identifier: Apache-2.0
+- */
+-#pragma once
+-
+-#include "esp_err.h"
+-#include "esp_log.h"
+-
+-#ifdef __cplusplus
+-extern "C" {
+-#endif
+-
+-/**
+- * Macro which can be used to check the error code. If the code is not ESP_OK, it prints the message and returns.
+- */
+-#if defined(CONFIG_COMPILER_OPTIMIZATION_CHECKS_SILENT)
+-#define ESP_RETURN_ON_ERROR(x, log_tag, format, ...) do {                                       \
+-        (void)log_tag;                                                                          \
+-        esp_err_t err_rc_ = (x);                                                                \
+-        if (unlikely(err_rc_ != ESP_OK)) {                                                      \
+-            return err_rc_;                                                                     \
+-        }                                                                                       \
+-    } while(0)
+-
+-/**
+- * A version of ESP_RETURN_ON_ERROR() macro that can be called from ISR.
+- */
+-#define ESP_RETURN_ON_ERROR_ISR(x, log_tag, format, ...) do {                                   \
+-        (void)log_tag;                                                                          \
+-        esp_err_t err_rc_ = (x);                                                                \
+-        if (unlikely(err_rc_ != ESP_OK)) {                                                      \
+-            return err_rc_;                                                                     \
+-        }                                                                                       \
+-    } while(0)
+-
+-/**
+- * Macro which can be used to check the error code. If the code is not ESP_OK, it prints the message,
+- * sets the local variable 'ret' to the code, and then exits by jumping to 'goto_tag'.
+- */
+-#define ESP_GOTO_ON_ERROR(x, goto_tag, log_tag, format, ...) do {                               \
+-        (void)log_tag;                                                                          \
+-        esp_err_t err_rc_ = (x);                                                                \
+-        if (unlikely(err_rc_ != ESP_OK)) {                                                      \
+-            ret = err_rc_;                                                                      \
+-            goto goto_tag;                                                                      \
+-        }                                                                                       \
+-    } while(0)
+-
+-/**
+- * A version of ESP_GOTO_ON_ERROR() macro that can be called from ISR.
+- */
+-#define ESP_GOTO_ON_ERROR_ISR(x, goto_tag, log_tag, format, ...) do {                           \
+-        (void)log_tag;                                                                          \
+-        esp_err_t err_rc_ = (x);                                                                \
+-        if (unlikely(err_rc_ != ESP_OK)) {                                                      \
+-            ret = err_rc_;                                                                      \
+-            goto goto_tag;                                                                      \
+-        }                                                                                       \
+-    } while(0)
+-
+-/**
+- * Macro which can be used to check the condition. If the condition is not 'true', it prints the message
+- * and returns with the supplied 'err_code'.
+- */
+-#define ESP_RETURN_ON_FALSE(a, err_code, log_tag, format, ...) do {                             \
+-        (void)log_tag;                                                                          \
+-        if (unlikely(!(a))) {                                                                   \
+-            return err_code;                                                                    \
+-        }                                                                                       \
+-    } while(0)
+-
+-/**
+- * A version of ESP_RETURN_ON_FALSE() macro that can be called from ISR.
+- */
+-#define ESP_RETURN_ON_FALSE_ISR(a, err_code, log_tag, format, ...) do {                         \
+-        (void)log_tag;                                                                          \
+-        if (unlikely(!(a))) {                                                                   \
+-            return err_code;                                                                    \
+-        }                                                                                       \
+-    } while(0)
+-
+-/**
+- * Macro which can be used to check the condition. If the condition is not 'true', it prints the message,
+- * sets the local variable 'ret' to the supplied 'err_code', and then exits by jumping to 'goto_tag'.
+- */
+-#define ESP_GOTO_ON_FALSE(a, err_code, goto_tag, log_tag, format, ...) do {                     \
+-        (void)log_tag;                                                                          \
+-        if (unlikely(!(a))) {                                                                   \
+-            ret = err_code;                                                                     \
+-            goto goto_tag;                                                                      \
+-        }                                                                                       \
+-    } while (0)
+-
+-/**
+- * A version of ESP_GOTO_ON_FALSE() macro that can be called from ISR.
+- */
+-#define ESP_GOTO_ON_FALSE_ISR(a, err_code, goto_tag, log_tag, format, ...) do {                 \
+-        (void)log_tag;                                                                          \
+-        if (unlikely(!(a))) {                                                                   \
+-            ret = err_code;                                                                     \
+-            goto goto_tag;                                                                      \
+-        }                                                                                       \
+-    } while (0)
+-
+-#else // !CONFIG_COMPILER_OPTIMIZATION_CHECKS_SILENT
+-
+-/**
+- * In the future, we want to switch to C++20. We also want to become compatible with clang.
+- * Hence, we provide two versions of the following macros. The first one is using the GNU extension \#\#__VA_ARGS__.
+- * The second one is using the C++20 feature __VA_OPT__(,). This allows users to compile their code with
+- * standard C++20 enabled instead of the GNU extension. Below C++20, we haven't found any good alternative to
+- * using \#\#__VA_ARGS__.
+- */
+-#if defined(__cplusplus) && (__cplusplus >  201703L)
+-
+-/**
+- * Macro which can be used to check the error code. If the code is not ESP_OK, it prints the message and returns.
+- */
+-#define ESP_RETURN_ON_ERROR(x, log_tag, format, ...) do {                                                  \
+-        esp_err_t err_rc_ = (x);                                                                           \
+-        if (unlikely(err_rc_ != ESP_OK)) {                                                                 \
+-            ESP_LOGE(log_tag, "%s(%d): " format, __FUNCTION__, __LINE__ __VA_OPT__(,) __VA_ARGS__);        \
+-            return err_rc_;                                                                                \
+-        }                                                                                                  \
+-    } while(0)
+-
+-/**
+- * A version of ESP_RETURN_ON_ERROR() macro that can be called from ISR.
+- */
+-#define ESP_RETURN_ON_ERROR_ISR(x, log_tag, format, ...) do {                                              \
+-        esp_err_t err_rc_ = (x);                                                                           \
+-        if (unlikely(err_rc_ != ESP_OK)) {                                                                 \
+-            ESP_EARLY_LOGE(log_tag, "%s(%d): " format, __FUNCTION__, __LINE__ __VA_OPT__(,) __VA_ARGS__);  \
+-            return err_rc_;                                                                                \
+-        }                                                                                                  \
+-    } while(0)
+-
+-/**
+- * Macro which can be used to check the error code. If the code is not ESP_OK, it prints the message,
+- * sets the local variable 'ret' to the code, and then exits by jumping to 'goto_tag'.
+- */
+-#define ESP_GOTO_ON_ERROR(x, goto_tag, log_tag, format, ...) do {                                          \
+-        esp_err_t err_rc_ = (x);                                                                           \
+-        if (unlikely(err_rc_ != ESP_OK)) {                                                                 \
+-            ESP_LOGE(log_tag, "%s(%d): " format, __FUNCTION__, __LINE__ __VA_OPT__(,) __VA_ARGS__);        \
+-            ret = err_rc_;                                                                                 \
+-            goto goto_tag;                                                                                 \
+-        }                                                                                                  \
+-    } while(0)
+-
+-/**
+- * A version of ESP_GOTO_ON_ERROR() macro that can be called from ISR.
+- */
+-#define ESP_GOTO_ON_ERROR_ISR(x, goto_tag, log_tag, format, ...) do {                                      \
+-        esp_err_t err_rc_ = (x);                                                                           \
+-        if (unlikely(err_rc_ != ESP_OK)) {                                                                 \
+-            ESP_EARLY_LOGE(log_tag, "%s(%d): " format, __FUNCTION__, __LINE__ __VA_OPT__(,) __VA_ARGS__);  \
+-            ret = err_rc_;                                                                                 \
+-            goto goto_tag;                                                                                 \
+-        }                                                                                                  \
+-    } while(0)
+-
+-/**
+- * Macro which can be used to check the condition. If the condition is not 'true', it prints the message
+- * and returns with the supplied 'err_code'.
+- */
+-#define ESP_RETURN_ON_FALSE(a, err_code, log_tag, format, ...) do {                                        \
+-        if (unlikely(!(a))) {                                                                              \
+-            ESP_LOGE(log_tag, "%s(%d): " format, __FUNCTION__, __LINE__ __VA_OPT__(,) __VA_ARGS__);        \
+-            return err_code;                                                                               \
+-        }                                                                                                  \
+-    } while(0)
+-
+-/**
+- * A version of ESP_RETURN_ON_FALSE() macro that can be called from ISR.
+- */
+-#define ESP_RETURN_ON_FALSE_ISR(a, err_code, log_tag, format, ...) do {                                    \
+-        if (unlikely(!(a))) {                                                                              \
+-            ESP_EARLY_LOGE(log_tag, "%s(%d): " format, __FUNCTION__, __LINE__ __VA_OPT__(,) __VA_ARGS__);  \
+-            return err_code;                                                                               \
+-        }                                                                                                  \
+-    } while(0)
+-
+-/**
+- * Macro which can be used to check the condition. If the condition is not 'true', it prints the message,
+- * sets the local variable 'ret' to the supplied 'err_code', and then exits by jumping to 'goto_tag'.
+- */
+-#define ESP_GOTO_ON_FALSE(a, err_code, goto_tag, log_tag, format, ...) do {                                \
+-        if (unlikely(!(a))) {                                                                              \
+-            ESP_LOGE(log_tag, "%s(%d): " format, __FUNCTION__, __LINE__ __VA_OPT__(,) __VA_ARGS__);        \
+-            ret = err_code;                                                                                \
+-            goto goto_tag;                                                                                 \
+-        }                                                                                                  \
+-    } while (0)
+-
+-/**
+- * A version of ESP_GOTO_ON_FALSE() macro that can be called from ISR.
+- */
+-#define ESP_GOTO_ON_FALSE_ISR(a, err_code, goto_tag, log_tag, format, ...) do {                            \
+-        if (unlikely(!(a))) {                                                                              \
+-            ESP_EARLY_LOGE(log_tag, "%s(%d): " format, __FUNCTION__, __LINE__ __VA_OPT__(,) __VA_ARGS__);  \
+-            ret = err_code;                                                                                \
+-            goto goto_tag;                                                                                 \
+-        }                                                                                                  \
+-    } while (0)
+-
+-#else // !(defined(__cplusplus) && (__cplusplus >  201703L))
+-
+-/**
+- * Macro which can be used to check the error code. If the code is not ESP_OK, it prints the message and returns.
+- */
+-#define ESP_RETURN_ON_ERROR(x, log_tag, format, ...) do {                                       \
+-        esp_err_t err_rc_ = (x);                                                                \
+-        if (unlikely(err_rc_ != ESP_OK)) {                                                      \
+-            ESP_LOGE(log_tag, "%s(%d): " format, __FUNCTION__, __LINE__, ##__VA_ARGS__);        \
+-            return err_rc_;                                                                     \
+-        }                                                                                       \
+-    } while(0)
+-
+-/**
+- * A version of ESP_RETURN_ON_ERROR() macro that can be called from ISR.
+- */
+-#define ESP_RETURN_ON_ERROR_ISR(x, log_tag, format, ...) do {                                   \
+-        esp_err_t err_rc_ = (x);                                                                \
+-        if (unlikely(err_rc_ != ESP_OK)) {                                                      \
+-            ESP_EARLY_LOGE(log_tag, "%s(%d): " format, __FUNCTION__, __LINE__, ##__VA_ARGS__);  \
+-            return err_rc_;                                                                     \
+-        }                                                                                       \
+-    } while(0)
+-
+-/**
+- * Macro which can be used to check the error code. If the code is not ESP_OK, it prints the message,
+- * sets the local variable 'ret' to the code, and then exits by jumping to 'goto_tag'.
+- */
+-#define ESP_GOTO_ON_ERROR(x, goto_tag, log_tag, format, ...) do {                               \
+-        esp_err_t err_rc_ = (x);                                                                \
+-        if (unlikely(err_rc_ != ESP_OK)) {                                                      \
+-            ESP_LOGE(log_tag, "%s(%d): " format, __FUNCTION__, __LINE__, ##__VA_ARGS__);        \
+-            ret = err_rc_;                                                                      \
+-            goto goto_tag;                                                                      \
+-        }                                                                                       \
+-    } while(0)
+-
+-/**
+- * A version of ESP_GOTO_ON_ERROR() macro that can be called from ISR.
+- */
+-#define ESP_GOTO_ON_ERROR_ISR(x, goto_tag, log_tag, format, ...) do {                           \
+-        esp_err_t err_rc_ = (x);                                                                \
+-        if (unlikely(err_rc_ != ESP_OK)) {                                                      \
+-            ESP_EARLY_LOGE(log_tag, "%s(%d): " format, __FUNCTION__, __LINE__, ##__VA_ARGS__);  \
+-            ret = err_rc_;                                                                      \
+-            goto goto_tag;                                                                      \
+-        }                                                                                       \
+-    } while(0)
+-
+-/**
+- * Macro which can be used to check the condition. If the condition is not 'true', it prints the message
+- * and returns with the supplied 'err_code'.
+- */
+-#define ESP_RETURN_ON_FALSE(a, err_code, log_tag, format, ...) do {                             \
+-        if (unlikely(!(a))) {                                                                   \
+-            ESP_LOGE(log_tag, "%s(%d): " format, __FUNCTION__, __LINE__, ##__VA_ARGS__);        \
+-            return err_code;                                                                    \
+-        }                                                                                       \
+-    } while(0)
+-
+-/**
+- * A version of ESP_RETURN_ON_FALSE() macro that can be called from ISR.
+- */
+-#define ESP_RETURN_ON_FALSE_ISR(a, err_code, log_tag, format, ...) do {                         \
+-        if (unlikely(!(a))) {                                                                   \
+-            ESP_EARLY_LOGE(log_tag, "%s(%d): " format, __FUNCTION__, __LINE__, ##__VA_ARGS__);  \
+-            return err_code;                                                                    \
+-        }                                                                                       \
+-    } while(0)
+-
+-/**
+- * Macro which can be used to check the condition. If the condition is not 'true', it prints the message,
+- * sets the local variable 'ret' to the supplied 'err_code', and then exits by jumping to 'goto_tag'.
+- */
+-#define ESP_GOTO_ON_FALSE(a, err_code, goto_tag, log_tag, format, ...) do {                     \
+-        if (unlikely(!(a))) {                                                                   \
+-            ESP_LOGE(log_tag, "%s(%d): " format, __FUNCTION__, __LINE__, ##__VA_ARGS__);        \
+-            ret = err_code;                                                                     \
+-            goto goto_tag;                                                                      \
+-        }                                                                                       \
+-    } while (0)
+-
+-/**
+- * A version of ESP_GOTO_ON_FALSE() macro that can be called from ISR.
+- */
+-#define ESP_GOTO_ON_FALSE_ISR(a, err_code, goto_tag, log_tag, format, ...) do {                 \
+-        if (unlikely(!(a))) {                                                                   \
+-            ESP_EARLY_LOGE(log_tag, "%s(%d): " format, __FUNCTION__, __LINE__, ##__VA_ARGS__);  \
+-            ret = err_code;                                                                     \
+-            goto goto_tag;                                                                      \
+-        }                                                                                       \
+-    } while (0)
+-
+-#endif // !(defined(__cplusplus) && (__cplusplus >  201703L))
+-
+-#endif // !CONFIG_COMPILER_OPTIMIZATION_CHECKS_SILENT
+-
+-
+-#ifdef __cplusplus
+-}
+-#endif
+diff --git a/include/esp_event.h b/include/esp_event.h
+index 47e21ca9663f0fc48a3e1ad60dcafaa9091ecb58..c1d120003fe091f5e28cfe5826544a8a069d9cab 100644
+--- a/include/esp_event.h
++++ b/include/esp_event.h
+@@ -9,11 +9,6 @@
+ 
+ #include "esp_err.h"
+ 
+-#include "freertos/FreeRTOS.h"
+-#include "freertos/task.h"
+-#include "freertos/queue.h"
+-#include "freertos/semphr.h"
+-
+ #include "esp_event_base.h"
+ 
+ #ifdef __cplusplus
+@@ -369,7 +364,7 @@ esp_err_t esp_event_handler_instance_unregister(esp_event_base_t event_base,
+  */
+ esp_err_t esp_event_post(esp_event_base_t event_base,
+                          int32_t event_id,
+-                         const void *event_data,
++                         void *event_data,
+                          size_t event_data_size,
+                          TickType_t ticks_to_wait);
+ 
+diff --git a/include/esp_event_loop.h b/include/esp_event_loop.h
+deleted file mode 100644
+index 14ab627e511251a5f3b7929b0d08bf57e24ba3d9..0000000000000000000000000000000000000000
+--- a/include/esp_event_loop.h
++++ /dev/null
+@@ -1,3 +0,0 @@
+-#pragma once
+-#warning "esp_event_loop.h is deprecated, please include esp_event.h instead"
+-#include "esp_event.h"
+diff --git a/include/esp_macros.h b/include/esp_macros.h
+deleted file mode 100644
+index 28aa5106c286b791189aa155ab9621422d932edf..0000000000000000000000000000000000000000
+--- a/include/esp_macros.h
++++ /dev/null
+@@ -1,70 +0,0 @@
+-/*
+- * SPDX-FileCopyrightText: 2015-2022 Espressif Systems (Shanghai) CO LTD
+- *
+- * SPDX-License-Identifier: Apache-2.0
+- */
+-
+-#pragma once
+-
+-/*
+-This header contains various general purpose helper macros used across ESP-IDF
+-*/
+-#include <assert.h>
+-#include "esp_assert.h"
+-
+-#ifdef __cplusplus
+-extern "C" {
+-#endif
+-
+-/**
+- * @brief Macro to select different versions of other macros based on whether VA_ARGS has an argument or no argument
+- *
+- * Some macros (such as in FreeRTOS) have two versions (one that accepts arguments and another that does not). The
+- * following "CHOOSE_MACRO_VA_ARG" selector allows automatic selection between two different versions of a macro.
+- *
+- * "CHOOSE_MACRO_VA_ARG" make use of the fact that "##__VA_ARGS__," will eliminate the trailing comma if there are no
+- * arguments, thus allows subsequent arguments in "CHOOSE_MACRO_VA_ARG" to be left shifted in the parameter list.
+- *
+- * Therefore, if we call the following:
+- * - CHOOSE_MACRO_VA_ARG(MACRO_ARGS, MACRO_NO_ARGS, ##__VA_ARGS__)(__VA_ARGS__)
+- *
+- * The result will be:
+- * - MACRO_ARGS(__VA_ARGS__) if __VA_ARGS__ was not empty
+- * - MACRO_NO_ARGS() if __VA_ARGS__ was empty
+- *
+- * @note In the future, we want to switch to C++20. We also want to become compatible with clang. Hence, we provide two
+- * versions of the following macros which are using variadic arguments. One is using the GNU extension ##__VA_ARGS__.
+- * The other is using the C++20 feature __VA_OPT__(,). This allows users to compile their code with standard C++20
+- * enabled instead of the GNU extension. Below C++20, we haven't found any good alternative to using ##__VA_ARGS__.
+- */
+-#if defined(__cplusplus) && (__cplusplus >  201703L)
+-#define CHOOSE_MACRO_VA_ARG_INN_IMPL(...) __VA_OPT__(0)
+-#define CHOOSE_MACRO_VA_ARG_INN(one, MACRO1, MACRO2, ...) MACRO1
+-#define CHOOSE_MACRO_VA_ARG(MACRO_WITH_ARGS, MACRO_WITH_NO_ARGS, ...) CHOOSE_MACRO_VA_ARG_INN(CHOOSE_MACRO_VA_ARG_INN_IMPL(__VA_ARGS__) __VA_OPT__(,) MACRO_WITH_ARGS, MACRO_WITH_NO_ARGS, 0)
+-#else
+-#define CHOOSE_MACRO_VA_ARG_INN(one, two, MACRO1, MACRO2, ...) MACRO1
+-#define CHOOSE_MACRO_VA_ARG(MACRO_WITH_ARGS, MACRO_WITH_NO_ARGS, ...) CHOOSE_MACRO_VA_ARG_INN(0, ##__VA_ARGS__, MACRO_WITH_ARGS, MACRO_WITH_NO_ARGS, 0)
+-#endif
+-
+-/* test macros */
+-#define foo_args(...) 1
+-#define foo_no_args() 2
+-#if defined(__cplusplus) && (__cplusplus >  201703L)
+-#define foo(...) CHOOSE_MACRO_VA_ARG(foo_args, foo_no_args __VA_OPT__(,) __VA_ARGS__)(__VA_ARGS__)
+-#else
+-#define foo(...) CHOOSE_MACRO_VA_ARG(foo_args, foo_no_args, ##__VA_ARGS__)(__VA_ARGS__)
+-#endif
+-
+-ESP_STATIC_ASSERT(foo() == 2, "CHOOSE_MACRO_VA_ARG() result does not match for 0 arguments");
+-ESP_STATIC_ASSERT(foo(42) == 1, "CHOOSE_MACRO_VA_ARG() result does not match for 1 argument");
+-#if defined(__cplusplus) && (__cplusplus >  201703L)
+-ESP_STATIC_ASSERT(foo(42, 87) == 1, "CHOOSE_MACRO_VA_ARG() result does not match for n arguments");
+-#endif
+-
+-#undef foo
+-#undef foo_args
+-#undef foo_no_args
+-
+-#ifdef __cplusplus
+-}
+-#endif
+diff --git a/include/esp_private/adc_share_hw_ctrl.h b/include/esp_private/adc_share_hw_ctrl.h
+deleted file mode 100644
+index 9d5f839e8d7fa174fd99f0095948007fb9018193..0000000000000000000000000000000000000000
+--- a/include/esp_private/adc_share_hw_ctrl.h
++++ /dev/null
+@@ -1,153 +0,0 @@
+-/*
+- * SPDX-FileCopyrightText: 2020-2021 Espressif Systems (Shanghai) CO LTD
+- *
+- * SPDX-License-Identifier: Apache-2.0
+- */
+-
+-/**
+- * ADC is shared by multiple components, including:
+- * - esp_phy
+- * - esp_wifi
+- * - driver
+- *
+- * However, usages of above components are different.
+- * Therefore, we put the common used parts into `esp_hw_support`, including:
+- * - adc power maintainance
+- * - adc hw calibration settings
+- * - adc locks, to prevent concurrently using adc hw
+- */
+-
+-#pragma once
+-#include "esp_err.h"
+-#include "hal/adc_types.h"
+-#include "soc/soc_caps.h"
+-
+-#ifdef __cplusplus
+-extern "C" {
+-#endif
+-
+-/*------------------------------------------------------------------------------
+-* ADC Power
+-*----------------------------------------------------------------------------*/
+-/**
+- * @brief Acquire the ADC Power
+- */
+-void adc_power_acquire(void);
+-
+-/**
+- * @brief Release the ADC Power
+- */
+-void adc_power_release(void);
+-
+-
+-#if SOC_ADC_CALIBRATION_V1_SUPPORTED
+-/*---------------------------------------------------------------
+-            ADC Hardware Calibration
+----------------------------------------------------------------*/
+-/**
+- * @brief Calculate the ADC HW calibration code. (Based on the pre-stored efuse or actual calibration)
+- *
+- * @param adc_n ADC unit to calibrate
+- * @param atten Attenuation to use
+- */
+-void adc_calc_hw_calibration_code(adc_unit_t adc_n, adc_atten_t atten);
+-
+-/**
+- * @brief Set the ADC HW calibration code.
+- *
+- * @param adc_n ADC unit to calibrate
+- * @param atten Attenuation to use
+- */
+-void adc_set_hw_calibration_code(adc_unit_t adc_n, adc_atten_t atten);
+-#endif //#if SOC_ADC_CALIBRATION_V1_SUPPORTED
+-
+-
+-/*---------------------------------------------------------------
+-            ADC Cross Peripheral Locks
+----------------------------------------------------------------*/
+-/**
+- * @brief Acquire ADC lock by unit
+- *
+- * The lock acquiring sequence will be: ADC1, ADC2, ...
+- *
+- * @note If any of the locks are taken, this API will wait until the lock is successfully acquired.
+- *
+- * @param[in] adc_unit    ADC unit ID
+- *
+- * @return
+- *        - ESP_OK: On success
+- */
+-esp_err_t adc_lock_acquire(adc_unit_t adc_unit);
+-
+-/**
+- * @brief Release ADC lock by unit
+- *
+- * The lock releasing sequence will be: ..., ADC2, ADC1
+- *
+- * @param[in] adc_unit    ADC unit ID
+- *
+- * @return
+- *        - ESP_OK:                On success
+- *        - ESP_ERR_INVALID_STATE: The lock(s) isn't acquired yet
+- */
+-esp_err_t adc_lock_release(adc_unit_t adc_unit);
+-
+-/**
+- * @brief Try to acquire ADC lock by unit
+- *
+- * The lock acquiring sequence will be: ADC1, ADC2, ...
+- *
+- * @note If any of the locks are taken, this API will return immediately with an error `ESP_ERR_TIMEOUT`
+- *
+- * @param[in] adc_unit    ADC unit ID
+- *
+- * @return
+- *        - ESP_OK:          On success
+- *        - ESP_ERR_TIMEOUT: Lock(s) is taken already
+- */
+-esp_err_t adc_lock_try_acquire(adc_unit_t adc_unit);
+-
+-/**
+- * @brief For WIFI module to claim the usage of ADC2.
+- *
+- * Other tasks will be forbidden to use ADC2 between ``adc2_wifi_acquire`` and ``adc2_wifi_release``.
+- * The WIFI module may have to wait for a short time for the current conversion (if exist) to finish.
+- *
+- * @return
+- *        - ESP_OK success
+- *        - ESP_ERR_TIMEOUT reserved for future use. Currently the function will wait until success.
+- */
+-esp_err_t adc2_wifi_acquire(void);
+-
+-/**
+- * @brief For WIFI module to let other tasks use the ADC2 when WIFI is not work.
+- *
+- * Other tasks will be forbidden to use ADC2 between ``adc2_wifi_acquire`` and ``adc2_wifi_release``.
+- * Call this function to release the occupation of ADC2 by WIFI.
+- *
+- * @return
+- *        - ESP_OK:                On success
+- *        - ESP_ERR_INVALID_STATE: The lock(s) isn't acquired yet
+- */
+-esp_err_t adc2_wifi_release(void);
+-
+-
+-#if CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32C3
+-/**
+- * @brief This API help ADC2 calibration constructor be linked.
+- *
+- * @note  This is a private function, Don't call `adc2_cal_include` in user code.
+- */
+-void adc2_cal_include(void);
+-#else
+-/**
+- * @brief There's no calibration involved on this chip.
+- *
+- * @note  This is a private function, Don't call `adc2_cal_include` in user code.
+- */
+-#define adc2_cal_include()
+-#endif //CONFIG_IDF_TARGET_*
+-
+-#ifdef __cplusplus
+-}
+-#endif
+diff --git a/include/esp_private/esp_clk.h b/include/esp_private/esp_clk.h
+deleted file mode 100644
+index 01b2849f8a077d74dc0e78b737feb8746c0cfd00..0000000000000000000000000000000000000000
+--- a/include/esp_private/esp_clk.h
++++ /dev/null
+@@ -1,100 +0,0 @@
+-/*
+- * SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD
+- *
+- * SPDX-License-Identifier: Apache-2.0
+- */
+-
+-#pragma once
+-#include <stdint.h>
+-
+-#ifdef __cplusplus
+-extern "C" {
+-#endif
+-
+-/**
+- * @file esp_clk.h
+- *
+- * This file contains declarations of clock related functions.
+- */
+-
+-/**
+- * @brief Get the calibration value of RTC slow clock
+- *
+- * The value is in the same format as returned by rtc_clk_cal (microseconds,
+- * in Q13.19 fixed-point format).
+- *
+- * @return the calibration value obtained using rtc_clk_cal, at startup time
+- */
+-uint32_t esp_clk_slowclk_cal_get(void);
+-
+-/**
+- * @brief Update the calibration value of RTC slow clock
+- *
+- * The value has to be in the same format as returned by rtc_clk_cal (microseconds,
+- * in Q13.19 fixed-point format).
+- * This value is used by timekeeping functions (such as gettimeofday) to
+- * calculate current time based on RTC counter value.
+- * @param value calibration value obtained using rtc_clk_cal
+- */
+-void esp_clk_slowclk_cal_set(uint32_t value);
+-
+-/**
+- * @brief Return current CPU clock frequency
+- * When frequency switching is performed, this frequency may change.
+- * However it is guaranteed that the frequency never changes with a critical
+- * section.
+- *
+- * @return CPU clock frequency, in Hz
+- */
+-int esp_clk_cpu_freq(void);
+-
+-/**
+- * @brief Return current APB clock frequency
+- *
+- * When frequency switching is performed, this frequency may change.
+- * However it is guaranteed that the frequency never changes with a critical
+- * section.
+- *
+- * @return APB clock frequency, in Hz
+- */
+-int esp_clk_apb_freq(void);
+-
+-/**
+- * @brief Return frequency of the main XTAL
+- *
+- * Frequency of the main XTAL can be either auto-detected or set at compile
+- * time (see CONFIG_XTAL_FREQ_SEL sdkconfig option). In both cases, this
+- * function returns the actual value at run time.
+- *
+- * @return XTAL frequency, in Hz
+- */
+-int esp_clk_xtal_freq(void);
+-
+-
+-/**
+- * @brief Read value of RTC counter, converting it to microseconds
+- * @attention The value returned by this function may change abruptly when
+- * calibration value of RTC counter is updated via esp_clk_slowclk_cal_set
+- * function. This should not happen unless application calls esp_clk_slowclk_cal_set.
+- * In ESP-IDF, esp_clk_slowclk_cal_set is only called in startup code.
+- *
+- * @return Value or RTC counter, expressed in microseconds
+- */
+-uint64_t esp_clk_rtc_time(void);
+-
+-/**
+- * @brief obtain internal critical section used esp_clk implementation.
+- *
+- * This is used by the esp_light_sleep_start() to avoid deadlocking when it
+- * calls esp_clk related API after stalling the other CPU.
+- */
+-void esp_clk_private_lock(void);
+-
+-/**
+- * @brief counterpart of esp_clk_private_lock
+- */
+-void esp_clk_private_unlock(void);
+-
+-#ifdef __cplusplus
+-}
+-#endif
+diff --git a/include/esp_private/esp_memprot_internal.h b/include/esp_private/esp_memprot_internal.h
+deleted file mode 100644
+index 8a000c1aa8ce20fac582d4bdb97a1eb1b842cd2d..0000000000000000000000000000000000000000
+--- a/include/esp_private/esp_memprot_internal.h
++++ /dev/null
+@@ -1,218 +0,0 @@
+-/*
+- * SPDX-FileCopyrightText: 2021-2022 Espressif Systems (Shanghai) CO LTD
+- *
+- * SPDX-License-Identifier: Apache-2.0
+- */
+-
+-#pragma once
+-
+-#include <stdbool.h>
+-#include <stdint.h>
+-#include "esp_err.h"
+-#include "esp_memprot_err.h"
+-#include "hal/memprot_types.h"
+-#include "soc_memprot_types.h"
+-#include "esp_memprot_types.h"
+-
+-#ifdef __cplusplus
+-extern "C" {
+-#endif
+-
+-/**
+-* @brief Convert Memprot low level errors to esp_err_t
+-*/
+-esp_err_t esp_mprot_ll_err_to_esp_err(const memprot_hal_err_t err);
+-
+-/**
+- * @brief Convert Memprot low level PMS World IDs to esp_mprot_pms_world_t
+- */
+-esp_mprot_pms_world_t esp_mprot_ll_world_to_hl_world(const memprot_hal_world_t world);
+-
+-/**
+- * @brief Converts operation type to string, no combination of operations allowed
+- *
+- * @param oper_type PMS operation type
+- */
+-const char *esp_mprot_oper_type_to_str(const uint32_t oper_type);
+-
+-/**
+- * @brief Converts PMS World type to string
+- *
+- * @param area_type PMS World type
+- */
+-const char *esp_mprot_pms_world_to_str(const esp_mprot_pms_world_t world_type);
+-
+-/**
+- * @brief Sets splitting address for given line type in the target Memory type
+- *
+- * @param mem_type memory type
+- * @param line_type split address type
+- * @param line_addr target address from a memory range relevant to given line_addr
+- * @param core Target CPU/Core ID (see *_CPU_NUM defs in soc.h). Can be NULL on 1-CPU systems
+- *
+- * @return ESP_OK on success
+- *         ESP_ERR_MEMPROT_MEMORY_TYPE_INVALID on invalid mem_type
+- *         ESP_ERR_MEMPROT_SPLIT_ADDR_INVALID on invalid line_type
+- *         ESP_ERR_MEMPROT_SPLIT_ADDR_OUT_OF_RANGE on splitting line out of given memory-type range
+- *         ESP_ERR_MEMPROT_SPLIT_ADDR_UNALIGNED on splitting line not aligned to PMS-required boundaries
+- */
+-esp_err_t esp_mprot_set_split_addr(const esp_mprot_mem_t mem_type, const esp_mprot_split_addr_t line_type, const void *line_addr, const int core);
+-
+-/**
+- * @brief Gets PMS splitting address for given split_addr type
+- *
+- * The value is read from the PMS configuration registers
+- *
+- * @param mem_type memory type
+- * @param line_type Split line type (see esp_mprot_split_addr_t enum)
+- * @param[out] line_addr Split line address from the configuration register
+- * @param core Target CPU/Core ID (see *_CPU_NUM defs in soc.h). Can be NULL on 1-CPU systems
+- *
+- * @return ESP_OK on success
+- *         ESP_ERR_INVALID_ARG on line_addr is pointer
+- *         ESP_ERR_MEMPROT_MEMORY_TYPE_INVALID on invalid mem_type
+- *         ESP_ERR_MEMPROT_SPLIT_ADDR_INVALID on invalid line_type
+- */
+-esp_err_t esp_mprot_get_split_addr(const esp_mprot_mem_t mem_type, const esp_mprot_split_addr_t line_type, void **line_addr, const int core);
+-
+-/**
+- * @brief Returns default main I/D splitting address for given Memory type
+- *
+- * @param mem_type memory type
+- * @param[out] def_split_addr Main I/D splitting address of required mem_type
+- *
+- * @return ESP_OK on success
+- *         ESP_ERR_INVALID_ARG on invalid def_split_addr pointer
+- *         ESP_ERR_MEMPROT_MEMORY_TYPE_INVALID on invalid mem_type
+- */
+-esp_err_t esp_mprot_get_default_main_split_addr(const esp_mprot_mem_t mem_type, void **def_split_addr);
+-
+-/**
+- * @brief Sets a lock for the main IRAM/DRAM splitting addresses
+- * Locks can be unlocked only by digital system reset
+- *
+- * @param mem_type memory type
+- * @param core Target CPU/Core ID (see *_CPU_NUM defs in soc.h). Can be NULL on 1-CPU systems
+- *
+- * @return ESP_OK on success
+- *         ESP_ERR_MEMPROT_MEMORY_TYPE_INVALID on invalid mem_type
+- */
+-esp_err_t esp_mprot_set_split_addr_lock(const esp_mprot_mem_t mem_type, const int core);
+-
+-/**
+- * @brief Gets a lock status for the splitting address configuration of given Memory type
+- *
+- * @param mem_type memory type
+- * @param[out] locked mem_type related lock status
+- * @param core Target CPU/Core ID (see *_CPU_NUM defs in soc.h). Can be NULL on 1-CPU systems
+- *
+- * @return ESP_OK on success
+- *         ESP_ERR_INVALID_ARGUMENT on invalid locked pointer
+- *         ESP_ERR_MEMPROT_MEMORY_TYPE_INVALID on invalid mem_type
+- */
+-esp_err_t esp_mprot_get_split_addr_lock(const esp_mprot_mem_t mem_type, bool *locked, const int core);
+-
+-/**
+- * @brief Sets a lock for PMS Area settings of required Memory type
+- * Locks can be unlocked only by digital system reset
+- *
+- * @param mem_type memory type
+- * @param core Target CPU/Core ID (see *_CPU_NUM defs in soc.h). Can be NULL on 1-CPU systems
+- *
+- * @return ESP_OK on success
+- *         ESP_ERR_MEMPROT_MEMORY_TYPE_INVALID on invalid mem_type
+- */
+-esp_err_t esp_mprot_set_pms_lock(const esp_mprot_mem_t mem_type, const int core);
+-
+-/**
+- * @brief Gets a lock status for PMS Area settings of required Memory type
+- *
+- * @param mem_type memory type
+- * @param[out] locked mem_type related lock status
+- * @param core Target CPU/Core ID (see *_CPU_NUM defs in soc.h). Can be NULL on 1-CPU systems
+- *
+- * @return ESP_OK on success
+- *         ESP_ERR_MEMPROT_MEMORY_TYPE_INVALID on invalid mem_type
+- *         ESP_ERR_INVALID_ARGUMENT on invalid locked pointer
+- */
+-esp_err_t esp_mprot_get_pms_lock(const esp_mprot_mem_t mem_type, bool *locked, const int core);
+-
+-/**
+- * @brief Sets permissions for given PMS Area
+- *
+- * @param area_type PMS area type
+- * @param flags combination of MEMPROT_OP_* defines
+- * @param core Target CPU/Core ID (see *_CPU_NUM defs in soc.h). Can be NULL on 1-CPU systems
+- *
+- * @return ESP_OK on success
+- *         ESP_ERR_MEMPROT_MEMORY_TYPE_INVALID on invalid mem_type
+- */
+-esp_err_t esp_mprot_set_pms_area(const esp_mprot_pms_area_t area_type, const uint32_t flags, const int core);
+-
+-/**
+- * @brief Gets current permissions for given PMS Area
+- *
+- * @param area_type PMS area type
+- * @param[out] flags combination of MEMPROT_OP_* defines
+- * @param core Target CPU/Core ID (see *_CPU_NUM defs in soc.h). Can be NULL on 1-CPU systems
+- *
+- * @return ESP_OK on success
+- *         ESP_ERR_MEMPROT_MEMORY_TYPE_INVALID on invalid mem_type
+- *         ESP_ERR_INVALID_ARG on invalid flags pointer
+- */
+-esp_err_t esp_mprot_get_pms_area(const esp_mprot_pms_area_t area_type, uint32_t *flags, const int core);
+-
+-/**
+- * @brief Sets a lock for PMS interrupt monitor settings of required Memory type
+- *
+- * Locks can be unlocked only by digital system reset
+- *
+- * @param mem_type memory type (see esp_mprot_mem_t enum)
+- * @param core Target CPU/Core ID (see *_CPU_NUM defs in soc.h). Can be NULL on 1-CPU systems
+- *
+- * @return ESP_OK on success
+- *         ESP_ERR_MEMPROT_MEMORY_TYPE_INVALID on invalid mem_type
+- */
+-esp_err_t esp_mprot_set_monitor_lock(const esp_mprot_mem_t mem_type, const int core);
+-
+-/**
+- * @brief Gets a lock status for PMS interrupt monitor settings of required Memory type
+- *
+- * @param mem_type memory type
+- * @param[out] locked mem_type related lock status
+- * @param core Target CPU/Core ID (see *_CPU_NUM defs in soc.h). Can be NULL on 1-CPU systems
+- *
+- * @return ESP_OK on success
+- *         ESP_ERR_MEMPROT_MEMORY_TYPE_INVALID on invalid mem_type
+- *         ESP_ERR_INVALID_ARG on invalid locked pointer
+- */
+-esp_err_t esp_mprot_get_monitor_lock(const esp_mprot_mem_t mem_type, bool *locked, const int core);
+-
+-/**
+- * @brief Enable PMS violation interrupt monitoring of required Memory type
+- *
+- * @param mem_type memory type
+- * @param enable enable/disable violation interrupt monitoring
+- * @param core Target CPU/Core ID (see *_CPU_NUM defs in soc.h). Can be NULL on 1-CPU systems
+- *
+- * @return ESP_OK on success
+- *         ESP_ERR_MEMPROT_MEMORY_TYPE_INVALID on invalid mem_type
+- */
+-esp_err_t esp_mprot_set_monitor_en(const esp_mprot_mem_t mem_type, const bool enable, const int core);
+-
+-/**
+- * @brief Gets PMS violation-monitoring-enabled flag for required Memory type
+- *
+- * @param mem_type memory type
+- * @param[out] enabled violation interrupt monitoring enable flag
+- * @param core Target CPU/Core ID (see *_CPU_NUM defs in soc.h). Can be NULL on 1-CPU systems
+- *
+- * @return ESP_OK on success
+- *         ESP_ERR_INVALID_ARG on invalid enabled pointer
+- *         ESP_ERR_MEMPROT_MEMORY_TYPE_INVALID on invalid mem_type
+- */
+-esp_err_t esp_mprot_get_monitor_en(const esp_mprot_mem_t mem_type, bool* enabled, const int core);
+-
+-#ifdef __cplusplus
+-}
+-#endif
+diff --git a/include/esp_private/esp_sleep_internal.h b/include/esp_private/esp_sleep_internal.h
+deleted file mode 100644
+index 2daff50dc3defce640bb8a77b74df4851a352984..0000000000000000000000000000000000000000
+--- a/include/esp_private/esp_sleep_internal.h
++++ /dev/null
+@@ -1,36 +0,0 @@
+-/*
+- * SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+- *
+- * SPDX-License-Identifier: Apache-2.0
+- */
+-
+-#pragma once
+-#include <stdbool.h>
+-#include "sdkconfig.h"
+-
+-#ifdef __cplusplus
+-extern "C" {
+-#endif
+-
+-
+-/**
+- * @brief Enables the use of ADC and temperature sensor in monitor (ULP) mode
+- *
+- * @note  This state is kept in RTC memory and will keep its value after a deep sleep wakeup
+- *
+- */
+-void esp_sleep_enable_adc_tsens_monitor(bool enable);
+-
+-// IDF does not officially support esp32h2 in v5.0
+-#if !CONFIG_IDF_TARGET_ESP32H2
+-/**
+- * @brief Isolate all digital IOs except those that are held during deep sleep
+- *
+- * Reduce digital IOs current leakage during deep sleep.
+- */
+-void esp_sleep_isolate_digital_gpio(void);
+-#endif
+-
+-#ifdef __cplusplus
+-}
+-#endif
+diff --git a/include/esp_private/esp_wifi_private.h b/include/esp_private/esp_wifi_private.h
+index 1b95905a061ba8c0960207859673f0ae3a8aeb6c..fa8fb16312e13eaaf007aaddcba2338a154eaba7 100644
+--- a/include/esp_private/esp_wifi_private.h
++++ b/include/esp_private/esp_wifi_private.h
+@@ -6,8 +6,6 @@
+ #ifndef _ESP_WIFI_PRIVATE_H
+ #define _ESP_WIFI_PRIVATE_H
+ 
+-#include "freertos/FreeRTOS.h"
+-#include "freertos/queue.h"
+ #include "sys/queue.h"
+ #include "sdkconfig.h"
+ #include "esp_wifi_crypto_types.h"
+diff --git a/include/esp_private/gdma.h b/include/esp_private/gdma.h
+deleted file mode 100644
+index f888cd5bc9bda6c5d8a7a8fb06e1968c60fd3bc3..0000000000000000000000000000000000000000
+--- a/include/esp_private/gdma.h
++++ /dev/null
+@@ -1,330 +0,0 @@
+-/*
+- * SPDX-FileCopyrightText: 2020-2021 Espressif Systems (Shanghai) CO LTD
+- *
+- * SPDX-License-Identifier: Apache-2.0
+- */
+-
+-// DO NOT USE THESE APIS IN ANY APPLICATIONS
+-// GDMA driver is not public for end users, but for ESP-IDF developpers.
+-
+-#pragma once
+-
+-#include <stdbool.h>
+-#include "soc/gdma_channel.h"
+-#include "esp_err.h"
+-
+-#ifdef __cplusplus
+-extern "C" {
+-#endif
+-
+-/**
+- * @brief Type of GDMA channel handle
+- *
+- */
+-typedef struct gdma_channel_t *gdma_channel_handle_t;
+-
+-/**
+- * @brief Enumeration of peripherals which have the DMA capability
+- * @note Some peripheral might not be available on certain chip, please refer to `soc_caps.h` for detail.
+- *
+- */
+-typedef enum {
+-    GDMA_TRIG_PERIPH_M2M,  /*!< GDMA trigger peripheral: M2M */
+-    GDMA_TRIG_PERIPH_UART, /*!< GDMA trigger peripheral: UART */
+-    GDMA_TRIG_PERIPH_SPI,  /*!< GDMA trigger peripheral: SPI */
+-    GDMA_TRIG_PERIPH_I2S,  /*!< GDMA trigger peripheral: I2S */
+-    GDMA_TRIG_PERIPH_AES,  /*!< GDMA trigger peripheral: AES */
+-    GDMA_TRIG_PERIPH_SHA,  /*!< GDMA trigger peripheral: SHA */
+-    GDMA_TRIG_PERIPH_ADC,  /*!< GDMA trigger peripheral: ADC */
+-    GDMA_TRIG_PERIPH_DAC,  /*!< GDMA trigger peripheral: DAC */
+-    GDMA_TRIG_PERIPH_LCD,  /*!< GDMA trigger peripheral: LCD */
+-    GDMA_TRIG_PERIPH_CAM,  /*!< GDMA trigger peripheral: CAM */
+-    GDMA_TRIG_PERIPH_RMT,  /*!< GDMA trigger peripheral: RMT */
+-} gdma_trigger_peripheral_t;
+-
+-/**
+- * @brief Enumeration of GDMA channel direction
+- *
+- */
+-typedef enum {
+-    GDMA_CHANNEL_DIRECTION_TX, /*!< GDMA channel direction: TX */
+-    GDMA_CHANNEL_DIRECTION_RX, /*!< GDMA channel direction: RX */
+-} gdma_channel_direction_t;
+-
+-/**
+- * @brief Collection of configuration items that used for allocating GDMA channel
+- *
+- */
+-typedef struct {
+-    gdma_channel_handle_t sibling_chan; /*!< DMA sibling channel handle (NULL means having sibling is not necessary) */
+-    gdma_channel_direction_t direction; /*!< DMA channel direction */
+-    struct {
+-        int reserve_sibling: 1; /*!< If set, DMA channel allocator would prefer to allocate new channel in a new pair, and reserve sibling channel for future use */
+-    } flags;
+-} gdma_channel_alloc_config_t;
+-
+-/**
+- * @brief GDMA transfer ability
+- *
+- * @note The alignment set in this structure is **not** a guarantee that gdma driver will take care of the nonalignment cases.
+- *       Actually the GDMA driver has no knowledge about the DMA buffer (address and size) used by upper layer.
+- *       So it's the responsibility of the **upper layer** to take care of the buffer address and size.
+- *
+- */
+-typedef struct {
+-    size_t sram_trans_align;  /*!< DMA transfer alignment for memory in SRAM, in bytes. The driver enables/disables burst mode based on this value. 0 means no alignment is required */
+-    size_t psram_trans_align; /*!< DMA transfer alignment for memory in PSRAM, in bytes. The driver sets proper burst block size based on the alignment value. 0 means no alignment is required */
+-} gdma_transfer_ability_t;
+-
+-/**
+- * @brief Type of GDMA event data
+- *
+- */
+-typedef struct {
+-    union {
+-        intptr_t rx_eof_desc_addr; /*!< EOF descriptor address of RX channel */
+-        intptr_t tx_eof_desc_addr; /*!< EOF descriptor address of TX channel */
+-    };
+-} gdma_event_data_t;
+-
+-/**
+- * @brief Type of GDMA event callback
+- * @param dma_chan GDMA channel handle, created from `gdma_new_channel`
+- * @param event_data GDMA event data
+- * @param user_data User registered data from `gdma_register_tx_event_callbacks` or `gdma_register_rx_event_callbacks`
+- *
+- * @return Whether a task switch is needed after the callback function returns,
+- *         this is usually due to the callback wakes up some high priority task.
+- *
+- */
+-typedef bool (*gdma_event_callback_t)(gdma_channel_handle_t dma_chan, gdma_event_data_t *event_data, void *user_data);
+-
+-/**
+- * @brief Group of supported GDMA TX callbacks
+- * @note The callbacks are all running under ISR environment
+- *
+- */
+-typedef struct {
+-    gdma_event_callback_t on_trans_eof; /*!< Invoked when TX engine meets EOF descriptor */
+-} gdma_tx_event_callbacks_t;
+-
+-/**
+- * @brief Group of supported GDMA RX callbacks
+- * @note The callbacks are all running under ISR environment
+- *
+- */
+-typedef struct {
+-    gdma_event_callback_t on_recv_eof; /*!< Invoked when RX engine meets EOF descriptor */
+-} gdma_rx_event_callbacks_t;
+-
+-/**
+- * @brief Type of GDMA engine trigger
+- * @note It's recommended to initialize this structure with `GDMA_MAKE_TRIGGER`.
+- *
+- */
+-typedef struct {
+-    gdma_trigger_peripheral_t periph; /*!< Target peripheral which will trigger DMA operations */
+-    int instance_id;                  /*!< Peripheral instance ID. Supported IDs are listed in `soc/gdma_channel.h`, e.g. SOC_GDMA_TRIG_PERIPH_UART0 */
+-} gdma_trigger_t;
+-
+-/**
+- * @brief Helper macro to initialize GDMA trigger
+- * @note value of `peri` must be selected from `gdma_trigger_peripheral_t` enum.
+- *       e.g. GDMA_MAKE_TRIGGER(GDMA_TRIG_PERIPH_UART,0)
+- *
+- */
+-#define GDMA_MAKE_TRIGGER(peri, id) \
+-    (gdma_trigger_t) { .periph = peri, .instance_id = SOC_##peri##id }
+-
+-/**
+- * @brief A collection of strategy item that each GDMA channel could apply
+- *
+- */
+-typedef struct {
+-    bool owner_check;      /*!< If set / clear, DMA channel enables / disables checking owner validity */
+-    bool auto_update_desc; /*!< If set / clear, DMA channel enables / disables hardware to update descriptor automatically (TX channel only) */
+-} gdma_strategy_config_t;
+-
+-/**
+- * @brief Create GDMA channel
+- * @note This API won't install interrupt service for the allocated channel.
+- *       If interrupt service is needed, user has to register GDMA event callback by `gdma_register_tx_event_callbacks` or `gdma_register_rx_event_callbacks`.
+- *
+- * @param[in] config Pointer to a collection of configurations for allocating GDMA channel
+- * @param[out] ret_chan Returnned channel handle
+- * @return
+- *      - ESP_OK: Create DMA channel successfully
+- *      - ESP_ERR_INVALID_ARG: Create DMA channel failed because of invalid argument
+- *      - ESP_ERR_NO_MEM: Create DMA channel failed because out of memory
+- *      - ESP_FAIL: Create DMA channel failed because of other error
+- */
+-esp_err_t gdma_new_channel(const gdma_channel_alloc_config_t *config, gdma_channel_handle_t *ret_chan);
+-
+-/**
+- * @brief Connect GDMA channel to trigger peripheral
+- *
+- * @note Suggest to use helper macro `GDMA_MAKE_TRIGGER` to construct parameter `trig_periph`. e.g. GDMA_MAKE_TRIGGER(GDMA_TRIG_PERIPH_SHA,0)
+- * @note Connecting to a peripheral will also reset the DMA FIFO and FSM automatically
+- *
+- * @param[in] dma_chan GDMA channel handle, allocated by `gdma_new_channel`
+- * @param[in] trig_periph GDMA trigger peripheral
+- * @return
+- *      - ESP_OK: Connect GDMA channel successfully
+- *      - ESP_ERR_INVALID_ARG: Connect GDMA channel failed because of invalid argument
+- *      - ESP_ERR_INVALID_STATE: Connect GDMA channel failed because DMA channel is working with another peripheral
+- *      - ESP_FAIL: Connect GDMA channel failed because of other error
+- */
+-esp_err_t gdma_connect(gdma_channel_handle_t dma_chan, gdma_trigger_t trig_periph);
+-
+-/**
+- * @brief Disconnect GMA channel from peripheral
+- *
+- * @param[in] dma_chan GDMA channel handle, allocated by `gdma_new_channel`
+- * @return
+- *      - ESP_OK: Disconnect GDMA channel successfully
+- *      - ESP_ERR_INVALID_ARG: Disconnect GDMA channel failed because of invalid argument
+- *      - ESP_ERR_INVALID_STATE: Disconnect GDMA channel failed because DMA channel is not connected to any peripheral
+- *      - ESP_FAIL: Disconnect DMA channel failed because of other error
+- */
+-esp_err_t gdma_disconnect(gdma_channel_handle_t dma_chan);
+-
+-/**
+- * @brief Set DMA channel transfer ability
+- *
+- * @param[in] dma_chan GDMA channel handle, allocated by `gdma_new_channel`
+- * @param[in] ability Transfer ability, e.g. alignment
+- * @return
+- *      - ESP_OK: Set DMA channel transfer ability successfully
+- *      - ESP_ERR_INVALID_ARG: Set DMA channel transfer ability failed because of invalid argument
+- *      - ESP_FAIL: Set DMA channel transfer ability failed because of other error
+- */
+-esp_err_t gdma_set_transfer_ability(gdma_channel_handle_t dma_chan, const gdma_transfer_ability_t *ability);
+-
+-/**
+- * @brief Apply channel strategy for GDMA channel
+- *
+- * @param dma_chan GDMA channel handle, allocated by `gdma_new_channel`
+- * @param config Configuration of GDMA channel strategy
+- *      - ESP_OK: Apply channel strategy successfully
+- *      - ESP_ERR_INVALID_ARG: Apply channel strategy failed because of invalid argument
+- *      - ESP_FAIL: Apply channel strategy failed because of other error
+- */
+-esp_err_t gdma_apply_strategy(gdma_channel_handle_t dma_chan, const gdma_strategy_config_t *config);
+-
+-/**
+- * @brief Delete GDMA channel
+- * @note If you call `gdma_new_channel` several times for a same peripheral, make sure you call this API the same times.
+- *
+- * @param[in] dma_chan GDMA channel handle, allocated by `gdma_new_channel`
+- * @return
+- *      - ESP_OK: Delete GDMA channel successfully
+- *      - ESP_ERR_INVALID_ARG: Delete GDMA channel failed because of invalid argument
+- *      - ESP_FAIL: Delete GDMA channel failed because of other error
+- */
+-esp_err_t gdma_del_channel(gdma_channel_handle_t dma_chan);
+-
+-/**
+- * @brief Get the channel ID
+- *
+- * @note This API breaks the encapsulation of GDMA Channel Object.
+- *       With the returned channel ID, you can even bypass all other GDMA driver API and access Low Level API directly.
+- *
+- * @param[in] dma_chan GDMA channel handle, allocated by `gdma_new_channel`
+- * @param[out] channel_id Returned channel ID
+- * @return
+- *      - ESP_OK: Get GDMA channel ID successfully
+- *      - ESP_ERR_INVALID_ARG: Get GDMA channel ID failed because of invalid argument
+- *      - ESP_FAIL: Get GDMA channel ID failed because of other error
+- */
+-esp_err_t gdma_get_channel_id(gdma_channel_handle_t dma_chan, int *channel_id);
+-
+-/**
+- * @brief Set GDMA event callbacks for TX channel
+- * @note This API will install GDMA interrupt service for the channel internally
+- *
+- * @param[in] dma_chan GDMA channel handle, allocated by `gdma_new_channel`
+- * @param[in] cbs Group of callback functions
+- * @param[in] user_data User data, which will be passed to callback functions directly
+- * @return
+- *      - ESP_OK: Set event callbacks successfully
+- *      - ESP_ERR_INVALID_ARG: Set event callbacks failed because of invalid argument
+- *      - ESP_FAIL: Set event callbacks failed because of other error
+- */
+-esp_err_t gdma_register_tx_event_callbacks(gdma_channel_handle_t dma_chan, gdma_tx_event_callbacks_t *cbs, void *user_data);
+-
+-/**
+- * @brief Set GDMA event callbacks for RX channel
+- * @note This API will install GDMA interrupt service for the channel internally
+- *
+- * @param[in] dma_chan GDMA channel handle, allocated by `gdma_new_channel`
+- * @param[in] cbs Group of callback functions
+- * @param[in] user_data User data, which will be passed to callback functions directly
+- * @return
+- *      - ESP_OK: Set event callbacks successfully
+- *      - ESP_ERR_INVALID_ARG: Set event callbacks failed because of invalid argument
+- *      - ESP_FAIL: Set event callbacks failed because of other error
+- */
+-esp_err_t gdma_register_rx_event_callbacks(gdma_channel_handle_t dma_chan, gdma_rx_event_callbacks_t *cbs, void *user_data);
+-
+-/**
+- * @brief Set DMA descriptor address and start engine
+- *
+- * @note This function is allowed to run within ISR context
+- * @note This function is also allowed to run when Cache is disabled, if `CONFIG_GDMA_CTRL_FUNC_IN_IRAM` is enabled
+- *
+- * @param[in] dma_chan GDMA channel handle, allocated by `gdma_new_channel`
+- * @param[in] desc_base_addr Base address of descriptors (usually the descriptors are chained into a link or ring)
+- * @return
+- *      - ESP_OK: Start DMA engine successfully
+- *      - ESP_ERR_INVALID_ARG: Start DMA engine failed because of invalid argument
+- *      - ESP_FAIL: Start DMA engine failed because of other error
+- */
+-esp_err_t gdma_start(gdma_channel_handle_t dma_chan, intptr_t desc_base_addr);
+-
+-/**
+- * @brief Stop DMA engine
+- *
+- * @note This function is allowed to run within ISR context
+- * @note This function is also allowed to run when Cache is disabled, if `CONFIG_GDMA_CTRL_FUNC_IN_IRAM` is enabled
+- *
+- * @param[in] dma_chan GDMA channel handle, allocated by `gdma_new_channel`
+- * @return
+- *      - ESP_OK: Stop DMA engine successfully
+- *      - ESP_ERR_INVALID_ARG: Stop DMA engine failed because of invalid argument
+- *      - ESP_FAIL: Stop DMA engine failed because of other error
+- */
+-esp_err_t gdma_stop(gdma_channel_handle_t dma_chan);
+-
+-/**
+- * @brief Make the appended descriptors be aware to the DMA engine
+- *
+- * @note This function is allowed to run within ISR context
+- * @note This function is also allowed to run when Cache is disabled, if `CONFIG_GDMA_CTRL_FUNC_IN_IRAM` is enabled
+- * @note This API could also resume a paused DMA engine, make sure new descriptors have been appended to the descriptor chain before calling it.
+- *
+- * @param[in] dma_chan GDMA channel handle, allocated by `gdma_new_channel`
+- * @return
+- *      - ESP_OK: Send append command to DMA engine successfully
+- *      - ESP_ERR_INVALID_ARG: Send append command to DMA engine failed because of invalid argument
+- *      - ESP_FAIL: Send append command to DMA engine failed because of other error
+- */
+-esp_err_t gdma_append(gdma_channel_handle_t dma_chan);
+-
+-/**
+- * @brief Reset DMA channel FIFO and internal finite state machine
+- *
+- * @note This function is allowed to run within ISR context
+- * @note This function is also allowed to run when Cache is disabled, if `CONFIG_GDMA_CTRL_FUNC_IN_IRAM` is enabled
+- * @note Resetting a DMA channel won't break the connection with the target peripheral
+- *
+- * @param[in] dma_chan GDMA channel handle, allocated by `gdma_new_channel`
+- * @return
+- *      - ESP_OK: DMA channel reset successfully
+- *      - ESP_ERR_INVALID_ARG: DMA channel reset failed due to invalid arguments
+- *      - ESP_FAIL: DMA channel reset failed due to other errors
+- */
+-esp_err_t gdma_reset(gdma_channel_handle_t dma_chan);
+-
+-#ifdef __cplusplus
+-}
+-#endif
+diff --git a/include/esp_private/regi2c_ctrl.h b/include/esp_private/regi2c_ctrl.h
+deleted file mode 100644
+index def755d81560cd0e00def800bae4ae4805c550f3..0000000000000000000000000000000000000000
+--- a/include/esp_private/regi2c_ctrl.h
++++ /dev/null
+@@ -1,82 +0,0 @@
+-/*
+- * SPDX-FileCopyrightText: 2015-2022 Espressif Systems (Shanghai) CO LTD
+- *
+- * SPDX-License-Identifier: Apache-2.0
+- */
+-
+-#pragma once
+-
+-#include <stdint.h>
+-#include "sdkconfig.h"
+-#include "esp_rom_regi2c.h"
+-#include "soc/regi2c_defs.h"
+-
+-#ifdef __cplusplus
+-extern "C" {
+-#endif
+-
+-
+-#define regi2c_read_reg_raw        esp_rom_regi2c_read
+-#define regi2c_read_reg_mask_raw   esp_rom_regi2c_read_mask
+-#define regi2c_write_reg_raw       esp_rom_regi2c_write
+-#define regi2c_write_reg_mask_raw  esp_rom_regi2c_write_mask
+-
+-
+-#ifdef BOOTLOADER_BUILD
+-/**
+- * If compiling for the bootloader, ROM functions can be called directly,
+- * without the need of a lock.
+- */
+-#define regi2c_ctrl_read_reg         regi2c_read_reg_raw
+-#define regi2c_ctrl_read_reg_mask    regi2c_read_reg_mask_raw
+-#define regi2c_ctrl_write_reg        regi2c_write_reg_raw
+-#define regi2c_ctrl_write_reg_mask   regi2c_write_reg_mask_raw
+-
+-#else
+-
+-/* Access internal registers, don't use in application */
+-uint8_t regi2c_ctrl_read_reg(uint8_t block, uint8_t host_id, uint8_t reg_add);
+-uint8_t regi2c_ctrl_read_reg_mask(uint8_t block, uint8_t host_id, uint8_t reg_add, uint8_t msb, uint8_t lsb);
+-void regi2c_ctrl_write_reg(uint8_t block, uint8_t host_id, uint8_t reg_add, uint8_t data);
+-void regi2c_ctrl_write_reg_mask(uint8_t block, uint8_t host_id, uint8_t reg_add, uint8_t msb, uint8_t lsb, uint8_t data);
+-
+-/* enter the critical section that protects internal registers. Don't use it in SDK. Use the functions above. */
+-void regi2c_enter_critical(void);
+-void regi2c_exit_critical(void);
+-
+-#endif // BOOTLOADER_BUILD
+-
+-/* Convenience macros for the above functions, these use register definitions
+- * from regi2c_xxx.h header files.
+- */
+-#define REGI2C_WRITE_MASK(block, reg_add, indata) \
+-      regi2c_ctrl_write_reg_mask(block, block##_HOSTID,  reg_add,  reg_add##_MSB,  reg_add##_LSB,  indata)
+-
+-#define REGI2C_READ_MASK(block, reg_add) \
+-      regi2c_ctrl_read_reg_mask(block, block##_HOSTID,  reg_add,  reg_add##_MSB,  reg_add##_LSB)
+-
+-#define REGI2C_WRITE(block, reg_add, indata) \
+-      regi2c_ctrl_write_reg(block, block##_HOSTID,  reg_add, indata)
+-
+-#define REGI2C_READ(block, reg_add) \
+-      regi2c_ctrl_read_reg(block, block##_HOSTID,  reg_add)
+-
+-/**
+- * Restore regi2c analog calibration related configuration registers.
+- * This is a workaround, and is fixed on later chips
+- */
+-#if REGI2C_ANA_CALI_PD_WORKAROUND
+-void regi2c_analog_cali_reg_read(void);
+-void regi2c_analog_cali_reg_write(void);
+-#endif   //#if ADC_CALI_PD_WORKAROUND
+-
+-/* Enable/Disable regi2c_saradc with calling these two functions.
+-   With reference count protection inside.
+-   Internal use only.
+-*/
+-void regi2c_saradc_enable(void);
+-void regi2c_saradc_disable(void);
+-
+-#ifdef __cplusplus
+-}
+-#endif
+diff --git a/include/esp_private/rtc_ctrl.h b/include/esp_private/rtc_ctrl.h
+deleted file mode 100644
+index bea8bbdd2a24b49d86c6b5804377b7118a8a895a..0000000000000000000000000000000000000000
+--- a/include/esp_private/rtc_ctrl.h
++++ /dev/null
+@@ -1,72 +0,0 @@
+-/*
+- * SPDX-FileCopyrightText: 2016-2021 Espressif Systems (Shanghai) CO LTD
+- *
+- * SPDX-License-Identifier: Apache-2.0
+- */
+-
+-#pragma once
+-
+-#include <stdint.h>
+-#include "esp_err.h"
+-#include "esp_intr_alloc.h"
+-
+-#ifdef __cplusplus
+-extern "C" {
+-#endif
+-
+-#define RTC_INTR_FLAG_IRAM   (BIT(0))  /*< Some rtc interrupts can be called with cache disabled */
+-
+-/**
+- * @brief Register a handler for specific RTC_CNTL interrupts
+- *
+- * Multiple handlers can be registered using this function. Whenever an
+- * RTC interrupt happens, all handlers with matching rtc_intr_mask values
+- * will be called.
+- *
+- * @param handler  handler function to call
+- * @param handler_arg  argument to be passed to the handler
+- * @param rtc_intr_mask  combination of RTC_CNTL_*_INT_ENA bits indicating the
+- *                       sources to call the handler for
+- * @param flags  An ORred mask of the RTC_INTR_FLAG_* defines. You can pass different
+- *               flags to it to realize different purpose. If 0, the interrupt will
+- *               not handle anything special. If you pass `RTC_INTR_FLAG_IRAM`, means
+- *               the interrupt can be triggered with cache disabled.
+- * @return
+- *      - ESP_OK on success
+- *      - ESP_ERR_NO_MEM not enough memory to allocate handler structure
+- *      - other errors returned by esp_intr_alloc
+- */
+-esp_err_t rtc_isr_register(intr_handler_t handler, void* handler_arg,
+-                            uint32_t rtc_intr_mask, uint32_t flags);
+-/**
+- * @brief Deregister the handler previously registered using rtc_isr_register
+- * @param handler  handler function to call (as passed to rtc_isr_register)
+- * @param handler_arg  argument of the handler (as passed to rtc_isr_register)
+- * @return
+- *      - ESP_OK on success
+- *      - ESP_ERR_INVALID_STATE if a handler matching both handler and
+- *        handler_arg isn't registered
+- */
+-esp_err_t rtc_isr_deregister(intr_handler_t handler, void* handler_arg);
+-
+-/**
+- * @brief Disable the RTC interrupt that is allowed to be executed when cache is disabled.
+- * cache disabled. Internal interrupt handle function will call this function in interrupt
+- * handler function. Disable bits when `esp_intr_noniram_disable` is called.
+- *
+- * @param cpu CPU number.
+- */
+-void rtc_isr_noniram_disable(uint32_t cpu);
+-
+-/**
+- * @brief Enable the RTC interrupt that is allowed to be executed when cache is disabled.
+- * cache disabled. Internal interrupt handle function will call this function in interrupt
+- * handler function. Enable bits when `esp_intr_noniram_enable` is called.
+- *
+- * @param cpu CPU number.
+- */
+-void rtc_isr_noniram_enable(uint32_t cpu);
+-
+-#ifdef __cplusplus
+-}
+-#endif
+diff --git a/include/esp_private/sleep_gpio.h b/include/esp_private/sleep_gpio.h
+deleted file mode 100644
+index abab21871a496f092cc084d05c7993a50d3fd4cf..0000000000000000000000000000000000000000
+--- a/include/esp_private/sleep_gpio.h
++++ /dev/null
+@@ -1,46 +0,0 @@
+-/*
+- * SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD
+- *
+- * SPDX-License-Identifier: Apache-2.0
+- */
+-
+-#pragma once
+-#include <stdint.h>
+-#include "sdkconfig.h"
+-
+-#ifdef __cplusplus
+-extern "C" {
+-#endif
+-
+-/**
+- * @file sleep_gpio.h
+- *
+- * This file contains declarations of GPIO related functions in light sleep mode.
+- */
+-
+-#if SOC_GPIO_SUPPORT_SLP_SWITCH && CONFIG_GPIO_ESP32_SUPPORT_SWITCH_SLP_PULL
+-
+-/**
+- * @brief Save GPIO pull-up and pull-down configuration information in the wake-up state
+- *
+- * In light sleep mode, the pull-up and pull-down resistors of GPIO will cause
+- * leakage current when the system sleeps. In order to reduce the power
+- * consumption of system sleep, it needs to save the configuration information
+- * of all GPIO pull-up and pull-down resistors and disable the pull-up and
+- * pull-down resistors of GPIO before the system enters sleep.
+- */
+-void gpio_sleep_mode_config_apply(void);
+-
+-/**
+- * @brief Restore GPIO pull-up and pull-down configuration information in the wake-up state
+- *
+- * In light sleep mode, after the system wakes up, it needs to restore all GPIO
+- * pull-up and pull-down configurations before the last sleep.
+- */
+-void gpio_sleep_mode_config_unapply(void);
+-
+-#endif // SOC_GPIO_SUPPORT_SLP_SWITCH && CONFIG_GPIO_ESP32_SUPPORT_SWITCH_SLP_PULL
+-
+-#ifdef __cplusplus
+-}
+-#endif
+diff --git a/include/esp_private/sleep_mac_bb.h b/include/esp_private/sleep_mac_bb.h
+deleted file mode 100644
+index 6b4019639d8390e1fe0608ba09ebf8b70f9410de..0000000000000000000000000000000000000000
+--- a/include/esp_private/sleep_mac_bb.h
++++ /dev/null
+@@ -1,43 +0,0 @@
+-/*
+- * SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD
+- *
+- * SPDX-License-Identifier: Apache-2.0
+- */
+-
+-#pragma once
+-#include <stdint.h>
+-#include "sdkconfig.h"
+-
+-#ifdef __cplusplus
+-extern "C" {
+-#endif
+-
+-/**
+- * @file sleep_mac_bb.h
+- *
+- * This file contains declarations of MAC and baseband power consumption related functions in light sleep mode.
+- */
+-
+-#if CONFIG_MAC_BB_PD
+-
+-/**
+- * @brief A callback function completes MAC and baseband power down operation
+- *
+- * In light sleep mode, execute Wi-Fi and Bluetooth module MAC and baseband
+- * power down and backup register configuration information operations.
+- */
+-void mac_bb_power_down_cb_execute(void);
+-
+-/**
+- * @brief A callback function completes MAC and baseband power up operation
+- *
+- * In light sleep mode, execute Wi-Fi and Bluetooth module MAC and baseband
+- * power up and restore register configuration information operations.
+- */
+-void mac_bb_power_up_cb_execute(void);
+-
+-#endif // CONFIG_MAC_BB_PD
+-
+-#ifdef __cplusplus
+-}
+-#endif
+diff --git a/include/esp_private/sleep_retention.h b/include/esp_private/sleep_retention.h
+deleted file mode 100644
+index 001e559c0c735b7b1456a8c2ddc4a3469d967604..0000000000000000000000000000000000000000
+--- a/include/esp_private/sleep_retention.h
++++ /dev/null
+@@ -1,55 +0,0 @@
+-/*
+- * SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD
+- *
+- * SPDX-License-Identifier: Apache-2.0
+- */
+-
+-#pragma once
+-#include <stdint.h>
+-#include "sdkconfig.h"
+-
+-#ifdef __cplusplus
+-extern "C" {
+-#endif
+-
+-/**
+- * @file sleep_retention.h
+- *
+- * This file contains declarations of memory retention related functions in light sleeo mode.
+- */
+-
+-#if SOC_PM_SUPPORT_CPU_PD
+-
+-/**
+- * @brief Whether to allow the cpu power domain to be powered off.
+- *
+- * In light sleep mode, only when the system can provide enough memory
+- * for cpu retention, the cpu power domain can be powered off.
+- */
+-bool cpu_domain_pd_allowed(void);
+-
+-#endif
+-
+-#if SOC_PM_SUPPORT_CPU_PD || SOC_PM_SUPPORT_TAGMEM_PD
+-
+-/**
+- * @brief Enable memory retention of some modules.
+- *
+- * In light sleep mode, before the system goes to sleep, enable the memory
+- * retention of modules such as CPU and I/D-cache tag memory.
+- */
+-void sleep_enable_memory_retention(void);
+-
+-/**
+- * @brief Disable memory retention of some modules.
+- *
+- * In light sleep mode, after the system exits sleep, disable the memory
+- * retention of moudles such as CPU and I/D-cache tag memory.
+- */
+-void sleep_disable_memory_retention(void);
+-
+-#endif // SOC_PM_SUPPORT_CPU_PD || SOC_PM_SUPPORT_TAGMEM_PD
+-
+-#ifdef __cplusplus
+-}
+-#endif
+diff --git a/include/esp_private/systimer.h b/include/esp_private/systimer.h
+deleted file mode 100644
+index da31530af25c901317b98f0e126584e0759da3fd..0000000000000000000000000000000000000000
+--- a/include/esp_private/systimer.h
++++ /dev/null
+@@ -1,33 +0,0 @@
+-/*
+- * SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+- *
+- * SPDX-License-Identifier: Apache-2.0
+- */
+-
+-#pragma once
+-
+-#include <stdint.h>
+-
+-#ifdef __cplusplus
+-extern "C" {
+-#endif
+-
+-/**
+- * @brief Convert ticks to microseconds
+- *
+- * @param ticks ticks to convert
+- * @return microseconds
+- */
+-uint64_t systimer_ticks_to_us(uint64_t ticks) __attribute__((const));
+-
+-/**
+- * @brief Convert microseconds to ticks
+- *
+- * @param us microseconds to convert
+- * @return ticks
+- */
+-uint64_t systimer_us_to_ticks(uint64_t us) __attribute__((const));
+-
+-#ifdef __cplusplus
+-}
+-#endif
+diff --git a/include/esp_private/wifi.h b/include/esp_private/wifi.h
+index b3f7342a0cf2c411ec63c0b7b35b918e7ad2c461..b3c0c93b38e9987f5020e919ddbb3d4529ed4d9c 100644
+--- a/include/esp_private/wifi.h
++++ b/include/esp_private/wifi.h
+@@ -21,8 +21,6 @@
+ 
+ #include <stdint.h>
+ #include <stdbool.h>
+-#include "freertos/FreeRTOS.h"
+-#include "freertos/queue.h"
+ #include "sys/queue.h"
+ #include "esp_err.h"
+ #include "esp_wifi_types.h"
+diff --git a/include/esp_system.h b/include/esp_system.h
+index fea13af97dd865ec6afb446f304622fa1d72f063..a2fae021e774ff0eb43e64c14be1d3d0e1ef589e 100644
+--- a/include/esp_system.h
++++ b/include/esp_system.h
+@@ -10,7 +10,6 @@
+ #include <stdint.h>
+ #include <stdbool.h>
+ #include "esp_err.h"
+-#include "esp_attr.h"
+ #include "esp_bit_defs.h"
+ #include "esp_idf_version.h"
+ 
+diff --git a/include/esp_wifi.h b/include/esp_wifi.h
+index f065bc50e938678c281a14314a098a02aa2c8c53..33b02634e2fe8fa43e0bc5cad6379dcb3763abff 100644
+--- a/include/esp_wifi.h
++++ b/include/esp_wifi.h
+@@ -55,7 +55,6 @@
+ #include "esp_wifi_types.h"
+ #include "esp_event.h"
+ #include "esp_private/esp_wifi_private.h"
+-#include "esp_wifi_default.h"
+ 
+ #ifdef __cplusplus
+ extern "C" {
+diff --git a/include/esp_wifi_default.h b/include/esp_wifi_default.h
+index 79a176bfc0289e98bad654e43946b7ccfe6645a8..4ce7f8b28efc210932f6aca5a795778abead76c2 100644
+--- a/include/esp_wifi_default.h
++++ b/include/esp_wifi_default.h
+@@ -1,14 +1,20 @@
+-/*
+- * SPDX-FileCopyrightText: 2019-2022 Espressif Systems (Shanghai) CO LTD
+- *
+- * SPDX-License-Identifier: Apache-2.0
+- */
++// Copyright 2019 Espressif Systems (Shanghai) PTE LTD
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++
++//     http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
+ 
+ #ifndef _ESP_WIFI_DEFAULT_H
+ #define _ESP_WIFI_DEFAULT_H
+ 
+-#include "esp_netif.h"
+-
+ #ifdef __cplusplus
+ extern "C" {
+ #endif
+@@ -44,7 +50,7 @@ esp_err_t esp_netif_attach_wifi_ap(esp_netif_t *esp_netif);
+ esp_err_t esp_wifi_set_default_wifi_sta_handlers(void);
+ 
+ /**
+- * @brief Sets default wifi event handlers for AP interface
++ * @brief Sets default wifi event handlers for STA interface
+  *
+  * @return
+  *  - ESP_OK on success, error returned from esp_event_handler_register if failed
+@@ -64,9 +70,6 @@ esp_err_t esp_wifi_clear_default_wifi_driver_and_handlers(void *esp_netif);
+ /**
+  * @brief Creates default WIFI AP. In case of any init error this API aborts.
+  *
+- * @note The API creates esp_netif object with default WiFi access point config,
+- * attaches the netif to wifi and registers default wifi handlers.
+- *
+  * @return pointer to esp-netif instance
+  */
+ esp_netif_t* esp_netif_create_default_wifi_ap(void);
+@@ -74,23 +77,10 @@ esp_netif_t* esp_netif_create_default_wifi_ap(void);
+ /**
+  * @brief Creates default WIFI STA. In case of any init error this API aborts.
+  *
+- * @note The API creates esp_netif object with default WiFi station config,
+- * attaches the netif to wifi and registers default wifi handlers.
+- *
+  * @return pointer to esp-netif instance
+  */
+ esp_netif_t* esp_netif_create_default_wifi_sta(void);
+ 
+-/**
+- * @brief Destroys default WIFI netif created with esp_netif_create_default_wifi_...() API.
+- *
+- * @param[in] esp_netif object to detach from WiFi and destroy
+- *
+- * @note This API unregisters wifi handlers and detaches the created object from the wifi.
+- * (this function is a no-operation if esp_netif is NULL)
+- */
+-void esp_netif_destroy_default_wifi(void *esp_netif);
+-
+ /**
+  * @brief Creates esp_netif WiFi object based on the custom configuration.
+  *
+diff --git a/include/espidf_wifi.h b/include/espidf_wifi.h
+index c9d334632f36692bedf32d0aa2750585e1816901..ce599d87e896f12ff4c02e6ea10880bef61970d9 100644
+--- a/include/espidf_wifi.h
++++ b/include/espidf_wifi.h
+@@ -23,6 +23,7 @@
+ #include "esp_private/wifi.h"
+ #include "phy.h"
+ #include "phy_init_data.h"
++#include "nvs.h"
+ 
+ #include "esp_timer.h"
+ #include "esp_system.h"
