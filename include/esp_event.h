@@ -9,6 +9,11 @@
 
 #include "esp_err.h"
 
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/queue.h"
+#include "freertos/semphr.h"
+
 #include "esp_event_base.h"
 
 #ifdef __cplusplus
@@ -364,7 +369,7 @@ esp_err_t esp_event_handler_instance_unregister(esp_event_base_t event_base,
  */
 esp_err_t esp_event_post(esp_event_base_t event_base,
                          int32_t event_id,
-                         void *event_data,
+                         const void *event_data,
                          size_t event_data_size,
                          TickType_t ticks_to_wait);
 

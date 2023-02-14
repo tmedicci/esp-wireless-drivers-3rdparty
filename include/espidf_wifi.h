@@ -23,7 +23,6 @@
 #include "esp_private/wifi.h"
 #include "phy.h"
 #include "phy_init_data.h"
-#include "nvs.h"
 
 #include "esp_timer.h"
 #include "esp_system.h"

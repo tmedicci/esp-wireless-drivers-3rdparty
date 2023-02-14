@@ -100,7 +100,7 @@ extern "C" {
 #define COREDUMP_RTC_FAST_ATTR
 #endif
 
-#ifdef CONFIG_SPIRAM_ALLOW_BSS_SEG_EXTERNAL_MEMORY
+#if CONFIG_SPIRAM_ALLOW_BSS_SEG_EXTERNAL_MEMORY
 // Forces bss variable into external memory. "
 #define EXT_RAM_BSS_ATTR _SECTION_ATTR_IMPL(".ext_ram.bss", __COUNTER__)
 #else
@@ -110,7 +110,7 @@ extern "C" {
 /**
  * Deprecated Macro for putting .bss on PSRAM
  */
-#ifdef CONFIG_SPIRAM_ALLOW_BSS_SEG_EXTERNAL_MEMORY
+#if CONFIG_SPIRAM_ALLOW_BSS_SEG_EXTERNAL_MEMORY
 // Forces bss variable into external memory. "
 #define EXT_RAM_ATTR _SECTION_ATTR_IMPL(".ext_ram.bss", __COUNTER__) _Pragma ("GCC warning \"'EXT_RAM_ATTR' macro is deprecated, please use `EXT_RAM_BSS_ATTR`\"")
 #else
@@ -120,7 +120,7 @@ extern "C" {
 // Forces data into noinit section to avoid initialization after restart.
 #define __NOINIT_ATTR _SECTION_ATTR_IMPL(".noinit", __COUNTER__)
 
-#ifdef CONFIG_SPIRAM_ALLOW_NOINIT_SEG_EXTERNAL_MEMORY
+#if CONFIG_SPIRAM_ALLOW_NOINIT_SEG_EXTERNAL_MEMORY
 // Forces data into external memory noinit section to avoid initialization after restart.
 #define EXT_RAM_NOINIT_ATTR _SECTION_ATTR_IMPL(".ext_ram_noinit", __COUNTER__)
 #else

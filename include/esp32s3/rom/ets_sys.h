@@ -638,7 +638,8 @@ void intr_matrix_set(int cpu_no, uint32_t model_num, uint32_t intr_num);
 #define ETS_MEM_BAR() asm volatile ( "" : : : "memory" )
 
 typedef enum {
-    FAIL = 1,
+    OK = 0,
+    FAIL,
     PENDING,
     BUSY,
     CANCEL,
