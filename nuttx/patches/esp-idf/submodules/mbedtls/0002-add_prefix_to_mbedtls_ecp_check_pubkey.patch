@@ -1,3 +1,25 @@
+diff --git a/include/mbedtls/ecp.h b/include/mbedtls/ecp.h
+index 3a766c28d24e1e22e303d32b97a577e74e9bcb4e..62d5fe3f52c62b2151837eb7cffa0f64d54a1628 100644
+--- a/include/mbedtls/ecp.h
++++ b/include/mbedtls/ecp.h
+@@ -756,7 +756,7 @@ int esp_mbedtls_ecp_point_write_binary( const mbedtls_ecp_group *grp,
+  * \brief           This function imports a point from unsigned binary data.
+  *
+  * \note            This function does not check that the point actually
+- *                  belongs to the given group, see mbedtls_ecp_check_pubkey()
++ *                  belongs to the given group, see esp_mbedtls_ecp_check_pubkey()
+  *                  for that.
+  *
+  * \param grp       The group to which the point should belong.
+@@ -1091,7 +1091,7 @@ int esp_mbedtls_ecp_muladd_restartable(
+  *                  a valid public key for the given curve.
+  * \return          Another negative error code on other kinds of failure.
+  */
+-int mbedtls_ecp_check_pubkey( const mbedtls_ecp_group *grp,
++int esp_mbedtls_ecp_check_pubkey( const mbedtls_ecp_group *grp,
+                               const mbedtls_ecp_point *pt );
+ 
+ /**
 diff --git a/library/ecp.c b/library/ecp.c
 index c42f523108cf6f0e10dc11dfd4cea854a9d9cd9f..6802ee6901b8da02d617afe50906e57a358ba927 100644
 --- a/library/ecp.c
