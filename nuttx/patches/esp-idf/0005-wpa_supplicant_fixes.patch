@@ -1,47 +1,7 @@
-diff --git a/wpa_supplicant/Kconfig b/wpa_supplicant/Kconfig
-index a6c4134d28a2c3210add29054cd5ff51aac0ddff..2f46155208b2f523122dac04c2460d89977d24aa 100644
---- a/wpa_supplicant/Kconfig
-+++ b/wpa_supplicant/Kconfig
-@@ -1,13 +1,15 @@
--menu "Supplicant"
-+menuconfig WPA_SUPPLICANT
-+    bool "IEEE 802.11 supplicant code"
-+	default n
-+	depends on NET && DRIVERS_WIRELESS
-+	---help---
-+		wpa_supplicant will run as a daemon for wpa auth.
-+
-+if WPA_SUPPLICANT
- 
-     config WPA_MBEDTLS_CRYPTO
-         bool "Use MbedTLS crypto APIs"
-         default y
--        select MBEDTLS_AES_C
--        select MBEDTLS_ECP_C
--        select MBEDTLS_ECDH_C
--        select MBEDTLS_ECDSA_C
--        select MBEDTLS_TLS_ENABLED
-         help
-             Select this option to use MbedTLS crypto APIs which utilize hardware acceleration.
- 
-@@ -15,7 +17,6 @@ menu "Supplicant"
-         config WPA_MBEDTLS_TLS_CLIENT
-             bool "Use MbedTLS TLS client for WiFi Enterprise connection"
-             default y
--            select MBEDTLS_TLS_ENABLED
-             help
-                 Select this option to use MbedTLS TLS client for WPA2 enterprise connection.
-                 Please note that from MbedTLS-3.0 onwards, MbedTLS does not support SSL-3.0
-@@ -118,4 +119,4 @@ menu "Supplicant"
-         help
-             Select this option to enable WPS registrar support in softAP mode.
- 
--endmenu
-+endif
-diff --git a/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls-bignum.c b/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls-bignum.c
+diff --git a/components/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls-bignum.c b/components/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls-bignum.c
 index a4de750ab713f4c434c8dbaa3dbaf12054431204..b26736136299dc25ca5d3df986b3e63b3b49bcc3 100644
---- a/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls-bignum.c
-+++ b/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls-bignum.c
+--- a/components/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls-bignum.c
++++ b/components/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls-bignum.c
 @@ -4,10 +4,8 @@
   * SPDX-License-Identifier: Apache-2.0
   */
@@ -62,10 +22,10 @@ index a4de750ab713f4c434c8dbaa3dbaf12054431204..b26736136299dc25ca5d3df986b3e63b
  static int crypto_rng_wrapper(void *ctx, unsigned char *buf, size_t len)
  {
      return random_get_bytes(buf, len);
-diff --git a/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls-ec.c b/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls-ec.c
+diff --git a/components/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls-ec.c b/components/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls-ec.c
 index 41f7c0227ba74a2047a58380157286b6fc1e2c5d..1e90f08f47ca06fc198c605be65a39707d636a04 100644
---- a/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls-ec.c
-+++ b/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls-ec.c
+--- a/components/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls-ec.c
++++ b/components/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls-ec.c
 @@ -6,10 +6,8 @@
  
  #define MBEDTLS_ALLOW_PRIVATE_ACCESS
@@ -77,10 +37,10 @@ index 41f7c0227ba74a2047a58380157286b6fc1e2c5d..1e90f08f47ca06fc198c605be65a3970
  
  #include "utils/includes.h"
  #include "utils/common.h"
-diff --git a/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls-rsa.c b/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls-rsa.c
+diff --git a/components/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls-rsa.c b/components/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls-rsa.c
 index 705dd9924ca4747eb0711cbc90f77a2419c5bf28..68622a0f69603867c124f64dc311aae66016714b 100644
---- a/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls-rsa.c
-+++ b/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls-rsa.c
+--- a/components/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls-rsa.c
++++ b/components/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls-rsa.c
 @@ -4,9 +4,7 @@
   * SPDX-License-Identifier: Apache-2.0
   */
@@ -91,10 +51,10 @@ index 705dd9924ca4747eb0711cbc90f77a2419c5bf28..68622a0f69603867c124f64dc311aae6
  
  #include "utils/includes.h"
  #include "utils/common.h"
-diff --git a/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls.c b/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls.c
+diff --git a/components/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls.c b/components/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls.c
 index 137f15dfcddf1b2b57c2a8c396f18e10f0825e78..b8d1f7eb127759f7a48efeaa43487e04c2cb38b8 100644
---- a/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls.c
-+++ b/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls.c
+--- a/components/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls.c
++++ b/components/wpa_supplicant/esp_supplicant/src/crypto/crypto_mbedtls.c
 @@ -34,7 +34,6 @@
  #include "sha384.h"
  #include "aes_wrap.h"
@@ -103,10 +63,10 @@ index 137f15dfcddf1b2b57c2a8c396f18e10f0825e78..b8d1f7eb127759f7a48efeaa43487e04
  
  static int digest_vector(mbedtls_md_type_t md_type, size_t num_elem,
  			 const u8 *addr[], const size_t *len, u8 *mac)
-diff --git a/wpa_supplicant/esp_supplicant/src/esp_wifi_driver.h b/wpa_supplicant/esp_supplicant/src/esp_wifi_driver.h
+diff --git a/components/wpa_supplicant/esp_supplicant/src/esp_wifi_driver.h b/components/wpa_supplicant/esp_supplicant/src/esp_wifi_driver.h
 index b7662e04373b9c5408aff2f8fda18edbb483be6b..d3995a060025cf1f1835ddf96a9f1d6abf9ee226 100644
---- a/wpa_supplicant/esp_supplicant/src/esp_wifi_driver.h
-+++ b/wpa_supplicant/esp_supplicant/src/esp_wifi_driver.h
+--- a/components/wpa_supplicant/esp_supplicant/src/esp_wifi_driver.h
++++ b/components/wpa_supplicant/esp_supplicant/src/esp_wifi_driver.h
 @@ -9,6 +9,7 @@
  
  #include "esp_err.h"
@@ -115,10 +75,10 @@ index b7662e04373b9c5408aff2f8fda18edbb483be6b..d3995a060025cf1f1835ddf96a9f1d6a
  
  #if CONFIG_NEWLIB_NANO_FORMAT
  #define TASK_STACK_SIZE_ADD 0
-diff --git a/wpa_supplicant/esp_supplicant/src/esp_wpa_main.c b/wpa_supplicant/esp_supplicant/src/esp_wpa_main.c
+diff --git a/components/wpa_supplicant/esp_supplicant/src/esp_wpa_main.c b/components/wpa_supplicant/esp_supplicant/src/esp_wpa_main.c
 index 8f62e5fd74abf7ea7742403f56d78a5d9fe9fada..acbde59963efbf4c280b1e479672e1de6868305a 100644
---- a/wpa_supplicant/esp_supplicant/src/esp_wpa_main.c
-+++ b/wpa_supplicant/esp_supplicant/src/esp_wpa_main.c
+--- a/components/wpa_supplicant/esp_supplicant/src/esp_wpa_main.c
++++ b/components/wpa_supplicant/esp_supplicant/src/esp_wpa_main.c
 @@ -359,7 +359,7 @@ int esp_supplicant_init(void)
  
      esp_wifi_register_wpa_cb_internal(wpa_cb);
@@ -128,10 +88,10 @@ index 8f62e5fd74abf7ea7742403f56d78a5d9fe9fada..acbde59963efbf4c280b1e479672e1de
      ret =  esp_wifi_internal_wapi_init();
  #endif
  
-diff --git a/wpa_supplicant/include/utils/wpa_debug.h b/wpa_supplicant/include/utils/wpa_debug.h
+diff --git a/components/wpa_supplicant/include/utils/wpa_debug.h b/components/wpa_supplicant/include/utils/wpa_debug.h
 index 02f1fb4f4e7e771d4c0a5149c3e42e59c3db2b73..799c0bd99bcec60c572264f6697b4c5bb333cd43 100644
---- a/wpa_supplicant/include/utils/wpa_debug.h
-+++ b/wpa_supplicant/include/utils/wpa_debug.h
+--- a/components/wpa_supplicant/include/utils/wpa_debug.h
++++ b/components/wpa_supplicant/include/utils/wpa_debug.h
 @@ -16,27 +16,33 @@
  #define WPA_DEBUG_H
  
@@ -215,10 +175,10 @@ index 02f1fb4f4e7e771d4c0a5149c3e42e59c3db2b73..799c0bd99bcec60c572264f6697b4c5b
  #endif
  
  #define wpa_auth_logger(...) do {} while(0)
-diff --git a/wpa_supplicant/port/eloop.c b/wpa_supplicant/port/eloop.c
+diff --git a/components/wpa_supplicant/port/eloop.c b/components/wpa_supplicant/port/eloop.c
 index 4b2f598af10a6edf60ba573a53b91b24cacfdb99..90162cd83f1c4442aff9df7bf075216314e5394c 100644
---- a/wpa_supplicant/port/eloop.c
-+++ b/wpa_supplicant/port/eloop.c
+--- a/components/wpa_supplicant/port/eloop.c
++++ b/components/wpa_supplicant/port/eloop.c
 @@ -15,8 +15,8 @@
  
  #include "common.h"
@@ -229,10 +189,10 @@ index 4b2f598af10a6edf60ba573a53b91b24cacfdb99..90162cd83f1c4442aff9df7bf0752163
  
  struct eloop_timeout {
  	struct dl_list list;
-diff --git a/wpa_supplicant/port/include/endian.h b/wpa_supplicant/port/include/endian.h
+diff --git a/components/wpa_supplicant/port/include/endian.h b/components/wpa_supplicant/port/include/endian.h
 deleted file mode 100644
 index 3527cea65868af134da24cafc801b215dbfbc4e4..0000000000000000000000000000000000000000
---- a/wpa_supplicant/port/include/endian.h
+--- a/components/wpa_supplicant/port/include/endian.h
 +++ /dev/null
 @@ -1,226 +0,0 @@
 -/*-
@@ -461,10 +421,10 @@ index 3527cea65868af134da24cafc801b215dbfbc4e4..00000000000000000000000000000000
 -}
 -
 -#endif	/* _ENDIAN_H_ */
-diff --git a/wpa_supplicant/port/include/os.h b/wpa_supplicant/port/include/os.h
+diff --git a/components/wpa_supplicant/port/include/os.h b/components/wpa_supplicant/port/include/os.h
 index dbd91af7afa92dd21bb944423f284a7ac50dd11b..1ae14e89efcc3fc15a02d0372cbd72f07a262816 100644
---- a/wpa_supplicant/port/include/os.h
-+++ b/wpa_supplicant/port/include/os.h
+--- a/components/wpa_supplicant/port/include/os.h
++++ b/components/wpa_supplicant/port/include/os.h
 @@ -14,13 +14,12 @@
  
  #ifndef OS_H
@@ -480,10 +440,10 @@ index dbd91af7afa92dd21bb944423f284a7ac50dd11b..1ae14e89efcc3fc15a02d0372cbd72f0
  
  typedef time_t os_time_t;
  
-diff --git a/wpa_supplicant/port/include/supplicant_opt.h b/wpa_supplicant/port/include/supplicant_opt.h
+diff --git a/components/wpa_supplicant/port/include/supplicant_opt.h b/components/wpa_supplicant/port/include/supplicant_opt.h
 index 2eb91956f6239076194ff525f46c0f9781803a6f..595574f713ef1caf5793d81bf27ba6cbfb0c46ea 100644
---- a/wpa_supplicant/port/include/supplicant_opt.h
-+++ b/wpa_supplicant/port/include/supplicant_opt.h
+--- a/components/wpa_supplicant/port/include/supplicant_opt.h
++++ b/components/wpa_supplicant/port/include/supplicant_opt.h
 @@ -9,7 +9,7 @@
  
  #include "sdkconfig.h"
@@ -493,10 +453,10 @@ index 2eb91956f6239076194ff525f46c0f9781803a6f..595574f713ef1caf5793d81bf27ba6cb
  #define DEBUG_PRINT
  #if defined(CONFIG_LOG_DEFAULT_LEVEL_DEBUG) || defined(CONFIG_LOG_DEFAULT_LEVEL_VERBOSE)
  #define ELOOP_DEBUG
-diff --git a/wpa_supplicant/port/os_xtensa.c b/wpa_supplicant/port/os_xtensa.c
+diff --git a/components/wpa_supplicant/port/os_xtensa.c b/components/wpa_supplicant/port/os_xtensa.c
 index 2f522eb30ea58f56f5c63792448cd0a731effd8a..ca90e886fee853bfc4b613150f04269bc23f4884 100644
---- a/wpa_supplicant/port/os_xtensa.c
-+++ b/wpa_supplicant/port/os_xtensa.c
+--- a/components/wpa_supplicant/port/os_xtensa.c
++++ b/components/wpa_supplicant/port/os_xtensa.c
 @@ -26,7 +26,7 @@
  #include <stdlib.h>
  #include <unistd.h>
@@ -506,10 +466,10 @@ index 2f522eb30ea58f56f5c63792448cd0a731effd8a..ca90e886fee853bfc4b613150f04269b
  #include "utils/common.h"
  #include "mbedtls/platform_util.h"
  
-diff --git a/wpa_supplicant/src/common/wpa_common.c b/wpa_supplicant/src/common/wpa_common.c
+diff --git a/components/wpa_supplicant/src/common/wpa_common.c b/components/wpa_supplicant/src/common/wpa_common.c
 index d799463be71e4098674fb8fdf28024244ca44a64..a3dbdd34e6f8630323bee2bde3fd19de34b20eed 100644
---- a/wpa_supplicant/src/common/wpa_common.c
-+++ b/wpa_supplicant/src/common/wpa_common.c
+--- a/components/wpa_supplicant/src/common/wpa_common.c
++++ b/components/wpa_supplicant/src/common/wpa_common.c
 @@ -1033,7 +1033,6 @@ int rsn_pmkid_suite_b_192(const u8 *kck, size_t kck_len, const u8 *aa,
  }
  #endif /* CONFIG_SUITEB192 */
@@ -535,10 +495,10 @@ index d799463be71e4098674fb8fdf28024244ca44a64..a3dbdd34e6f8630323bee2bde3fd19de
  	if (cipher & WPA_CIPHER_BIP_GMAC_128)
  		return RSN_CIPHER_SUITE_BIP_GMAC_128;
  	if (cipher & WPA_CIPHER_BIP_GMAC_256)
-diff --git a/wpa_supplicant/src/crypto/aes-ccm.c b/wpa_supplicant/src/crypto/aes-ccm.c
+diff --git a/components/wpa_supplicant/src/crypto/aes-ccm.c b/components/wpa_supplicant/src/crypto/aes-ccm.c
 index 507c8f5458e4015bf11114456c12f2007522a2aa..f8bac1b3eb8aa71cafbe4cce4499ded8b6530de1 100644
---- a/wpa_supplicant/src/crypto/aes-ccm.c
-+++ b/wpa_supplicant/src/crypto/aes-ccm.c
+--- a/components/wpa_supplicant/src/crypto/aes-ccm.c
++++ b/components/wpa_supplicant/src/crypto/aes-ccm.c
 @@ -10,7 +10,7 @@
  #ifdef CONFIG_IEEE80211W
  #include "includes.h"
@@ -548,10 +508,10 @@ index 507c8f5458e4015bf11114456c12f2007522a2aa..f8bac1b3eb8aa71cafbe4cce4499ded8
  #include "aes.h"
  #include "aes_wrap.h"
  
-diff --git a/wpa_supplicant/src/crypto/aes-gcm.c b/wpa_supplicant/src/crypto/aes-gcm.c
+diff --git a/components/wpa_supplicant/src/crypto/aes-gcm.c b/components/wpa_supplicant/src/crypto/aes-gcm.c
 index 0a937f5e6bb44e841eb4f3cce8f89ac437587e74..fb8038ee6b25f08f67675852b17fd631edda7948 100644
---- a/wpa_supplicant/src/crypto/aes-gcm.c
-+++ b/wpa_supplicant/src/crypto/aes-gcm.c
+--- a/components/wpa_supplicant/src/crypto/aes-gcm.c
++++ b/components/wpa_supplicant/src/crypto/aes-gcm.c
 @@ -9,7 +9,7 @@
  
  #include "includes.h"
@@ -561,10 +521,10 @@ index 0a937f5e6bb44e841eb4f3cce8f89ac437587e74..fb8038ee6b25f08f67675852b17fd631
  #include "aes.h"
  #include "aes_wrap.h"
  
-diff --git a/wpa_supplicant/src/crypto/aes-omac1.c b/wpa_supplicant/src/crypto/aes-omac1.c
+diff --git a/components/wpa_supplicant/src/crypto/aes-omac1.c b/components/wpa_supplicant/src/crypto/aes-omac1.c
 index 0a3420492ecf1697a3a3cb4321b97d789246c65a..abfe248aced9fc728a79c8e4d7b99eb04908fbd6 100644
---- a/wpa_supplicant/src/crypto/aes-omac1.c
-+++ b/wpa_supplicant/src/crypto/aes-omac1.c
+--- a/components/wpa_supplicant/src/crypto/aes-omac1.c
++++ b/components/wpa_supplicant/src/crypto/aes-omac1.c
 @@ -9,7 +9,7 @@
  
  #include "includes.h"
@@ -574,10 +534,10 @@ index 0a3420492ecf1697a3a3cb4321b97d789246c65a..abfe248aced9fc728a79c8e4d7b99eb0
  #include "aes.h"
  #include "aes_wrap.h"
  
-diff --git a/wpa_supplicant/src/crypto/aes-unwrap.c b/wpa_supplicant/src/crypto/aes-unwrap.c
+diff --git a/components/wpa_supplicant/src/crypto/aes-unwrap.c b/components/wpa_supplicant/src/crypto/aes-unwrap.c
 index b3cb0e5c9a038047d636c659e28a5fa401251b0e..5d961e62e678352711221ca5a8d778141a34df4d 100644
---- a/wpa_supplicant/src/crypto/aes-unwrap.c
-+++ b/wpa_supplicant/src/crypto/aes-unwrap.c
+--- a/components/wpa_supplicant/src/crypto/aes-unwrap.c
++++ b/components/wpa_supplicant/src/crypto/aes-unwrap.c
 @@ -9,7 +9,7 @@
  
  #include "includes.h"
@@ -587,10 +547,10 @@ index b3cb0e5c9a038047d636c659e28a5fa401251b0e..5d961e62e678352711221ca5a8d77814
  #include "aes.h"
  #include "aes_wrap.h"
  
-diff --git a/wpa_supplicant/src/crypto/aes-wrap.c b/wpa_supplicant/src/crypto/aes-wrap.c
+diff --git a/components/wpa_supplicant/src/crypto/aes-wrap.c b/components/wpa_supplicant/src/crypto/aes-wrap.c
 index 2c6be608f2b5721147aa279d42b2742dc2c8105c..1562a1031739ecbb9ce32d48412bc320f2e33a1d 100644
---- a/wpa_supplicant/src/crypto/aes-wrap.c
-+++ b/wpa_supplicant/src/crypto/aes-wrap.c
+--- a/components/wpa_supplicant/src/crypto/aes-wrap.c
++++ b/components/wpa_supplicant/src/crypto/aes-wrap.c
 @@ -9,7 +9,7 @@
  
  #include "includes.h"
@@ -600,10 +560,10 @@ index 2c6be608f2b5721147aa279d42b2742dc2c8105c..1562a1031739ecbb9ce32d48412bc320
  #include "aes.h"
  #include "aes_wrap.h"
  
-diff --git a/wpa_supplicant/src/crypto/crypto_ops.c b/wpa_supplicant/src/crypto/crypto_ops.c
+diff --git a/components/wpa_supplicant/src/crypto/crypto_ops.c b/components/wpa_supplicant/src/crypto/crypto_ops.c
 index d87d67f7abbbcb7db756e6a874d0a2bcad12d787..fe0f55652826ffb13544e392bc42604ae064f513 100644
---- a/wpa_supplicant/src/crypto/crypto_ops.c
-+++ b/wpa_supplicant/src/crypto/crypto_ops.c
+--- a/components/wpa_supplicant/src/crypto/crypto_ops.c
++++ b/components/wpa_supplicant/src/crypto/crypto_ops.c
 @@ -39,7 +39,7 @@ static void esp_aes_decrypt(void *ctx, const u8 *crypt, u8 *plain)
  static int esp_aes_gmac(const u8 *key, size_t esp_key_len, const u8 *iv, size_t iv_len,
  			const u8 *aad, size_t aad_len, u8 *tag)
@@ -613,10 +573,10 @@ index d87d67f7abbbcb7db756e6a874d0a2bcad12d787..fe0f55652826ffb13544e392bc42604a
  	return aes_gmac(key, esp_key_len, iv, iv_len, aad, aad_len, tag);
  #else
  	return 0;
-diff --git a/wpa_supplicant/src/crypto/sha1-prf.c b/wpa_supplicant/src/crypto/sha1-prf.c
+diff --git a/components/wpa_supplicant/src/crypto/sha1-prf.c b/components/wpa_supplicant/src/crypto/sha1-prf.c
 index 24c63477845da210b83a884c84d0df14c2197015..427dc21ccf33d76f25aab3dcaf6aea2deef5300c 100644
---- a/wpa_supplicant/src/crypto/sha1-prf.c
-+++ b/wpa_supplicant/src/crypto/sha1-prf.c
+--- a/components/wpa_supplicant/src/crypto/sha1-prf.c
++++ b/components/wpa_supplicant/src/crypto/sha1-prf.c
 @@ -8,7 +8,7 @@
  
  #include "includes.h"
@@ -626,10 +586,10 @@ index 24c63477845da210b83a884c84d0df14c2197015..427dc21ccf33d76f25aab3dcaf6aea2d
  #include "sha1.h"
  #include "crypto.h"
  
-diff --git a/wpa_supplicant/src/crypto/sha256-kdf.c b/wpa_supplicant/src/crypto/sha256-kdf.c
+diff --git a/components/wpa_supplicant/src/crypto/sha256-kdf.c b/components/wpa_supplicant/src/crypto/sha256-kdf.c
 index 5a6b744552d6a7c9e4c5445535d44d32c81c7605..beba2e2c07f8d5e76f74b77ae3449d84d19babff 100644
---- a/wpa_supplicant/src/crypto/sha256-kdf.c
-+++ b/wpa_supplicant/src/crypto/sha256-kdf.c
+--- a/components/wpa_supplicant/src/crypto/sha256-kdf.c
++++ b/components/wpa_supplicant/src/crypto/sha256-kdf.c
 @@ -8,7 +8,7 @@
  
  #include "includes.h"
@@ -639,10 +599,10 @@ index 5a6b744552d6a7c9e4c5445535d44d32c81c7605..beba2e2c07f8d5e76f74b77ae3449d84
  #include "sha256.h"
  
  
-diff --git a/wpa_supplicant/src/crypto/sha256-prf.c b/wpa_supplicant/src/crypto/sha256-prf.c
+diff --git a/components/wpa_supplicant/src/crypto/sha256-prf.c b/components/wpa_supplicant/src/crypto/sha256-prf.c
 index 656de59772f7f19dc902cf61b125eae12908b6c3..9de2ff29e2a5a54a14cc5ad89b2b1de24919b988 100644
---- a/wpa_supplicant/src/crypto/sha256-prf.c
-+++ b/wpa_supplicant/src/crypto/sha256-prf.c
+--- a/components/wpa_supplicant/src/crypto/sha256-prf.c
++++ b/components/wpa_supplicant/src/crypto/sha256-prf.c
 @@ -8,7 +8,7 @@
  
  #include "includes.h"
@@ -652,10 +612,10 @@ index 656de59772f7f19dc902cf61b125eae12908b6c3..9de2ff29e2a5a54a14cc5ad89b2b1de2
  #include "sha256.h"
  #include "crypto.h"
  
-diff --git a/wpa_supplicant/src/eap_common/eap_wsc_common.c b/wpa_supplicant/src/eap_common/eap_wsc_common.c
+diff --git a/components/wpa_supplicant/src/eap_common/eap_wsc_common.c b/components/wpa_supplicant/src/eap_common/eap_wsc_common.c
 index 13b24ef1e7449f2032d540d925d0d8f4e940e051..56006ef34ef7a2860de483871040e2664386ee03 100644
---- a/wpa_supplicant/src/eap_common/eap_wsc_common.c
-+++ b/wpa_supplicant/src/eap_common/eap_wsc_common.c
+--- a/components/wpa_supplicant/src/eap_common/eap_wsc_common.c
++++ b/components/wpa_supplicant/src/eap_common/eap_wsc_common.c
 @@ -8,7 +8,7 @@
  
  #include "includes.h"
@@ -665,10 +625,10 @@ index 13b24ef1e7449f2032d540d925d0d8f4e940e051..56006ef34ef7a2860de483871040e266
  #include "eap_peer/eap_defs.h"
  #include "eap_peer/eap_common.h"
  #include "wps/wps.h"
-diff --git a/wpa_supplicant/src/eap_peer/eap_tls_common.c b/wpa_supplicant/src/eap_peer/eap_tls_common.c
+diff --git a/components/wpa_supplicant/src/eap_peer/eap_tls_common.c b/components/wpa_supplicant/src/eap_peer/eap_tls_common.c
 index bb13ccf8dc20fe84a8795a48759348be60d2e3b2..7b664373b449ba16b04594c7815cdfc1c2546c8a 100644
---- a/wpa_supplicant/src/eap_peer/eap_tls_common.c
-+++ b/wpa_supplicant/src/eap_peer/eap_tls_common.c
+--- a/components/wpa_supplicant/src/eap_peer/eap_tls_common.c
++++ b/components/wpa_supplicant/src/eap_peer/eap_tls_common.c
 @@ -1019,15 +1019,14 @@ get_defaults:
  int eap_peer_tls_phase2_nak(struct eap_method_type *types, size_t num_types,
  			    struct eap_hdr *hdr, struct wpabuf **resp)
@@ -686,10 +646,10 @@ index bb13ccf8dc20fe84a8795a48759348be60d2e3b2..7b664373b449ba16b04594c7815cdfc1
  	*resp = eap_msg_alloc(EAP_VENDOR_IETF, EAP_TYPE_NAK, num_types,
  			      EAP_CODE_RESPONSE, hdr->identifier);
  	if (*resp == NULL)
-diff --git a/wpa_supplicant/src/eap_server/eap_server.c b/wpa_supplicant/src/eap_server/eap_server.c
+diff --git a/components/wpa_supplicant/src/eap_server/eap_server.c b/components/wpa_supplicant/src/eap_server/eap_server.c
 index a0aaf8e652fa91c41e1d2be4b0f197d9739eb738..8fc0057ddc5388cc0f21b8628889f9edc43f1b08 100644
---- a/wpa_supplicant/src/eap_server/eap_server.c
-+++ b/wpa_supplicant/src/eap_server/eap_server.c
+--- a/components/wpa_supplicant/src/eap_server/eap_server.c
++++ b/components/wpa_supplicant/src/eap_server/eap_server.c
 @@ -14,7 +14,7 @@
  
  #include "includes.h"
@@ -699,10 +659,10 @@ index a0aaf8e652fa91c41e1d2be4b0f197d9739eb738..8fc0057ddc5388cc0f21b8628889f9ed
  #include "crypto/sha256.h"
  #include "eap_i.h"
  #include "state_machine.h"
-diff --git a/wpa_supplicant/src/eap_server/eap_server_identity.c b/wpa_supplicant/src/eap_server/eap_server_identity.c
+diff --git a/components/wpa_supplicant/src/eap_server/eap_server_identity.c b/components/wpa_supplicant/src/eap_server/eap_server_identity.c
 index 0f707c482c5b490e93926cc3b7dbbb7ff6f8e023..e7b814e0579da6b289aa209ab604b25ae963567d 100644
---- a/wpa_supplicant/src/eap_server/eap_server_identity.c
-+++ b/wpa_supplicant/src/eap_server/eap_server_identity.c
+--- a/components/wpa_supplicant/src/eap_server/eap_server_identity.c
++++ b/components/wpa_supplicant/src/eap_server/eap_server_identity.c
 @@ -8,7 +8,7 @@
  
  #include "includes.h"
@@ -712,10 +672,10 @@ index 0f707c482c5b490e93926cc3b7dbbb7ff6f8e023..e7b814e0579da6b289aa209ab604b25a
  #include "eap_i.h"
  
  
-diff --git a/wpa_supplicant/src/eap_server/eap_server_methods.c b/wpa_supplicant/src/eap_server/eap_server_methods.c
+diff --git a/components/wpa_supplicant/src/eap_server/eap_server_methods.c b/components/wpa_supplicant/src/eap_server/eap_server_methods.c
 index f37c9c3835945751015f688bed84c8f72c21c105..15876d00357765563b84bf8b982c545576170e70 100644
---- a/wpa_supplicant/src/eap_server/eap_server_methods.c
-+++ b/wpa_supplicant/src/eap_server/eap_server_methods.c
+--- a/components/wpa_supplicant/src/eap_server/eap_server_methods.c
++++ b/components/wpa_supplicant/src/eap_server/eap_server_methods.c
 @@ -8,7 +8,7 @@
  
  #include "includes.h"
@@ -725,10 +685,10 @@ index f37c9c3835945751015f688bed84c8f72c21c105..15876d00357765563b84bf8b982c5455
  #include "eap_i.h"
  #include "eap_methods.h"
  
-diff --git a/wpa_supplicant/src/eap_server/eap_server_wsc.c b/wpa_supplicant/src/eap_server/eap_server_wsc.c
+diff --git a/components/wpa_supplicant/src/eap_server/eap_server_wsc.c b/components/wpa_supplicant/src/eap_server/eap_server_wsc.c
 index f3c4756257f2f1faf694eb04c7ba61d2cd6eebaa..2923419df39a4d79045c29dcebec9822840384a8 100644
---- a/wpa_supplicant/src/eap_server/eap_server_wsc.c
-+++ b/wpa_supplicant/src/eap_server/eap_server_wsc.c
+--- a/components/wpa_supplicant/src/eap_server/eap_server_wsc.c
++++ b/components/wpa_supplicant/src/eap_server/eap_server_wsc.c
 @@ -8,7 +8,7 @@
  
  #include "includes.h"
@@ -738,10 +698,10 @@ index f3c4756257f2f1faf694eb04c7ba61d2cd6eebaa..2923419df39a4d79045c29dcebec9822
  #include "eloop.h"
  #include "eap_i.h"
  #include "eap_common/eap_wsc_common.h"
-diff --git a/wpa_supplicant/src/eapol_auth/eapol_auth_sm.c b/wpa_supplicant/src/eapol_auth/eapol_auth_sm.c
+diff --git a/components/wpa_supplicant/src/eapol_auth/eapol_auth_sm.c b/components/wpa_supplicant/src/eapol_auth/eapol_auth_sm.c
 index c77f40b00e16aecb67fe643733d839457cab6a74..ec6951f34170e281dcd8aea4236a7e78e4e1956b 100644
---- a/wpa_supplicant/src/eapol_auth/eapol_auth_sm.c
-+++ b/wpa_supplicant/src/eapol_auth/eapol_auth_sm.c
+--- a/components/wpa_supplicant/src/eapol_auth/eapol_auth_sm.c
++++ b/components/wpa_supplicant/src/eapol_auth/eapol_auth_sm.c
 @@ -8,7 +8,7 @@
  
  #include "includes.h"
@@ -751,10 +711,10 @@ index c77f40b00e16aecb67fe643733d839457cab6a74..ec6951f34170e281dcd8aea4236a7e78
  #include "eloop.h"
  #include "state_machine.h"
  #include "common/eapol_common.h"
-diff --git a/wpa_supplicant/src/rsn_supp/pmksa_cache.c b/wpa_supplicant/src/rsn_supp/pmksa_cache.c
+diff --git a/components/wpa_supplicant/src/rsn_supp/pmksa_cache.c b/components/wpa_supplicant/src/rsn_supp/pmksa_cache.c
 index 136a66d4d6f4ba0dc17b9ae5df80538a1129ef44..064792e1520f1bec1d3fe7b6725c05f06c5b2790 100644
---- a/wpa_supplicant/src/rsn_supp/pmksa_cache.c
-+++ b/wpa_supplicant/src/rsn_supp/pmksa_cache.c
+--- a/components/wpa_supplicant/src/rsn_supp/pmksa_cache.c
++++ b/components/wpa_supplicant/src/rsn_supp/pmksa_cache.c
 @@ -7,8 +7,8 @@
   */
  
@@ -766,10 +726,10 @@ index 136a66d4d6f4ba0dc17b9ae5df80538a1129ef44..064792e1520f1bec1d3fe7b6725c05f0
  #include "rsn_supp/wpa.h"
  #include "rsn_supp/wpa_i.h"
  #include "common/eapol_common.h"
-diff --git a/wpa_supplicant/src/rsn_supp/wpa.c b/wpa_supplicant/src/rsn_supp/wpa.c
+diff --git a/components/wpa_supplicant/src/rsn_supp/wpa.c b/components/wpa_supplicant/src/rsn_supp/wpa.c
 index 5fc90b4c78bf77843940c64d9e5e9e93f44e32a3..6a507835ad6a86995b0c492fd12a886e556e1519 100644
---- a/wpa_supplicant/src/rsn_supp/wpa.c
-+++ b/wpa_supplicant/src/rsn_supp/wpa.c
+--- a/components/wpa_supplicant/src/rsn_supp/wpa.c
++++ b/components/wpa_supplicant/src/rsn_supp/wpa.c
 @@ -30,7 +30,6 @@
  #include "crypto/aes_wrap.h"
  #include "crypto/ccmp.h"
@@ -787,10 +747,10 @@ index 5fc90b4c78bf77843940c64d9e5e9e93f44e32a3..6a507835ad6a86995b0c492fd12a886e
  
          /*deauthenticate AP*/
  
-diff --git a/wpa_supplicant/src/utils/common.h b/wpa_supplicant/src/utils/common.h
+diff --git a/components/wpa_supplicant/src/utils/common.h b/components/wpa_supplicant/src/utils/common.h
 index 31fa00a0d4d50a3981d524f7affd30c23b9cbc68..18b597910942bb3c3f70cdfff174fbff18a1693d 100644
---- a/wpa_supplicant/src/utils/common.h
-+++ b/wpa_supplicant/src/utils/common.h
+--- a/components/wpa_supplicant/src/utils/common.h
++++ b/components/wpa_supplicant/src/utils/common.h
 @@ -16,7 +16,6 @@
  #include "list.h"
  
@@ -807,10 +767,10 @@ index 31fa00a0d4d50a3981d524f7affd30c23b9cbc68..18b597910942bb3c3f70cdfff174fbff
  
  #if defined(__linux__) || defined(__GLIBC__)
  #include <endian.h>
-diff --git a/wpa_supplicant/src/utils/includes.h b/wpa_supplicant/src/utils/includes.h
+diff --git a/components/wpa_supplicant/src/utils/includes.h b/components/wpa_supplicant/src/utils/includes.h
 index 45a2da95ce7e63ee66b4d031afad33c0225f56d7..51733c217c5e21933ff8849b1f50b9baec22ec07 100644
---- a/wpa_supplicant/src/utils/includes.h
-+++ b/wpa_supplicant/src/utils/includes.h
+--- a/components/wpa_supplicant/src/utils/includes.h
++++ b/components/wpa_supplicant/src/utils/includes.h
 @@ -59,6 +59,7 @@
  
  #else
@@ -828,10 +788,10 @@ index 45a2da95ce7e63ee66b4d031afad33c0225f56d7..51733c217c5e21933ff8849b1f50b9ba
  #endif /* !__ets__ */
  
  #endif /* INCLUDES_H */
-diff --git a/wpa_supplicant/src/utils/wpa_debug.c b/wpa_supplicant/src/utils/wpa_debug.c
+diff --git a/components/wpa_supplicant/src/utils/wpa_debug.c b/components/wpa_supplicant/src/utils/wpa_debug.c
 index ca75f7483733a892e078275f064bb3d879ac69bf..036c2566c8b22cb03ff9330376e6b982b9334f96 100644
---- a/wpa_supplicant/src/utils/wpa_debug.c
-+++ b/wpa_supplicant/src/utils/wpa_debug.c
+--- a/components/wpa_supplicant/src/utils/wpa_debug.c
++++ b/components/wpa_supplicant/src/utils/wpa_debug.c
 @@ -8,7 +8,37 @@
  #ifdef ESP_SUPPLICANT
  #include "utils/includes.h"
