@@ -62,6 +62,38 @@ index 1b95905a061ba8c0960207859673f0ae3a8aeb6c..fa8fb16312e13eaaf007aaddcba2338a
  #include "sys/queue.h"
  #include "sdkconfig.h"
  #include "esp_wifi_crypto_types.h"
+diff --git a/components/esp_wifi/include/esp_private/wifi.h b/components/esp_wifi/include/esp_private/wifi.h
+index b3f7342a0cf2c411ec63c0b7b35b918e7ad2c461..b3c0c93b38e9987f5020e919ddbb3d4529ed4d9c 100644
+--- a/components/esp_wifi/include/esp_private/wifi.h
++++ b/components/esp_wifi/include/esp_private/wifi.h
+@@ -21,8 +21,6 @@
+ 
+ #include <stdint.h>
+ #include <stdbool.h>
+-#include "freertos/FreeRTOS.h"
+-#include "freertos/queue.h"
+ #include "sys/queue.h"
+ #include "esp_err.h"
+ #include "esp_wifi_types.h"
+diff --git a/components/esp_wifi/include/esp_wifi_default.h b/components/esp_wifi/include/esp_wifi_default.h
+index 79a176bfc0289e98bad654e43946b7ccfe6645a8..90ad44b660b52e5163f441830ca31f8eee5c9ec5 100644
+--- a/components/esp_wifi/include/esp_wifi_default.h
++++ b/components/esp_wifi/include/esp_wifi_default.h
+@@ -7,8 +7,6 @@
+ #ifndef _ESP_WIFI_DEFAULT_H
+ #define _ESP_WIFI_DEFAULT_H
+ 
+-#include "esp_netif.h"
+-
+ #ifdef __cplusplus
+ extern "C" {
+ #endif
+diff --git a/components/mbedtls/mbedtls b/components/mbedtls/mbedtls
+--- a/components/mbedtls/mbedtls
++++ b/components/mbedtls/mbedtls
+@@ -1 +1 @@
+-Subproject commit 7b428b1bf260ce1fec4e3ffb6494070d439a3a67
++Subproject commit 7b428b1bf260ce1fec4e3ffb6494070d439a3a67-dirty
 diff --git a/components/nvs_flash/include/nvs.h b/components/nvs_flash/include/nvs.h
 index 966c16de69e08836be16f8e2dc487b93d597398f..ab99ee3f2c40f8f31f90dce05c5dd952acc04cc8 100644
 --- a/components/nvs_flash/include/nvs.h
