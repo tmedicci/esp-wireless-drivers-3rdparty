@@ -10,17 +10,33 @@ Wireless software drivers mainly contains of hardware drivers, wireless protocol
 
 ### mbedTLS Symbol Collisions 
 
-cd esp-mbedtls
-ctags --kinds-c=fv mbedtls/library/*.c
-cd ../utils/
-./prefixer.sh ../esp-mbedtls/tags ../esp-mbedtls/mbedtls/
-git -C ../esp-mbedtls/mbedtls diff --full-index --binary > ../patches/nuttx/esp-mbedtls/mbedtls/0001-after_prefixer.patch
-./prefixer.sh ../esp-mbedtls/tags ../wpa_supplicant
-git diff --full-index --binary > ../patches/nuttx/0001-wpa_supplicant_after_prefixer.patch
-git add ../wpa_supplicant/*
-./prefixer.sh ../esp-mbedtls/tags ../esp-mbedtls/port
-git diff > ../patches/nuttx/0002-esp-mbedtls_port_after_prefixer.patch
+cd esp-idf/components/mbedtls/mbedtls
+ctags --kinds-c=fv esp-idf/components/mbedtls/mbedtls/library/*.c
 
+#### Generate Patch for mbedtls
+
+cd ../utils/
+git -C ../esp-idf reset --hard
+git -C ../esp-idf/components/mbedtls/mbedtls reset --hard
+
+./prefixer.sh ctags/mbedtls/tags ../esp-idf/components/mbedtls/mbedtls
+mkdir -p ../nuttx/patches/esp-idf/components/mbedtls/mbedtls
+git -C ../esp-idf/components/mbedtls/mbedtls diff --full-index --binary > ../nuttx/patches/esp-idf/components/mbedtls/mbedtls/0001-add_prefix.patch
+git -C ../esp-idf/components/mbedtls/mbedtls reset --hard
+
+#### Generate Patch for ESP-IDF's mbedtls port
+
+git -C ../esp-idf reset --hard
+./prefixer.sh ctags/mbedtls/tags ../esp-idf/components/mbedtls/port
+mkdir -p ../nuttx/patches/esp-idf/components/mbedtls/port
+git -C ../esp-idf diff --full-index --binary > ../nuttx/patches/esp-idf/components/mbedtls/port/0001-add_prefix.patch
+
+#### Generate Patch for wpa_supplicant
+
+git -C ../esp-idf reset --hard
+./prefixer.sh ctags/mbedtls/tags ../esp-idf/components/wpa_supplicant
+mkdir -p ../nuttx/patches/esp-idf/components/wpa_supplicant
+git -C ../esp-idf/ diff --full-index --binary > ../nuttx/patches/esp-idf/components/wpa_supplicant/0001-add_prefix.patch
 
 ctags --kinds-c=fv ../esp-mbedtls/mbedtls/library/*.c
 ./prefixer.sh ./tags ../esp-mbedtls/mbedtls/
