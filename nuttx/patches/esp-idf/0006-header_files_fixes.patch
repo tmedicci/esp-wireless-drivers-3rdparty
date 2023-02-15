@@ -88,12 +88,6 @@ index 79a176bfc0289e98bad654e43946b7ccfe6645a8..90ad44b660b52e5163f441830ca31f8e
  #ifdef __cplusplus
  extern "C" {
  #endif
-diff --git a/components/mbedtls/mbedtls b/components/mbedtls/mbedtls
---- a/components/mbedtls/mbedtls
-+++ b/components/mbedtls/mbedtls
-@@ -1 +1 @@
--Subproject commit 7b428b1bf260ce1fec4e3ffb6494070d439a3a67
-+Subproject commit 7b428b1bf260ce1fec4e3ffb6494070d439a3a67-dirty
 diff --git a/components/nvs_flash/include/nvs.h b/components/nvs_flash/include/nvs.h
 index 966c16de69e08836be16f8e2dc487b93d597398f..ab99ee3f2c40f8f31f90dce05c5dd952acc04cc8 100644
 --- a/components/nvs_flash/include/nvs.h
