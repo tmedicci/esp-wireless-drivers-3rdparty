@@ -14,14 +14,19 @@
 
 #ifndef OS_H
 #define OS_H
+#ifndef __NuttX__
 #include "esp_types.h"
+#endif
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "esp_err.h"
 #include "supplicant_opt.h"
+#ifdef __NuttX__
+#include "espidf_wifi.h"
+#else
 #include "esp_wifi.h"
-
+#endif
 typedef time_t os_time_t;
 
 /**

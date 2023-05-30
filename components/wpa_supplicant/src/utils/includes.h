@@ -73,6 +73,10 @@
 #include "esp32h2/rom/ets_sys.h"
 #endif
 
+#ifdef __NuttX__
+#include "espidf_wifi.h"
+#endif
+
 #endif /* !__ets__ */
 
 #endif /* INCLUDES_H */

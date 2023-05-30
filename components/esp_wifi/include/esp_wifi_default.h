@@ -7,7 +7,9 @@
 #ifndef _ESP_WIFI_DEFAULT_H
 #define _ESP_WIFI_DEFAULT_H
 
+#ifndef __NuttX__
 #include "esp_netif.h"
+#endif
 
 #ifdef __cplusplus
 extern "C" {

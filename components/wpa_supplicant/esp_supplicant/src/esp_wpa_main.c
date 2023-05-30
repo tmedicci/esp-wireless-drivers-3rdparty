@@ -359,8 +359,14 @@ int esp_supplicant_init(void)
 
     esp_wifi_register_wpa_cb_internal(wpa_cb);
 
-#if CONFIG_WPA_WAPI_PSK
+#ifdef __NuttX__
+#   ifdef CONFIG_WPA_WAPI_PSK
     ret =  esp_wifi_internal_wapi_init();
+#   endif
+#else
+#   if CONFIG_WPA_WAPI_PSK
+    ret =  esp_wifi_internal_wapi_init();
+#   endif
 #endif
 
     return ret;
