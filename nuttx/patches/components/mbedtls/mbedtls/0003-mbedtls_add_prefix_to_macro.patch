@@ -22,29 +22,29 @@ index 2c41d4d87a7cd884d2ab24921c50717e8948588d..1b4f93f6bc0e72a4f4b55e239884c3d4
 -                                         G ## _gy, sizeof(G ## _gy),   \
 -                                         G ## _n,  sizeof(G ## _n),   \
 -                                         G ## _T                         \
-+                                         esp_ G ## _p,  sizeof(G ## _p),   \
-+                                         esp_ G ## _a,  sizeof(G ## _a),   \
-+                                         esp_ G ## _b,  sizeof(G ## _b),   \
-+                                         esp_ G ## _gx, sizeof(G ## _gx),   \
-+                                         esp_ G ## _gy, sizeof(G ## _gy),   \
-+                                         esp_ G ## _n,  sizeof(G ## _n),   \
-+                                         esp_ G ## _T                         \
++                                         esp_ ## G ## _p,  sizeof(esp_ ## G ## _p),   \
++                                         esp_ ## G ## _a,  sizeof(esp_ ## G ## _a),   \
++                                         esp_ ## G ## _b,  sizeof(esp_ ## G ## _b),   \
++                                         esp_ ## G ## _gx, sizeof(esp_ ## G ## _gx),   \
++                                         esp_ ## G ## _gy, sizeof(esp_ ## G ## _gy),   \
++                                         esp_ ## G ## _n,  sizeof(esp_ ## G ## _n),   \
++                                         esp_ ## G ## _T                         \
                                           )
  
  #define LOAD_GROUP(G)     esp_ecp_group_load(grp,            \
 -                                         G ## _p,  sizeof(G ## _p),   \
-+                                         esp_ G ## _p,  sizeof(G ## _p),   \
++                                         esp_ ## G ## _p,  sizeof(esp_ ## G ## _p),   \
                                           NULL,     0,                    \
 -                                         G ## _b,  sizeof(G ## _b),   \
 -                                         G ## _gx, sizeof(G ## _gx),   \
 -                                         G ## _gy, sizeof(G ## _gy),   \
 -                                         G ## _n,  sizeof(G ## _n),   \
 -                                         G ## _T                         \
-+                                         esp_ G ## _b,  sizeof(G ## _b),   \
-+                                         esp_ G ## _gx, sizeof(G ## _gx),   \
-+                                         esp_ G ## _gy, sizeof(G ## _gy),   \
-+                                         esp_ G ## _n,  sizeof(G ## _n),   \
-+                                         esp_ G ## _T                         \
++                                         esp_ ## G ## _b,  sizeof(esp_ ## G ## _b),   \
++                                         esp_ ## G ## _gx, sizeof(esp_ ## G ## _gx),   \
++                                         esp_ ## G ## _gy, sizeof(esp_ ## G ## _gy),   \
++                                         esp_ ## G ## _n,  sizeof(esp_ ## G ## _n),   \
++                                         esp_ ## G ## _T                         \
                                           )
  #endif /* ECP_LOAD_GROUP */
  
