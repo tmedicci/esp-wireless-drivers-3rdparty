@@ -10,15 +10,14 @@ This release was based at [`sync-3-release_v5.0`](../../tree/sync-3-release_v5.0
 
 This branch is intended to be downloaded/cloned by NuttX's build system, using the provided source to build Espressif's SoCs on NuttX.
 
-### Repository Organization
-
-The repository is organized into the following folders and files:
+### Organization
+This branch is organized into the following directories:
 
 #### `components`
 The [`components`](./components/) folder contains the components sourced from [`sync-3-release_v5.0`](../../tree/sync-3-release_v5.0) and the additions made to enable building the sources on NuttX. Please note that these components may contain git submodules.
 
 > **Note 1:**
-> Not all sources under `components` are required to be built. It's feature-dependent. Please check which sources are built on NuttX. For ESP32-S3's Wi-Fi, for instance, check [nuttx/arch/xtensa/src/esp32s3/Wireless.mk](https://github.com/apache/nuttx/blob/master/arch/xtensa/src/esp32s3/Wireless.mk).
+> Not all sources under `components` are required to build NuttX: it's feature-dependent. Please check which sources are built on NuttX when build, for instance, ESP32-S3's Wi-Fi: [nuttx/arch/xtensa/src/esp32s3/Wireless.mk](https://github.com/apache/nuttx/blob/master/arch/xtensa/src/esp32s3/Wireless.mk).
 
 > **Note 2:**
 > Please note that, preferably, modifications on source should be made using the preprocessor macro `__NuttX__`.
@@ -29,11 +28,11 @@ The [`nuttx`](./nuttx) directory contains two sub-directories:
 
 ##### `nuttx/include`
 
-Includes headers that are used specifically to build NuttX, including API's translations, macro (re)-definitions, and other necessary files that are meant to interface with sources and header files in `components`.
+Includes headers that are used specifically to build NuttX that are not available in `components` (or that can't be directly added there), including API's translations, macro (re)-definitions, and other necessary files that are meant to interface with sources and header files in `components`.
 
 ##### `nuttx/patches`
 
-Provide patches to be applied in the source code when it isn't suitable to directly change it. Specifically, that would happen when are treating submodules. The Mbed TLS is a submodule into [`components/mbedtls/mbedtls`](./components/mbedtls/mbedtls) folder. Changing its source would require keeping a separate remote for the Mbed TLS. Instead, we can provide patches to be applied before building the Mbed TLS.
+Provide patches to be applied in the source code when it isn't suitable to directly change it. Specifically, patches are used to change the source code of git submodules. The Mbed TLS is a submodule in [`components/mbedtls/mbedtls`](./components/mbedtls/mbedtls) folder and directly changing its source would require keeping a separate remote for the Mbed TLS. Instead, we can provide patches to be applied before building the Mbed TLS.
 
 > **Note 3:**
 > The path under `nuttx/patches` is related to the path where the patch is meant to be applied: [`nuttx/patches/components/mbedtls/mbedtls/0001-mbedtls_add_prefix.patch`](nuttx/patches/components/mbedtls/mbedtls/0001-mbedtls_add_prefix.patch), for instance, is meant to be applied at [`components/mbedtls/mbedtls/`](components/mbedtls/mbedtls/)
@@ -43,15 +42,13 @@ Provide patches to be applied in the source code when it isn't suitable to direc
 This section explains in-depth the workarounds for using the components on NuttX.
 #### Mbed TLS Symbol Collisions
 
-ESP32 SoC family makes use of the Mbed TLS to implement [wpa_supplicant crypto functions](esp-idf/components/wpa_supplicant/src/crypto). However, this same application may be present on 3rd party platforms. This is true for NuttX, for example.
+ESP32 SoC family makes use of the Mbed TLS to implement [wpa_supplicant crypto functions](components/wpa_supplicant/src/crypto). However, this same application may be present on 3rd party platforms. This is true for NuttX, for example. Thus, to provide complete userspace/kernel separation and to avoid problems regarding the Mbed TLS version, the ESP32 implementation builds a custom version of Mbed TLS. To avoid symbol collision if NuttX's Mbed TLS is used, functions and global variables with external linkage from the ESP32-custom Mbed TLS are then prefixed.
 
-In order to provide complete userspace/kernel separation and to avoid problems regarding the Mbed TLS version, the ESP32 implementation builds a custom version of Mbed TLS based on ESP-IDF's. However, there would be symbol collision if the Mbed TLS is used natively on the platform. To avoid this, functions and global variables with external linkage from the ESP32-custom Mbed TLS are then prefixed.
-
-This is done through patches that apply the prefix. Please check [nuttx/patches/components/mbedtls/mbedtls](nuttx/patches/components/mbedtls/mbedtls) for checking the patches that are meant to be applied on Mbed TLS submodule by NuttX's build system.
+This is done through patches that apply the prefix. Please check [nuttx/patches/components/mbedtls/mbedtls](nuttx/patches/components/mbedtls/mbedtls) for checking the patches that are meant to be applied on Mbed TLS submodule that is used by the Wi-Fi driver.
 
 ## How to Update the Release Branch
 
-From a release branch, make a rebase to get the most recent changes from a sync branch (may be the same branch that was used for that release or another sync branch). For instance, considering that the `release/nuttx` contains the latest release for NuttX and it will be rebased into `sync-3-release_v5.0`:
+From a release branch, make a rebase to get the most recent changes from a sync branch (it can be the same branch that was used for that release or another sync branch). For instance, considering that the `release/nuttx` contains the latest release for NuttX and it will be rebased into `sync-3-release_v5.0`:
 
 ```
 git checkout sync-3-release_v5.0
@@ -60,17 +57,17 @@ git checkout release/nuttx
 git rebase origin/sync-3-release_v5.0
 ```
 
-That would thrown several conflicts to be solved in the commits that are on top of the release branch. Solve them!
+That would throw several conflicts to be solved in the commits that are on top of the sync-branch branch. Solve them!
 
 ### Submodules
-AS previously said, the components may contain git submodules. The sync branch provides just a reference of the hash used by this submodules, but not add them as a git submodule.
+The components may contain git submodules. The sync branch provides just a reference of the hash used by these submodules, but it doesn't add them as a git submodule.
 
 The [`sync-3-release_v5.0`](../../tree/sync-3-release_v5.0), specifically, contains the following submodules:
 * components/mbedtls/mbedtls;
 * components/esp_phy/lib;
 * components/esp_wifi/lib;
 
-Each one of them need to be added as a git submodule in this release branch. Considering the `esp_phy/lib`, for instance:
+Each one of them needs to be added as a git submodule in this release branch. Considering the `esp_phy/lib`, for instance:
 ```
 git rm -r --cached components/esp_phy/lib
 rm -rf components/esp_phy/lib
@@ -78,18 +75,18 @@ git submodule add ../../espressif/esp-phy-lib.git components/esp_phy/lib
 git restore --staged components/esp_phy/lib
 ```
 
-After (re)adding the git submodules, make sure they are update to the same hash of the `components`:
+After (re)adding the git submodules, make sure they are updated to the same hash of the `components`:
 ```
 git submodule update --init --update
 ``` 
 
 ### Patches
 
-After rebasing and ensuring that the submodules are properly set and updated, one should test applying the patches in [nuttx/patches/](nuttx/patches/). If some of them fails, please fix them.
+After rebasing and ensuring that the submodules are properly set and updated, one should test applying the patches in [nuttx/patches/](nuttx/patches/). If any of them fail, please fix them.
 
 #### nuttx/patches/components/mbedtls/mbedtls
 
-The patches under [nuttx/patches/components/mbedtls/mbedtls](nuttx/patches/components/mbedtls/mbedtls) may fail specially if the version of the Mbed TLS changes. This happens because the patches are intendend to add a prefix to Mbed TLS's functions (please check [here](#mbed-tls-symbol-collisions)). If this happens, use the following method to recreate them.
+The patches under [nuttx/patches/components/mbedtls/mbedtls](nuttx/patches/components/mbedtls/mbedtls) may fail especially if the version of the Mbed TLS changes. This happens because the patches are intended to add a prefix to Mbed TLS's functions (please check [here](#mbed-tls-symbol-collisions)). If this happens, use the following method to recreate them.
 
 ##### Create ctags file
 
@@ -122,7 +119,7 @@ git -C ../esp-idf/components/mbedtls/mbedtls reset --hard
 > Please note that `ctags` only uses the first branch on a `#if` (or `#ifdef`) [preprocessor conditional](https://docs.ctags.io/en/latest/man/ctags.1.html#notes-for-c-c-parser). That being said, it may need to be necessary to add the `esp_` prefix manually for some functions. Please check [`0002-mbedtls_add_prefix.patch`](nuttx/patches/components/mbedtls/mbedtls/0002-mbedtls_add_prefix.patch) for an example of a patch that added the `esp_` prefix manually. The same is valid for [macro-defined code](nuttx/patches/components/mbedtls/mbedtls/0003-mbedtls_add_prefix_to_macro.patch).
 
 ### Tagging the Release
-After the code was 1) rebased, 2) submodules configured and, 3) patches updated. Please tag the version before pushing the branche release branch upstream:
+After the code was 1) rebased, 2) submodules configured, and 3) patches updated. Please tag the version before pushing the branche release branch upstream:
 
 ```
 # Create an annotated tag for identifying the release
